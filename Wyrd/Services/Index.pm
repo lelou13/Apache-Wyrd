@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::Index;
-our $VERSION = '0.91';
+our $VERSION = '0.92';
 use Apache::Wyrd::Services::SAK qw(token_parse);
 use Apache::Wyrd::Services::SearchParser;
 use BerkeleyDB;

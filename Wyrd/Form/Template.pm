@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Form::Template;
-our $VERSION = '0.91';
+our $VERSION = '0.92';
 use base qw(Apache::Wyrd);
 
 =pod

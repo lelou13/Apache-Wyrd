@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Interfaces::XMLer;
-our $VERSION = '0.91';
+our $VERSION = '0.92';
 use XML::Simple qw(:strict);
 
 =pod

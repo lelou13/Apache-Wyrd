@@ -1,37 +1,24 @@
-#!/usr/bin/perl
-
 use strict;
 use warnings;
 no warnings qw(uninitialized);
+use Cwd;
 use Apache::Test;
 use Apache::TestUtil;
 use Apache::TestRequest qw(GET_BODY GET_OK);
-use Cwd;
-
-BEGIN {
-	chdir 't' if -d 't';
-	if (-f 'no_test') {
-		print "1..0 #Skipping... Apache::Test not available...";
-		exit 0;
-	}
-}
+use Apache::Wyrd::Services::Index;
+my $directory = getcwd();
+#Note -- This line is to silence some errors using Apache::Test v. 1.19
+eval 'use lib $directory';
+$directory = "$directory/t" if (-d 't');
 
 my $count = &count;
-eval {use Apache::Wyrd::Services::Index};
-$count = 0 if ($@);
-
 print "1..$count\n";
-
-unless ($count) {
-	exit 0;
-}
 
 my $index = undef;
 
 print "not " unless (GET_OK '/13.html');
 print "ok 1 - Index creation\n";
 
-my $directory = getcwd;
 eval {$index = Apache::Wyrd::Services::Index->new({
 	file => "$directory/data/testindex.db",
 	attributes => [qw(regular map)],

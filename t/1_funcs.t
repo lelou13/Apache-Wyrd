@@ -1,14 +1,9 @@
-#!/usr/bin/perl
-
-use strict;
-use warnings;
+use Cwd;
 use Apache::Wyrd::Services::SAK qw(:all);
 use Apache::Wyrd::Services::CodeRing;
 use Apache::Wyrd::Interfaces::Setter;
-
-BEGIN {
-	chdir 't' if -d 't';
-}
+my $directory = getcwd();
+$directory = "$directory/t" if (-d 't');
 
 my $count = &count;
 
@@ -35,7 +30,7 @@ my %hash = (
 print "not " unless (keys %hash == 3 and ($hash{yes} and $hash{no} and $hash{maybe}));
 print "ok 5 - lc_hash\n";
 
-print "not " if (${slurp_file("data/slurp")} ne "slurp");
+print "not " if (${slurp_file("$directory/data/slurp")} ne "slurp");
 print "ok 6 - slurp_file\n";
 
 my @hashes = (

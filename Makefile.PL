@@ -5,6 +5,32 @@ use Cwd;
 
 push @ARGV, '-maxclients', '2';
 
+my $mod_perl_ok = 0;
+my $mod_perl_version = 'unknown or uninstalled';
+eval 'use Apache';
+unless ($@) {
+	$mod_perl_version = $Apache::VERSION;
+	$mod_perl_ok = 1 if (($mod_perl_version < 1.99) and ($mod_perl_version >= 1.26));
+}
+
+unless ($mod_perl_ok) {
+	print <<__MSG__;
+
+These modules are designed to work under Apache 1.X using mod_perl 1.26
+or greater (but not mod_perl 1.99 or better).  This does not seem to be
+an appropriate platform.  If you know what you're doing, or if you just
+want to examine these modules, you can opt to continue.  Otherwise,
+please install the appropriate software before continuing.  See
+http://perl.apache.org for details.
+
+__MSG__
+	my $ok = prompt('Continue (y/n)?', 'n');
+	if (lc($ok) ne 'y') {
+		print "OK, aborting...\n\n";
+		exit 0;
+	}
+}
+
 my $have_atest = 1;
 my $atest_version = 0;
 eval 'use Apache::Test';
@@ -18,11 +44,11 @@ if ($@ or ($atest_version < 1.08)) {
 	$have_atest = 0;
 	print <<__MSG__;
 
-The test suite for this module requires Apache::Test version > 1.08,
-which is apparently not available.  It is highly recommended that you
-run the test suite, but it is not absolutely required.  If you choose to
-continue, you may install Apache::Wyrd, but it may be unuseable.  Do you
-want to continue?
+The test suite for this module requires Apache::Test version 1.08 or
+better, which is apparently not available.  It is highly recommended
+that you run the test suite, but it is not absolutely required.  If you
+choose to continue, you may install Apache::Wyrd, but it may be
+unusable.  Do you want to continue?
 
 __MSG__
 	my $ok = prompt('Continue (y/n)?', 'n');
@@ -32,18 +58,14 @@ __MSG__
 	} else {
 		print <<__MSG__;
 
-OK. However, if you run into problems, please install Apache::Test and
-run the test suite (make test) before contacting the author for support.
+OK. Tests will fail if you 'make test', but this will not necessarily
+mean the modules are unusable.  However, if you run into problems,
+please install Apache::Test v 1.08+ and run the complete test suite
+(make test) before contacting the author for support.
 
 __MSG__
 		sleep 5;
-		open (BLOCKER, '> t/no_test');
-		print BLOCKER 'this file is here to block testing.  remove it if you want to allow the tests';
-		close (BLOCKER);
 	}
-} else {
-	#for test re-runs
-	-f 't/no_test' && unlink('t/no_test');
 }
 
 my $blowfish = 'Crypt::Blowfish';
@@ -124,7 +146,6 @@ my $makefile = WriteMakefile(
 my $wyrd_version = $makefile->{VERSION};
 my $perl_version = $];
 my $os = $^O;
-my $mod_perl_version = $Apache::VERSION;
 my $bdb = $BerkeleyDB::db_version;
 my $error = 0;
 my $ua = undef;
@@ -180,7 +201,7 @@ if (lc($ok) ne 'y') {
 			mod_perl	=>	$mod_perl_version,
 			os			=>	$os,
 			bdb			=>	$bdb,
-			wyrds		=>	$this_version
+			wyrds		=>	$wyrd_version
 		]
 	);
 	';

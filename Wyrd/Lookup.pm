@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Lookup;
-our $VERSION = '0.91';
+our $VERSION = '0.92';
 use base qw (Apache::Wyrd Apache::Wyrd::Interfaces::Setter);
 use Apache::Wyrd::Services::SAK qw(:db);
 

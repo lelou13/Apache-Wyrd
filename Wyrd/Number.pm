@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Number;
-our $VERSION = '0.91';
+our $VERSION = '0.92';
 use base qw (Apache::Wyrd);
 use Apache::Wyrd::Services::SAK qw(commify);
 

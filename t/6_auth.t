@@ -9,14 +9,6 @@ my $ua = LWP::UserAgent->new(
 	requests_redirectable	=> []
 );
 
-BEGIN {
-	chdir 't' if -d 't';
-	if (-f 'no_test') {
-		print "1..0 #Skipping... Apache::Test not available...";
-		exit 0;
-	}
-}
-
 plan tests => 7;
 
 my $res = $ua->get('http://localhost:8529/restricted/test.html');

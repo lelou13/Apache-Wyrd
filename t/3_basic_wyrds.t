@@ -1,16 +1,6 @@
-#!/usr/bin/perl
-
 use Apache::Test;
 use Apache::TestUtil;
-use Apache::TestRequest 'GET_BODY';
-
-BEGIN {
-	chdir 't' if -d 't';
-	if (-f 'no_test') {
-		print "1..0 #Skipping... Apache::Test not available...";
-		exit 0;
-	}
-}
+use Apache::TestRequest qw(GET_BODY GET_OK);
 
 plan tests => 15;
 

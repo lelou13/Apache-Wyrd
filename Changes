@@ -1,6 +1,17 @@
 Changes
 =======
 
+    0.92   January 13, 2005
+
+           SearchParser operator precidence change to AND/OR/NOT/DIFF in
+           that order
+
+           Corrected malformed searches in SearchParser
+
+           Changes to Makefile.PL: more checks, compensation for lib
+           error in Apache::Test 1.19, better reporting of software
+           versions
+
     0.91   January 9, 2005
 
            Fixed self_path bug where leading slashes were preserved a
