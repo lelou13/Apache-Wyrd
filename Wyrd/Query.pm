@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Query;
-our $VERSION = '0.82';
+our $VERSION = '0.83';
 use base qw(Apache::Wyrd::Interfaces::Setter Apache::Wyrd);
 use Apache::Wyrd::Services::SAK qw(token_parse);
 
@@ -31,7 +31,8 @@ Apache::Wyrd::Query - SQL-handle (DBI) object for Wyrds
 =head1 DESCRIPTION
 
 Provides a DBI-style statement handle to the Wyrd that encloses it.  The
-parent must implement the C<register_query> method to make use of it.
+parent must implement the C<register_query> method to make use of it.  The
+Query Wyrd passes a reference of itself to the C<register_query> method.
 
 =head2 HTML ATTRIBUTES
 
@@ -134,7 +135,7 @@ sub sh {
 
 =back
 
-=head1 BUGS/CAVEATS
+=head1 BUGS/CAVEATS/RESERVED METHODS
 
 Reserves the C<_setup>, C<_format_output>, and C<_generate_output>
 methods.

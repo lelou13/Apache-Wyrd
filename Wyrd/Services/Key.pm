@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::Key;
-our $VERSION = '0.82';
+our $VERSION = '0.83';
 use base qw(Class::Singleton);
 
 my $pure_perl = 0;
@@ -71,7 +71,9 @@ sub _new_instance {
 	my ($class, $key) = @_;
 	unless ($key) {
 		for (my $i=0; $i<56; $i++) {
-			$key .= chr(rand(256));
+			#collect random chars, dropping null bytes in case of C
+			#interfaces, i.e. DBM files and the like.
+			$key .= chr(int(rand(255)) + 1);
 		}
 	}
 	my $cypher = undef;
@@ -118,7 +120,7 @@ sub cypher {
 
 =back
 
-=head1 BUGS/CAVEATS
+=head1 BUGS/CAVEATS/RESERVED METHODS
 
 Unless a fixed key is used, any encrypted information is irretrievable
 on server restart.

@@ -9,7 +9,7 @@ List of known problems:
 List of known problems which will not be fixed, and why:
 
 -	Wyrds should be case-insensitive: too cycle-costly and only encourages
-	sloppiness
+	sloppiness.  Attributes are already case-insensitive.
 
 -	Should be able to put HTML within the attributes inside the Wyrd tag:
 	Only a few instances can't be done with Attribute Wyrds, and those will

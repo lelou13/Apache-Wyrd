@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::TicketPad;
-our $VERSION = '0.82';
+our $VERSION = '0.83';
 use BerkeleyDB;
 use BerkeleyDB::Btree;
 
@@ -131,7 +131,7 @@ sub find {
 
 =back
 
-=head1 BUGS/CAVEATS
+=head1 BUGS/CAVEATS/RESERVED METHODS
 
 Will fail if the Apache process cannot create a file unreadable by group
 or other.

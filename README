@@ -67,9 +67,9 @@ All the Wyrds have their own documentation in POD form.
 
 The first three give the basics:
 
-Apache::Wyrd::Handler:  The Handler Module
+Apache::Wyrd::Handler   The Handler Module
 Apache::Wyrd            The abstract self-parsing embeddable object
-Apache::Wyrd::DBL:      The "switchboard" of Apache and DBI connnections
+Apache::Wyrd::DBL       The "switchboard" of Apache and DBI connnections
 
 Then the support classes provide much-used functionality:
 
@@ -85,18 +85,20 @@ Apache::Wyrd::CGISetter
 There are "form-handling" modules:
 
 Apache::Wyrd::Form
-Apache::Wyrd::Form::Template.pm
+Apache::Wyrd::Form::Template
 Apache::Wyrd::Input
 Apache::Wyrd::Datum
 Apache::Wyrd::Input::Set
 Apache::Wyrd::Input::Opt
 Apache::Wyrd::Input::Complex
 Apache::Wyrd::Input::Condenser
+Apache::Wyrd::MySQLForm
 Apache::Wyrd::Form::Preload
 Apache::Wyrd::Form::View
 Apache::Wyrd::ErrTag
-Apache::Wyrd::ErrFlag
+Apache::Wyrd::ErrFlield
 Apache::Wyrd::Interfaces::SmartInput
+Apache::Wyrd::SQLForm
 Apache::Wyrd::Var
 
 The interface classes:
@@ -121,8 +123,8 @@ Apache::Wyrd::Services::SearchParser
 
 Database-driven objects:
 
+Apache::Wyrd::Chart
 Apache::Wyrd::Lookup
-Apache::Wyrd::MySQLForm
 Apache::Wyrd::Query
 Apache::Wyrd::Defaults
 
@@ -134,12 +136,18 @@ Apache::Wyrd::Services::TicketPad
 Apache::Wyrd::User
 Apache::Wyrd::Interfaces::GetUser
 
-And the debugging/misc. tools:
+The debugging tools:
 
-Apache::Wyrd::LogDump
-Apache::Wyrd::Redirect
 Apache::Wyrd::CSSGene
 Apache::Wyrd::Debug
+Apache::Wyrd::LogDump
+Apache::Wyrd::ShowParams
+
+And the formatting/convenience classes:
+
+Apache::Wyrd::FileSize
+Apache::Wyrd::Number
+Apache::Wyrd::Redirect
 
 --------
 NB: "Wyrd" is pronounced "word" or "weird"--use whichever one you like.

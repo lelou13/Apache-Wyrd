@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Template;
-our $VERSION = '0.82';
+our $VERSION = '0.83';
 use base qw (Apache::Wyrd);
 
 =pod
@@ -43,7 +43,7 @@ Name of the parent Wyrd's attribute to modify
 
 NONE
 
-=head1 BUGS/CAVEATS
+=head1 BUGS/CAVEATS/RESERVED METHODS
 
 Reserves the _setup method.
 

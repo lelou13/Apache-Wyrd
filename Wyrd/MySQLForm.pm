@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::MySQLForm;
-our $VERSION = '0.82';
+our $VERSION = '0.83';
 use base qw(Apache::Wyrd::SQLForm);
 use Apache::Wyrd::Services::SAK qw(:db);
 use warnings qw(all);
@@ -53,7 +53,7 @@ sub _insert_id {
 
 =back
 
-=head1 BUGS/CAVEATS
+=head1 BUGS/CAVEATS/RESERVED METHODS
 
 NONE
 

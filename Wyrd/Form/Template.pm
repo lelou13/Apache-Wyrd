@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Form::Template;
-our $VERSION = '0.82';
+our $VERSION = '0.83';
 use base qw(Apache::Wyrd);
 
 =pod
@@ -109,7 +109,7 @@ sub form_body {
 
 =back
 
-=head1 BUGS/CAVEATS
+=head1 BUGS/CAVEATS/RESERVED METHODS
 
 Reserves the _setup and _format_output methods.
 

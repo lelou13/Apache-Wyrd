@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::CodeRing;
-our $VERSION = '0.82';
+our $VERSION = '0.83';
 use Apache::Wyrd::Services::SAK qw(lc_hash);
 use Apache::Wyrd::Services::Key;
 use Digest::MD5 qw(md5_hex);
@@ -167,7 +167,7 @@ sub decrypt {
 
 =back
 
-=head1 BUGS/CAVEATS
+=head1 BUGS/CAVEATS/RESERVED METHODS
 
 Rather than returning an error, the C<decrypt> method silently returns a
 ref to an empty string on an unsuccessful decrypt.  The null byte ("\0")

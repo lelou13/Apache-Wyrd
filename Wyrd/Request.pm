@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized redefine);
 
 package Apache::Wyrd::Request;
-our $VERSION = '0.82';
+our $VERSION = '0.83';
 use base qw (Apache::Request);
 
 =pod
@@ -59,7 +59,7 @@ sub instance {
 
 =back
 
-=head1 BUGS/CAVEATS
+=head1 BUGS/CAVEATS/RESERVED METHODS
 
 UNKNOWN
 

@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::Auth;
-our $VERSION = '0.82';
+our $VERSION = '0.83';
 use Apache::Wyrd::Services::CodeRing;
 use Apache::Wyrd::Request;
 use Apache::Constants qw(AUTH_REQUIRED HTTP_SERVICE_UNAVAILABLE REDIRECT DECLINED);
@@ -237,10 +237,10 @@ sub handler {
 	#require an SSL login server if this is an insecure port (currently always).
 	#in future, 1 will be replaced with a test for SSL encryption.
 	if (1 or $req->dir_config('LSForce')) {
-		# 1) Generate a random key
+		# 1) Generate a random key.  NB: stored in A DBM, so null byte terminates string in C.  Avoid it.
 		my $key = '';
 		for (my $i=0; $i<56; $i++) {
-			$key .= chr(rand(256));
+			$key .= chr(int(rand(255)) + 1);
 		}
 		my $rand_cr = Apache::Wyrd::Services::CodeRing->new({key => $key});
 		my $self_cr = Apache::Wyrd::Services::CodeRing->new;
@@ -370,7 +370,7 @@ CGI param for password if not 'password'
 
 =back
 
-=head1 BUGS/CAVEATS
+=head1 BUGS/CAVEATS/RESERVED METHODS
 
 As with many such schemes, man-in-the-middle attacks are always
 possible.  Additionally, a "stolen cookie", i.e. one obtained via packet

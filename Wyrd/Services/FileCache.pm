@@ -8,7 +8,7 @@ use strict;
 use Apache::Wyrd::Services::SAK qw(slurp_file token_parse);
 use Exporter;
 
-our $VERSION = '0.82';
+our $VERSION = '0.83';
 our @ISA = qw(Exporter);
 our @EXPORT = qw(get_cached);
 
@@ -41,6 +41,17 @@ setting C<NoFileCache> to a true value:
 
 	PerlSetVar NoFileCache 1
 
+=head1 FLAGS
+
+=over
+
+=item allow_nonexistent_files
+
+Do not report a fatal error if the file can't be found.  Instead, return
+undef for contents.
+
+=back
+
 =head1 METHODS
 
 I<(format: (returns) name (arguments after self))>
@@ -66,8 +77,10 @@ sub get_cached {
 		$_previous_checktime_register = $time;
 	}
 	return $_file_cache_register{$file} if (exists($_file_cache_register{$file}));
-	$self->_raise_exception("File $file cannot be read or is not a proper file.")
-		unless (-r $file and -f _);
+	unless (-r $file and -f _) {
+		$self->_raise_exception("File $file cannot be read or is not a proper file.")
+			unless ($self->_flags->allow_nonexistent_files);
+	}
 	$self->_info("reading $file for file cache");
 	$_file_cache_register{$file} =  ${slurp_file($file)};
 	$_file_timestamp_register{$file} = $stats[9];
@@ -78,7 +91,7 @@ sub get_cached {
 
 =back
 
-=head1 BUGS/CAVEATS
+=head1 BUGS/CAVEATS/RESERVED METHODS
 
 reserves the private global variables: $_file_cache_register,
 $_file_timestamp_register, and $_previous_checktime_register.

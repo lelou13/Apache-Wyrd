@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::CGISetter;
-our $VERSION = '0.82';
+our $VERSION = '0.83';
 use base qw(Apache::Wyrd::Interfaces::Stealth Apache::Wyrd::Interfaces::Setter Apache::Wyrd);
 
 =pod
@@ -54,7 +54,7 @@ Remove any undefined values, so that there are no remaining $:variable placemark
 
 NONE
 
-=head1 BUGS/CAVEATS
+=head1 BUGS/CAVEATS/RESERVED METHODS
 
 Reserves the _format_output method.
 

@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::Index;
-our $VERSION = '0.82';
+our $VERSION = '0.83';
 use Apache::Wyrd::Services::SAK qw(token_parse);
 use Apache::Wyrd::Services::SearchParser;
 use BerkeleyDB;
@@ -856,7 +856,7 @@ sub translate_packed {
 
 =back
 
-=head1 BUGS/CAVEATS
+=head1 BUGS/CAVEATS/RESERVED METHODS
 
 UNKNOWN
 
@@ -878,7 +878,7 @@ Methods to be implemented by any item that wants to be indexed.
 
 =item Apache::Wyrd::Services::SearchParser
 
-Parser for handling logical searches (AND/OR/NOT).
+Parser for handling logical searches (AND/OR/NOT/DIFF).
 
 =back
 

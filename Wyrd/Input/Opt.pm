@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Input::Opt;
-our $VERSION = '0.82';
+our $VERSION = '0.83';
 use Apache::Wyrd::Datum;
 use base qw(Apache::Wyrd::Interfaces::Setter Apache::Wyrd);
 =pod
@@ -163,7 +163,7 @@ sub option {
 
 =back
 
-=head1 BUGS/CAVEATS
+=head1 BUGS/CAVEATS/RESERVED METHODS
 
 Reserves the _format_output, _generate_output, and final_output methods.
 

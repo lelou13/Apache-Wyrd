@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Form;
-our $VERSION = '0.82';
+our $VERSION = '0.83';
 use base qw(Apache::Wyrd::Interfaces::Mother Apache::Wyrd::Interfaces::Setter Apache::Wyrd);
 #use XML::Simple;
 use XML::Dumper;
@@ -829,7 +829,7 @@ sub _set_children {
 
 =back
 
-=head1 BUGS/CAVEATS
+=head1 BUGS/CAVEATS/RESERVED METHODS
 
 Reserves the _setup, the _format_output, AND the _generate_output method.  Subclassing is done via the other hooks, above.
 

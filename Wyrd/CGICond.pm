@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::CGICond;
-our $VERSION = '0.82';
+our $VERSION = '0.83';
 use base qw(Apache::Wyrd::Interfaces::Stealth Apache::Wyrd);
 use Apache::Wyrd::Services::SAK qw(:hash);
 
@@ -68,7 +68,7 @@ text if any of the variables are null.  (see the SYNOPSIS)
 
 NONE
 
-=head1 BUGS/CAVEATS
+=head1 BUGS/CAVEATS/RESERVED METHODS
 
 Reserves the _format_output method.
 

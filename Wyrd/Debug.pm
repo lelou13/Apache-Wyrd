@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Debug;
-our $VERSION = '0.82';
+our $VERSION = '0.83';
 use base qw (Apache::Wyrd);
 
 =pod
@@ -57,7 +57,7 @@ you should specify it. It must be writeable by the server.
 
 NONE
 
-=head1 BUGS/CAVEATS
+=head1 BUGS/CAVEATS/RESERVED METHODS
 
 Reserves the _setup method.
 

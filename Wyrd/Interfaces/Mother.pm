@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Interfaces::Mother;
-our $VERSION = '0.82';
+our $VERSION = '0.83';
 
 =pod
 
@@ -107,7 +107,7 @@ sub _process_child {
 
 =back
 
-=head1 BUGS/CAVEATS
+=head1 BUGS/CAVEATS/RESERVED METHODS
 
 The methods C<_name_child>, C<_generate_id>, C<_set_children>, and
 C<_child_hash> are reserved by this interface.

@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Handler;
-our $VERSION = '0.82';
+our $VERSION = '0.83';
 use Apache::Wyrd::DBL;
 use Apache::Wyrd;
 use Apache::Wyrd::Services::SAK qw(slurp_file);
@@ -155,8 +155,17 @@ sub get_file {
 	my $file = $self->{'req'}->filename;
 	$file =~ s#/$##;
 	if (-d $file){
-		$file .= '/index.html';
-		$self->{'send_header'} = 1;
+		my $found = 0;
+		foreach my $index ('/index.html', '/index.htm', '/home.html', '/home.htm') {
+			my $try = $file . $index;
+			if (-f $try) {
+				$file = $try;
+				$self->{'send_header'} = 1;
+				$found = 1;
+			}
+			last if ($found);
+		}
+		return NOT_FOUND unless ($found);
 	}
 	return DECLINED unless ($file =~ /\.html?$/);
 	unless (-r _) {
@@ -170,6 +179,9 @@ sub get_file {
 	my @stats = stat _;
 	$self->{'init'}->{'mtime'} = $stats[9];
 	$self->{'init'}->{'size'} = $stats[7];
+	my $root = $self->{'req'}->document_root;
+	$file =~ s/$root//;
+	$self->{'init'}->{'self_path'} = $file;
 	return undef;
 }
 
@@ -312,7 +324,7 @@ __PAGE_END__
 
 =back
 
-=head1 BUGS/CAVEATS
+=head1 BUGS/CAVEATS/RESERVED METHODS
 
 =head2 FREE SOFTWARE
 

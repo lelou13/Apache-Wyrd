@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Lib;
-our $VERSION = '0.82';
+our $VERSION = '0.83';
 use strict;
 use base qw(Apache::Wyrd::Interfaces::Stealth Apache::Wyrd);
 use Apache::Wyrd::Services::FileCache;
@@ -42,7 +42,7 @@ The file to insert.
 
 NONE
 
-=head1 BUGS/CAVEATS
+=head1 BUGS/CAVEATS/RESERVED METHODS
 
 Reserves the _format_output method.  Consider limiting the /lib/
 directory access via a server directive.

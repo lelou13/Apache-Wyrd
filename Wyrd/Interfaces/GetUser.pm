@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Interfaces::GetUser;
-our $VERSION = '0.82';
+our $VERSION = '0.83';
 use Apache::Cookie;
 
 =pod
@@ -95,7 +95,7 @@ sub user {
 
 =back
 
-=head1 BUGS/CAVEATS
+=head1 BUGS/CAVEATS/RESERVED METHODS
 
 UNKNOWN
 

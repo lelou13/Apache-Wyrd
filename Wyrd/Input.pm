@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Input;
-our $VERSION = '0.82';
+our $VERSION = '0.83';
 use Apache::Wyrd::Datum;
 use base qw(Apache::Wyrd::Interfaces::Setter Apache::Wyrd::Interfaces::SmartInput Apache::Wyrd);
 use Apache::Wyrd::Services::SAK qw(token_parse);
@@ -395,7 +395,7 @@ sub _escape {
 
 =back
 
-=head1 BUGS/CAVEATS
+=head1 BUGS/CAVEATS/RESERVED METHODS
 
 Reserves the C<_format_output> and C<_generate_output> methods.  Also
 reserves the C<final_output> method.

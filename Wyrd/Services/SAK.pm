@@ -28,11 +28,13 @@ I<(format: (returns) C<$wyrd-E<gt>name> (arguments))> for methods
 
 =cut
 
-our $VERSION = '0.82';
+our $VERSION = '0.83';
 our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(
 	array_4_get
+	attopts_template
 	cgi_query
+	commify
 	data_clean
 	do_query
 	env_4_get
@@ -52,10 +54,12 @@ our @EXPORT_OK = qw(
 
 our %EXPORT_TAGS = (
 	all			=>	\@EXPORT_OK,
-	db		=>	[qw(cgi_query do_query set_clause)],
+	db			=>	[qw(cgi_query do_query set_clause)],
 	file		=>	[qw(slurp_file spit_file)],
-	hash	=>	[qw(array_4_get data_clean env_4_get lc_hash sort_by_ikey sort_by_key token_hash token_parse uniquify_by_ikey uniquify_by_key uri_escape)],
-	mail		=>	[qw(send_mail)]
+	hash		=>	[qw(array_4_get data_clean env_4_get lc_hash sort_by_ikey sort_by_key token_hash token_parse uniquify_by_ikey uniquify_by_key uri_escape)],
+	mail		=>	[qw(send_mail)],
+	string		=>	[qw(commify)],
+	tag			=>	[qw(attopts_template)]
 );
 
 =pod
@@ -172,8 +176,8 @@ sub slurp_file {
 
 =item (scalar) C<spit_file>(scalar, scalar)
 
-Opposite of C<slurp_file>.  A positive response means the file was successfully
-written
+Opposite of C<slurp_file>.  The second argument is the contents of the file.
+A positive response means the file was successfully written.
 
 =cut
 
@@ -435,7 +439,7 @@ Quick and dirty interfaces to sendmail
 
 =over
 
-=item (null) C<send_mail>(hashref)
+=item (null) C<send_mail> (hashref)
 
 Send an email.  Assumes that the apache process is a trusted user (see
 sendmail documentation).  The hash should have the following keys: to,
@@ -458,6 +462,52 @@ $$mail{body}
 
 __mail_end__
 	close OUT;
+}
+
+=pod
+
+=back
+
+=head2 Strings (:string)
+
+String manipulations.
+
+=over
+
+=item (scalar) C<commify> (array)
+
+Add commas to numbers, thanks to the perlfaq.
+
+=cut
+
+ sub commify {
+	my $number = shift;
+	1 while ($number =~ s/^([-+]?\d+)(\d{3})/$1,$2/);
+	return $number;
+}
+
+=pod
+
+=back
+
+=head2 TAGS (:tag)
+
+Tag-generation tools.
+
+=over
+
+=item (scalar) C<attopts_template> (array)
+
+Creates a template of attribute options, given an array of the attributes.
+
+=cut
+
+sub attopts_template {
+	my @opts = @_;
+	my $string = '';
+	foreach my $opt (@opts) {
+		$string .= '?:' . $opt . '{ $:' . $opt . '}';
+	}
 }
 
 =pod

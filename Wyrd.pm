@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd;
-our $VERSION = '0.82';
+our $VERSION = '0.83';
 use Apache::Wyrd::Services::SAK qw (token_parse);
 use Apache::Wyrd::Services::Tree;
 use Apache::Util;

@@ -10,6 +10,7 @@ Wyrd.pm
 Wyrd/Attribute.pm
 Wyrd/CGICond.pm
 Wyrd/CGISetter.pm
+Wyrd/Chart.pm
 Wyrd/CSSGene.pm
 Wyrd/Datum.pm
 Wyrd/DBL.pm
@@ -17,6 +18,7 @@ Wyrd/Debug.pm
 Wyrd/Defaults.pm
 Wyrd/ErrField.pm
 Wyrd/ErrTag.pm
+Wyrd/FileSize.pm
 Wyrd/Form.pm
 Wyrd/Form/Preload.pm
 Wyrd/Form/Template.pm
@@ -34,10 +36,15 @@ Wyrd/Interfaces/Setter.pm
 Wyrd/Interfaces/SmartInput.pm
 Wyrd/Interfaces/Stealth.pm
 Wyrd/Interfaces/XMLer.pm
+Wyrd/Lattice.pm
+Wyrd/Lattice/Footer.pm
+Wyrd/Lattice/Grid.pm
+Wyrd/Lattice/Header.pm
 Wyrd/Lib.pm
 Wyrd/LogDump.pm
 Wyrd/Lookup.pm
 Wyrd/MySQLForm.pm
+Wyrd/Number.pm
 Wyrd/Query.pm
 Wyrd/Redirect.pm
 Wyrd/Request.pm

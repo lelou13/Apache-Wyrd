@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Redirect;
-our $VERSION = '0.82';
+our $VERSION = '0.83';
 use base qw (Apache::Wyrd);
 use Apache::Constants qw(REDIRECT);
 
@@ -38,7 +38,7 @@ enclosed text will not be processed.
 
 =back
 
-=head1 BUGS/CAVEATS
+=head1 BUGS/CAVEATS/RESERVED METHODS
 
 Reserves the _setup method.
 

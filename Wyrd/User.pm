@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::User;
-our $VERSION = '0.82';
+our $VERSION = '0.83';
 use XML::Dumper;
 use Apache::Wyrd::Services::SAK qw(data_clean);
 use Digest::MD5 qw(md5_hex);
@@ -237,7 +237,7 @@ sub name_credentials {
 
 =back
 
-=head1 BUGS/CAVEATS
+=head1 BUGS/CAVEATS/RESERVED METHODS
 
 UNKNOWN
 

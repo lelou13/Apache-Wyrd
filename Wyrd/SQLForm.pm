@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::SQLForm;
-our $VERSION = '0.82';
+our $VERSION = '0.83';
 use base qw(Apache::Wyrd::Form);
 use Apache::Wyrd::Services::SAK qw(:db);
 use warnings qw(all);
@@ -361,7 +361,7 @@ sub _set_feedback {
 
 =back
 
-=head1 BUGS/CAVEATS
+=head1 BUGS/CAVEATS/RESERVED METHODS
 
 Reserves the _submit_data method above and beyond the methods already
 reserved by C<Apache::Wyrd::Form>.  Also overrides the Form methods

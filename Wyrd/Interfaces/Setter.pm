@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Interfaces::Setter;
-our $VERSION = '0.82';
+our $VERSION = '0.83';
 use Apache::Util;
 
 =pod
@@ -331,7 +331,7 @@ sub _cgi_hash {
 
 =back
 
-=head1 BUGS/CAVEATS
+=head1 BUGS/CAVEATS/RESERVED METHODS
 
 "$:" is a variable in perl, so be sure to escape or single-quote your
 templates.  If you start seeing B<-variablename> in your pages, you'll

@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Defaults;
-our $VERSION = '0.82';
+our $VERSION = '0.83';
 use base qw(Apache::Wyrd::Query);
 
 =pod
@@ -54,7 +54,7 @@ See C<Apache::Wyrd::Query>.
 
 See C<Apache::Wyrd::Query>.
 
-=head1 BUGS/CAVEATS
+=head1 BUGS/CAVEATS/RESERVED METHODS
 
 Reserves the C<_setup>, C<_format_output>, and C<_generate_output> methods.
 

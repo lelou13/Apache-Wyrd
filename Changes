@@ -1,11 +1,40 @@
 Changes
 =======
 
-  0.82   - Documentation changes.
+    0.83   (August 19, 2004)
+
+           New Wyrds: Automatic graphical charts from Query Wyrds
+           (Apache::Wyrd::Chart) English-language Numbers
+           (Apache::Wyrd::Number), File-size (Apache::Wyrd::FileSize), CGI
+           dump (Apache::Wyrd::ShowParams)
+
+           Documentation Changes
+
+           Null-byte string termination in DB file bug in
+           Apache::Wyrd::Services::Key/Auth/LoginServer fix
+
+           Better handling of self_path function in Apache::Wyrd::Handler
+           object
+
+           Apache::Wyrd::Services::FileCache object less strict for
+           non-existent files
+
+           Multiple queries in Apache::Wyrd::Lookup object (primarily to
+           overcome sub-select limitations on some DBAs)
+
+           More functions for Apache::Wyrd::Services::SAK
+
+    0.82   (March 25, 2004)
+
+           Documentation changes
 
            Fix in Apache::Wyrd::Services::Index for failed tests in libdb4+
            w/ perl 5.8+
 
-  0.81   - documentation/testing changes, March 18, 2004
+    0.81   (March 18, 2004)
 
-  0.8    - first public beta, March 17, 2004
+           Documentation/testing changes, March 18, 2004
+
+    0.8    (March 17, 2004)
+
+           First public beta

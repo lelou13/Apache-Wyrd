@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::LoginServer;
-our $VERSION = '0.82';
+our $VERSION = '0.83';
 use Apache::Wyrd::Services::CodeRing;
 use Apache::Wyrd::Services::TicketPad;
 use Apache::Wyrd::Request;
@@ -105,10 +105,13 @@ sub handler {
 		$debug && warn("found the key $key");
 		$key = Apache::Util::unescape_uri($key);
 		my $ex_cr1 = Apache::Wyrd::Services::CodeRing->new({key => $key});
+		$debug && warn("Generated a new decryption ring with the found key");
 		$key = ${$ex_cr1->decrypt(\$ticket)};
+		$debug && warn("Key decrypted");
 		my $ex_cr2 = Apache::Wyrd::Services::CodeRing->new({key => $key});
 		my $data = $user . ':' . $password;
 		$data = $ex_cr2->encrypt(\$data);
+		$debug && warn("Data encrypted with decrypted key");
 		$req->custom_response(REDIRECT, "$success_url" . $joiner . "challenge=$$data");
 		$debug && warn("loginserver has set the challenge to $$data");
 		return REDIRECT;
@@ -133,7 +136,7 @@ the Apache process.  It should probably be unreadable by anyone else.
 
 Set to true to allow debugging, which will go to the error log.
 
-=head1 BUGS/CAVEATS
+=head1 BUGS/CAVEATS/RESERVED METHODS
 
 Size of the ticketpad is not configurable.
 

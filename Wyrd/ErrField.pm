@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::ErrField;
-our $VERSION = '0.82';
+our $VERSION = '0.83';
 use strict;
 use base qw(Apache::Wyrd::ErrTag);
 
@@ -70,7 +70,7 @@ trigger this tag.
 
 =back
 
-=head1 BUGS/CAVEATS
+=head1 BUGS/CAVEATS/RESERVED METHODS
 
 Reserves the _format_output method.
 

@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Input::Complex;
-our $VERSION = '0.82';
+our $VERSION = '0.83';
 use base qw(
 	Apache::Wyrd::Interfaces::Mother
 	Apache::Wyrd::Interfaces::Setter
@@ -155,7 +155,7 @@ sub _get_value() {
 
 =item 
 
-=head1 BUGS/CAVEATS
+=head1 BUGS/CAVEATS/RESERVED METHODS
 
 Reserves the C<_setup>, C<_format_output>, and C<_generate_output>. 
 Also overerides the register_input and _parse_options methods from

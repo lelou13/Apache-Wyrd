@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Input::Set;
-our $VERSION = '0.82';
+our $VERSION = '0.83';
 use Apache::Wyrd::Datum;
 use base qw(
 	Apache::Wyrd::Interfaces::Mother
@@ -105,7 +105,7 @@ are any or whitespace if not.
 
 see C<Apache::Wyrd::Input>
 
-=head1 BUGS/CAVEATS
+=head1 BUGS/CAVEATS/RESERVED METHODS
 
 Reserves the _generate_output, final_output, and _process_child methods.
 

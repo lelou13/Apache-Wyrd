@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Interfaces::SmartInput;
-our $VERSION = '0.82';
+our $VERSION = '0.83';
 
 =pod
 
@@ -25,7 +25,7 @@ HTML input), it should set it's B<_smart_type> attribute to specify one
 or the other of 'text' or 'textarea'.
 
 
-=head1 BUGS/CAVEATS
+=head1 BUGS/CAVEATS/RESERVED METHODS
 
 Provides an estimate at best.  Assumes that browser defaults will not
 rapidly change.  Supports only the major mac and windows browsers at the

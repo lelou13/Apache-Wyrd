@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Input::Condenser;
-our $VERSION = '0.82';
+our $VERSION = '0.83';
 use base qw(Apache::Wyrd::Input::Complex);
 use Apache::Wyrd::Services::SAK qw(token_parse);
 
@@ -83,7 +83,7 @@ sub _set_template_globals {
 
 =back
 
-=head1 BUGS/CAVEATS
+=head1 BUGS/CAVEATS/RESERVED METHODS
 
 Reserves the _setup, _format_output, and final_output method on top of
 the methods reserved by C<Apache::Wyrd::Input::Complex>.

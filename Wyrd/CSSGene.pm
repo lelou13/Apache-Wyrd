@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::CSSGene;
-our $VERSION = '0.82';
+our $VERSION = '0.83';
 use base qw (Apache::Wyrd::Interfaces::Setter Apache::Wyrd);
 use BerkeleyDB;
 use BerkeleyDB::Btree;
@@ -18,7 +18,7 @@ my $default_population = 20;
 
 =head1 NAME
 
-Apache::Wyrd::CSSGene - "Silly" Wyrd for breeding CSS stylesheets
+Apache::Wyrd::CSSGene - Example Wyrd for breeding CSS stylesheets
 
 =head1 SYNOPSIS
 
@@ -75,7 +75,7 @@ own range)
 
 NO PUBLIC METHODS
 
-=head1 BUGS/CAVEATS
+=head1 BUGS/CAVEATS/RESERVED METHODS
 
 (Besides bordering on the absurd) Reserves the _format_output method.
 

@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::DBL;
-our $VERSION = '0.82';
+our $VERSION = '0.83';
 use DBI;
 use Apache;
 use Apache::Wyrd::Request;
@@ -117,6 +117,7 @@ sub new {
 		logfile
 		mtime
 		req
+		self_path
 		size
 		strict
 		user
@@ -136,7 +137,7 @@ sub new {
 		$data->{'mod_perl'} = 1;
 		my $server = $$init{'req'}->server;
 		$data->{'debug'} = 1 if ($server->port == 81);
-		$data->{'self_path'} ||= $$init{'req'}->parsed_uri->path;
+		$data->{'self_path'} ||= $$init{'req'}->parsed_uri->rpath;
 		my $apr = Apache::Wyrd::Request->instance($$init{'req'});
 		$data->{'apr'} = $apr;
 	};

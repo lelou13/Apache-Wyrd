@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Lookup;
-our $VERSION = '0.82';
+our $VERSION = '0.83';
 use base qw (Apache::Wyrd Apache::Wyrd::Interfaces::Setter);
 use Apache::Wyrd::Services::SAK qw(:db);
 
@@ -80,7 +80,7 @@ sub _default_record_joiner {
 
 =back
 
-=head1 BUGS/CAVEATS
+=head1 BUGS/CAVEATS/RESERVED METHODS
 
 Reserves the _format_output and _generate_output methods.
 
@@ -100,8 +100,12 @@ sub _format_output {
 sub _generate_output {
 	my ($self) = @_;
 	$self->{'query'} ||= $self->_data;
-	$self->_info("Doing query " . $self->query);
-	my $sh = $self->cgi_query($self->query);
+	my $sh = undef;
+	my @queries = grep {$_} split (';', $self->{'query'});
+	foreach my $subquery (@queries) {
+		$self->_info("executing $subquery");
+		$sh = $self->cgi_query($subquery);
+	}
 	if ($self->_data and ($self->query ne $self->_data)) {
 		$self->_info("Interpreting data as a templated query.");
 		my @parts = ();

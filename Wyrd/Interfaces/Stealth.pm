@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Interfaces::Stealth;
-our $VERSION = '0.82';
+our $VERSION = '0.83';
 
 =pod
 
@@ -26,7 +26,7 @@ This is useful, say, in enclosing a group of Form::Input wyrds without
 disconnecting them from their enclosing form.
 
 
-=head1 BUGS/CAVEATS
+=head1 BUGS/CAVEATS/RESERVED METHODS
 
 Overrides the _pre_spawn method.
 

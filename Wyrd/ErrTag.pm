@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::ErrTag;
-our $VERSION = '0.82';
+our $VERSION = '0.83';
 use base qw(Apache::Wyrd);
 use Apache::Wyrd::Services::SAK qw(token_parse);
 
@@ -88,7 +88,7 @@ sub get_triggers {
 
 =back
 
-=head1 BUGS/CAVEATS
+=head1 BUGS/CAVEATS/RESERVED METHODS
 
 Reserves the C<_setup>, C<_format_output>, and C<final_output> methods.
 
