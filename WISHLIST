@@ -1,0 +1,9 @@
+Wishes, pipe-dreams, etc.
+
+-	Should be able to use CGI.pm, not just apreq
+
+-	Modify installation Makefile.PL to use PM_FILTER to allow #ifdefine - style
+commenting out of all debugging code.
+
+-	Security-enhanced version that prevents read-access to CodeRing
+cryptography key values or "cookie-stealing"

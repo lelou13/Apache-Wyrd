@@ -1,0 +1,29 @@
+List of known problems:
+
+-	Base Wyrd object should be either more seperable or totally inseperable
+	from an Apache::Wyrd::DBL object.
+
+-	General audit needed to enforce object-model integrity and
+	interface consistency
+
+List of known problems which will not be fixed, and why:
+
+-	Wyrds should be case-insensitive: too cycle-costly and only encourages
+	sloppiness
+
+-	Should be able to put HTML within the attributes inside the Wyrd tag:
+	Only a few instances can't be done with Attribute Wyrds, and those will
+	likely require an additional mini-interpreter "language" like the
+	Apache::Wyrd::Services::Setter conditional mini-language for escaping
+	HTML:  This would likely be cycle-costly.
+
+-	Wyrds should not encourage polluting the system-wide module
+	namespace:  Guilty as charged.
+
+-	It should work more like PHP or Mason: No need to duplicate effort. If
+	PHP or Mason works for you, use it!
+
+-	The _self_parse method which is integral to the Wyrd object is
+	functionally incompatible with the idea of a "non-parsed-header"
+	document:  It makes more sense to use something else hand-coded if you
+	need to do that.
