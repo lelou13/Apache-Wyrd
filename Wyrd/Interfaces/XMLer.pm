@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Interfaces::XMLer;
-our $VERSION = '0.87';
+our $VERSION = '0.90';
 use XML::Simple qw(:strict);
 
 =pod
@@ -98,7 +98,7 @@ sub _put_data {
 
 =head1 BUGS/CAVEATS/RESERVED METHODS
 
-This Inteface is scheduled for depreciation.  Use at your own risk.
+This Interface is scheduled for depreciation.  Use at your own risk.
 
 =head1 AUTHOR
 

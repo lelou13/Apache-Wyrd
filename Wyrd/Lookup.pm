@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Lookup;
-our $VERSION = '0.87';
+our $VERSION = '0.90';
 use base qw (Apache::Wyrd Apache::Wyrd::Interfaces::Setter);
 use Apache::Wyrd::Services::SAK qw(:db);
 
@@ -18,15 +18,15 @@ Apache::Wyrd::Lookup - Wyrd for returning an SQL query result
 
 =head1 SYNOPSIS
 
-    <Apache::Wyrd::Lookup joiner=" : ">
+    <BASENAME::Lookup joiner=" : ">
       select * from people
-    </Apache::Wyrd::Lookup>
+    </BASENAME::Lookup>
 
-    <Apache::Wyrd::Lookup
+    <BASENAME::Lookup
       query="select name from contact where name is like 'S%'">
       <b>$:name</b>
-      <Apache::Wyrd::Var name="field_joiner"><BR></Apache::Wyrd::Var>
-    </Apache::Wyrd::Lookup>
+      <BASENAME::Var name="field_joiner"><BR></BASENAME::Var>
+    </BASENAME::Lookup>
 
 =head2 HTML ATTRIBUTES
 
@@ -158,7 +158,7 @@ General-purpose HTML-embeddable perl object
 
 Copyright 2002-2004 Wyrdwright, Inc. and licensed under the GPL.
 
-See L<http://www.gnu.org/licenses/gpl.html#TOC1>
+See LICENSE under the documentation for C<Apache::Wyrd>.
 
 =cut
 

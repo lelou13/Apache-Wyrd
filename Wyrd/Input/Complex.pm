@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Input::Complex;
-our $VERSION = '0.87';
+our $VERSION = '0.90';
 use base qw(
 	Apache::Wyrd::Interfaces::Mother
 	Apache::Wyrd::Interfaces::Setter
@@ -29,12 +29,12 @@ Apache::Wyrd::Input::Complex - Abstract class for more complex Wyrds (hashes/str
 Occasionally, an Input is needed which is too complicated to reduce to a
 single parameter or control.  These might be items in a sub-table or
 otherwise related information to the main information being requested. 
-If it can be reduced to a single data stucture, such as an arrayref to
+If it can be reduced to a single data structure, such as an arrayref to
 an array of hashes, it can be handled by the Complex Input Wyrd.
 
 Form objects need a certain behavior out of the Inputs they handle.  The
 form will be calling certain methods and expecting certain outcomes. 
-This module abstractifies those requirements and consists of hook
+This module abstract-ifies those requirements and consists of hook
 methods which must be overridden in a subclass.  The normal behavior of
 these methods is to cause an exception to be raised and to emit an error
 message concerning the method which requires overriding.

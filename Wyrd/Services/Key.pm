@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::Key;
-our $VERSION = '0.87';
+our $VERSION = '0.90';
 use base qw(Class::Singleton);
 
 my $pure_perl = 0;
@@ -51,8 +51,8 @@ Fixed keys are also possible.  The instance method can also accept a
 string as an argument to use in place of a randomly-generated key.
 
 In development environments, with frequent server restarts, it is
-adviseable to use a fixed key to prevent your Form state and Login
-Cookies from becoming unuseable.
+advisable to use a fixed key to prevent your Form state and Login
+Cookies from becoming unusable.
 
 =head1 METHODS
 

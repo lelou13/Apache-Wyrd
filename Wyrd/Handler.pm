@@ -4,12 +4,13 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Handler;
-our $VERSION = '0.87';
+our $VERSION = '0.90';
 use Apache::Wyrd::DBL;
 use Apache::Wyrd;
 use Apache::Wyrd::Services::SAK qw(slurp_file);
 use Apache;
 use Apache::Constants qw(:common);
+use Apache::Wyrd::Services::Auth;
 
 =pod
 
@@ -39,7 +40,7 @@ named, in this example, C<BASNAME::Handler> and is found in a BASENAME
 directory which in @INC of a local mod_perl installation. Traditionally,
 this is in C<E<lt>apache configuration directoryE<gt>/lib/perl/>.  If
 the perl module BASENAME::Handler has a C<use base
-qw(Apache::Wyrd::Handler)> pragma, the C<handler> method should properly
+qw(Apache::Wyrd::Handler)> declaration, the C<handler> method should properly
 determine the base class for the BASENAME set of Wyrds and the handler
 should interpret only those tags beginning E<lt>BASENAME::...  A
 rudimentary sample of this usage is available in the t/lib directory of
@@ -49,7 +50,7 @@ This way, several sites using Wyrds can be built, each subclassing
 Apache::Wyrd objects in their own idiom without interfering in the
 interpretation of the same objects in another BASENAME class.  (However,
 nothing prevents a second BASENAME from including the first BASENAME in
-its C<use base> pragma array).  This is a feature(tm) of Apache::Wyrd
+its C<use base> declaration array).  This is a feature(tm) of Apache::Wyrd
 and is intended to promote code re-use.
 
 The Handler also dumps out the error log, if needed from the DBL, where
@@ -117,8 +118,33 @@ sub handler : method {
 		$self->add_headers;
 		$req->send_http_header('text/html');
 		$req->print($self->{'output'});
+	} else{
+		my $new_response = $self->_exception_handler($response, $req);
+		$response = $new_response if ($new_response);
 	}
 	return $response;
+}
+
+=pod
+
+=item _exception_handler
+
+Before returning a non-OK response, the handler will send two scalars to
+this method and if the method returns a response, that response will be
+sent instead.  Subclasses of Apache::Wyrd::Handler can use this method
+to invoke and return responses from other handlers.  What arguments for
+the first method subclasses of this method accept and how they invoke
+the responding entity are entirely up to the programmer.  Usually,
+however, the dir_config table is populated with authorization
+requirements for this request, as required by
+C<Apache::Wyrd::Services::Auth> in order to masquerade this handler as a
+stacked Auth handler.
+
+=cut
+
+sub _exception_handler {
+	my ($self) = @_;
+	return undef;
 }
 
 =pod
@@ -162,6 +188,7 @@ sub get_file {
 	$self->{'init'}->{'mtime'} = $stats[9];
 	$self->{'init'}->{'size'} = $stats[7];
 	my $root = $self->{'req'}->document_root;
+	$self->{'init'}->{'file_path'} = $file;
 	$file =~ s/$root//;
 	$self->{'init'}->{'self_path'} = $file;
 	return undef;
@@ -258,10 +285,10 @@ sub respond {
 			$self->{'req'}->custom_response(SERVER_ERROR, $self->errorpage($@, $log));
 			$response = SERVER_ERROR;
 		}
-		#$dbl->get_response && return $dbl->get_response;
+		$dbl->get_response && return $dbl->get_response;
 		$self->{'output'} = $output;
 	} else {
-		#$dbl->get_response && return $dbl->get_response;
+		$dbl->get_response && return $dbl->get_response;
 		$self->{'output'} = $object->output();
 	}
 	$dbl->{'logfile'} && $dbl->close_logfile;
@@ -315,14 +342,11 @@ __PAGE_END__
 Standard warning about GNU GPL software.  See LICENSE under the documentation
 for Apache::Wyrd
 
-=head2 UNSTABLE
+=head2 (GENERALLY) UNIX-Only
 
-The basic Wyrd API should remain stable barring unforseen events, but until some
-time after initial release, this software should be considered unstable.
-
-This software has only tested under Linux and Darwin, but should work for any
-*nix-style system.  This software is not intended for use on windows or other
-easily-damaged glass objects.
+This software has only tested under Linux and Darwin, but should work
+for any *nix-style system.  This software is not intended for use on
+windows or other delicate glassware.
 
 =head1 AUTHOR
 

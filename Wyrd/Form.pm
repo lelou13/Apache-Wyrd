@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Form;
-our $VERSION = '0.87';
+our $VERSION = '0.90';
 use base qw(Apache::Wyrd::Interfaces::Mother Apache::Wyrd::Interfaces::Setter Apache::Wyrd);
 #use XML::Simple;
 use XML::Dumper;
@@ -56,7 +56,7 @@ C<Apache::Wyrd::Input>s or derived classes of C<Apache::Wyrd::Input>.
 C<Form::View> (View) objects show a snapshot of the current state of the
 form, as a preview, and C<Form::ErrTag> and C<Form::ErrField> objects
 (Error Flags) indicate on the page which Inputs have illegal values for
-the requirements of the form.  Dev. Note: Althought they are all
+the requirements of the form.  Dev. Note: Although they are all
 enclosed in a C<Form::Template> Wyrd, all these elements are actually
 direct children of the Form, because the Template enclosing them becomes
 the literal body of the form for the browser-server transaction at that
@@ -477,7 +477,7 @@ sub _prep_submission {
 =item (void) C<_submit_data> (void)
 
 Submit the accumulated data.  All variables should be in the _variables
-attribute at the time this method is called.  By default, it will attemp
+attribute at the time this method is called.  By default, it will attempt
 to mail an XML dump of the data if the recipient attribute is set.  If
 not, it will dump the data to STDERR (the Apache error log).
 

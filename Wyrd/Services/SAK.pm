@@ -28,7 +28,7 @@ I<(format: (returns) C<$wyrd-E<gt>name> (arguments))> for methods
 
 =cut
 
-our $VERSION = '0.87';
+our $VERSION = '0.90';
 our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(
 	array_4_get
@@ -76,7 +76,7 @@ database stored in C<Apache::Wyrd::DBL>.
 =item (scalarref) C<$wyrd-E<gt>cgi_query>(scalar)
 
 For turning strings with conditional variables into
-querys parseable by the SQL interpreter.  First sets all conditional variables
+queries parseable by the SQL interpreter.  First sets all conditional variables
 in the query that are known, then set all unknown variables to NULL.  The query
 is then executes and the DBI handle to the query is returned.
 
@@ -198,11 +198,13 @@ filename.  A scalarref to the contents of the file is returned.
 sub slurp_file {
 	my $file = shift;
 	$file = open (FILE, $file);
-	my $temp = $/;
-	undef $/;
-	$file = <FILE>;
-	close (FILE);
-	$/ = $temp;
+	if ($file) {
+		my $temp = $/;
+		undef $/;
+		$file = <FILE>;
+		close (FILE);
+		$/ = $temp;
+	}
 	return \$file;
 }
 

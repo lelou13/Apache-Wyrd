@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::SQLForm;
-our $VERSION = '0.87';
+our $VERSION = '0.90';
 use base qw(Apache::Wyrd::Form);
 use Apache::Wyrd::Services::SAK qw(:db);
 use warnings qw(all);
@@ -212,7 +212,7 @@ sub primary_delete_error {
 
 =item (scalar) C<deleted> (void)
 
-Checks to see if the B<action> CGI parameter is set to "really_delete", and if so, deletes the record from the primary table and calls the C<_perform_secondary_deletes> method to remove associated records in secondary tables.  Returns a 1 if the deletion occured, undef otherwise.
+Checks to see if the B<action> CGI parameter is set to "really_delete", and if so, deletes the record from the primary table and calls the C<_perform_secondary_deletes> method to remove associated records in secondary tables.  Returns a 1 if the deletion occurred, undef otherwise.
 
 =cut
 

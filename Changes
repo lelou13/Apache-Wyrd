@@ -1,6 +1,29 @@
 Changes
 =======
 
+    0.90   December 16, 2004
+
+           Interfaces, standard methods for core modules are now frozen
+           and should be considered stable
+
+           Re-enabled custom responses.  Custom responses via
+           Wyrd->abort() and/or DBL->set_response() will now be
+           permanent features
+
+           Wyrds can now use abort() to hand off the request to another
+           PerlRequestHandler
+
+           Added global flag 'disable' to shut off a given Wyrd and all
+           it's children
+
+           Added file_path attribute, giving the absolute pathname
+           of the file being served
+
+           Minor bug fixes for increased reliability with Index objects
+           and in SAK
+
+           Documentation changes, spelling corrections
+
     0.87   October 31, 2004
 
            Added post-procesing hooks to SQLForm

@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd;
-our $VERSION = '0.87';
+our $VERSION = '0.90';
 use Apache::Wyrd::Services::SAK qw (token_parse);
 use Apache::Wyrd::Services::Tree;
 use Apache::Util;
@@ -106,7 +106,7 @@ NONE
 =head1 DESCRIPTION
 
 Apache::Wyrd is the core module in a collection of interoperating
-modules that allow the rapid opject-oriented development of web sites in
+modules that allow the rapid object-oriented development of web sites in
 Apache's mod_perl environment (LAMP).  This collection includes a very
 flexible, HTML-friendly method of defining dynamic items on a web page,
 and interfacing directly to perl objects with them.  It comes with many
@@ -190,7 +190,7 @@ or as:
     <BASENAME::WyrdName name="imasample" />
 
 to be valid.  Invalid Wyrds are ignored and do not get processed, but
-may cause errors in other Wyrds if mal-formed, so it often pays to "view
+may cause errors in other Wyrds if malformed, so it often pays to "view
 source" on your browser while debugging.
 
 Unlike (X)HTML, however, Wyrds are named like perl modules with the double-colon
@@ -198,7 +198,7 @@ syntax (BASENAME::SUBNAME::SUBSUBNAME) and these names are B<case-sensitive>.
 Furthermore, either single or double quotes MUST be used around attributes, and
 these quotes must match on either side of the enclosed attribute value.  Single
 quotes may be used, however, to enclose double quotes and vice-versa unless the
-entire attribute value is quoted.  When in doubt, escape quotes by preceeding
+entire attribute value is quoted.  When in doubt, escape quotes by preceding
 them with a backslash (\).  B<HTML tags should not appear inside attributes.> 
 See C<Apache::Wyrd::Template> and C<Apache::Wyrd::Attribute> for common ways
 around this limitation.
@@ -278,9 +278,10 @@ the loglevels and defaults to 'fatal'.
 
 =item flags
 
-a list of optional modifiers, separated by whitespace or commas, which
+A list of optional modifiers, separated by whitespace or commas, which
 can be used to modify the behavior of the Wyrd.  Flags should contain no
-whitespace.
+whitespace.  One builtin flag exists: disable keeps the Wyrd and all
+enclosed data from being processed or generated at all.
 
 =back
 
@@ -293,7 +294,7 @@ methods below will be discarded.
 
 Any attribute beginning with an underline is reserved  for future
 development. Two of these are created at the time of generation which
-are particularly important and deerve mention:
+are particularly important and deserve mention:
 
 =item _data
 
@@ -331,7 +332,7 @@ methods are private and are denoted as such by a leading underscore (_).
 =head3 PUBLIC METHODS
 
 In most cases, a given HTML attribute will be available to the Wyrd directly by
-accessing C<$self-E<gt>{attribute}>.  For convenience, these can be acessed via
+accessing C<$self-E<gt>{attribute}>.  For convenience, these can be accessed via
 a method call to the name of the attribute (I<example:> C<$value =
 $self-E<gt>attributename>).  If the method call has an argument, it means to set
 rather than retrieve the attribute (I<example:>
@@ -403,7 +404,7 @@ sub new {
 	$data->{'_class_name'} = $class;
 	$class =~ s/([^:]+)::.+/$1/;
 	$data->{'_base_class'} = ($init->{'_parent'}->{'_base_class'} || $class || 'Apache::Wyrd');
-	$data->_setup;
+	$data->_setup unless ($data->_flags->disable);
 	return ($data);
 }
 
@@ -460,6 +461,7 @@ produce the text this Wyrd is meant to produce.
 
 sub output {
 	my $self = shift;
+	return '' if ($self->_flags->disable);
 	$self->_process_self;
 	$self->_format_output;
 	return $self->_generate_output;
@@ -476,9 +478,10 @@ Apache::Constants::SERVER_ERROR.
 
 sub abort {
 	my ($self, $response) = @_;
-	$self->{'_parent'}->abort($response) if (ref($self->{'_parent'}) =~ /$self->base_class/);
+	return $self->{'_parent'}->abort($response) if (UNIVERSAL::can($self->{'_parent'}, 'abort'));
 	$response ||= SERVER_ERROR;
 	$self->dbl->set_response($response);
+	$self->_flags->disable(1);
 	return undef;
 }
 
@@ -566,7 +569,10 @@ I<This behavior has proven of limited value and will probably be depreciated.>
 sub _generate_tag {
 #used to auto-generate tags when _format_TAG is undefined
 	my ($self, $tag, $value) = @_;
-	$self->_raise_exception("Compilation error: the output method should be defined but is not because of a misplaced curly-brace or some other such rot.") if ($tag eq 'output');
+	if ($tag eq 'output') {
+		#$self->_format_output was called on an item that failed to compile.
+		$self->_raise_exception("Compilation error in " . $self->_class_name);
+	}
 	return "<$tag>$value</$tag>";
 }
 
@@ -600,11 +606,7 @@ WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 General Public License for more details.
 
-=head2 UNSTABLE
-
-The basic Wyrd API should remain stable barring unforseen whoppers, but
-until some time after initial release, this software should be
-considered unstable.
+=head2 (GENERALLY) UNIX-Only
 
 This software has only tested under Linux and Darwin, but should work
 for any *nix-style system.  This software is not intended for use on
@@ -693,6 +695,7 @@ sub _init{
 	for (my $level=0; $init->{'dielevel'} >= $level; $level++) {
 		$_error_handler{$level} = $_fatal_error_handler;
 	}
+	$init->{'_flags'}=Apache::Wyrd::Services::Tree->new unless ($init->{'_flags'});
 	return $init;
 }
 

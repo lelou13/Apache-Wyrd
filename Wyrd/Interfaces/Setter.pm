@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Interfaces::Setter;
-our $VERSION = '0.87';
+our $VERSION = '0.90';
 use Apache::Util;
 
 =pod
@@ -41,11 +41,11 @@ Apache::Wyrd::Interfaces::Setter - Templating Interface for Wyrds
 
 The Setter interface give Wyrds a small templating "language" for
 placing variables into HTML:  In short summary, there are two kinds of
-tokens interpreted by the Setter: a palacemarker and a conditional.  For
-placemarkers, any valid perl variable name preceeded by dollar-colon
+tokens interpreted by the Setter: a placemarker and a conditional.  For
+placemarkers, any valid perl variable name preceded by dollar-colon
 ("$:") is replaced by the value of that variable.  For conditionals, any
-valid perl variable name preceeded by an exclamation or question mark
-and follwed by curly braces enclosing text shows the enclosed text
+valid perl variable name preceded by an exclamation or question mark
+and followed by curly braces enclosing text shows the enclosed text
 conditionally if the variable is true ("?:") or false ("!:").  These
 conditionals can be nested.
 
@@ -334,8 +334,8 @@ sub _cgi_hash {
 =head1 BUGS/CAVEATS/RESERVED METHODS
 
 "$:" is a variable in perl, so be sure to escape or single-quote your
-templates.  If you start seeing B<-variablename> in your pages, you'll
-know why.
+in-code templates.  If you start seeing B<-variablename> in your pages,
+you'll know why.
 
 =head1 AUTHOR
 

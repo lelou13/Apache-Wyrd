@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::LoginServer;
-our $VERSION = '0.87';
+our $VERSION = '0.90';
 use Apache::Wyrd::Services::CodeRing;
 use Apache::Wyrd::Services::TicketPad;
 use Apache::Wyrd::Request;
@@ -42,7 +42,7 @@ via a redirected GET request with the challenge parameter set to the
 encrypted data.
 
 The TicketPad has a limited capacity, and old tickets are removed as new
-ones are added.  If the authorizatoin request is so stale it asks for a
+ones are added.  If the authorization request is so stale it asks for a
 ticket that has been discarded, the LoginServer returns the status
 HTTP_SERVICE_UNAVAILABLE.
 
@@ -129,7 +129,7 @@ sub handler {
 
 =item TicketDBFile
 
-Location of the DB file holding the tickets.  It should be writeable by
+Location of the DB file holding the tickets.  It should be writable by
 the Apache process.  It should probably be unreadable by anyone else.
 
 =item Debug

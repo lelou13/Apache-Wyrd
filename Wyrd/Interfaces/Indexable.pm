@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Interfaces::Indexable;
-our $VERSION = '0.87';
+our $VERSION = '0.90';
 use Digest::MD5 qw(md5_hex);
 
 =pod
@@ -66,7 +66,7 @@ Apache::Wyrd::Services::Index object will also need to be implemented in an
 indexable object.  If the attribute is a map, it needs only to return a string
 of tokens separated by whitespace, punctuation optional.
 
-Because the assumption is that the indexible item will probably be a web page,
+Because the assumption is that the indexable item will probably be a web page,
 the path to the file from the server root is the traditional "name" of the item.
 As such, when the results of a search are returned by the Index, the B<href>
 attribute of a link to the page is created from the B<name> attribute.

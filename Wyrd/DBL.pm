@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::DBL;
-our $VERSION = '0.87';
+our $VERSION = '0.90';
 use DBI;
 use Apache;
 use Apache::Wyrd::Request;
@@ -113,6 +113,7 @@ sub new {
 		db_password
 		db_username
 		debug
+		file_path
 		globals
 		logfile
 		mtime
@@ -454,9 +455,23 @@ sub param_exists {
 
 =pod
 
+=item (scalar) C<file_path> (void)
+
+return the path to the actual file being parsed.
+
+=cut
+
+sub file_path {
+	my ($self) = shift;
+	return $self->{'file_path'} if $self->{'file_path'};
+	$self->log_bug('file_path was requested from DBL, but could not be determined.');
+}
+
+=pod
+
 =item (scalar) C<self_path> (void)
 
-return the absolute path on the server to the file being served.
+return the document-root relative path to the file being served.
 
 =cut
 
@@ -501,8 +516,8 @@ close the C<dbh> connection if it was opened.
 sub close_db {
 	my ($self) = @_;
 	return undef unless ($self->{'dbh_ok'});
-	$self->{'dbh'}->finish;
-	$self->{'dbh'}->disconnect;
+	$self->{'dbh'}->finish if (UNIVERSAL::can($self->{'dbh'}, 'finish'));
+	$self->{'dbh'}->disconnect if (UNIVERSAL::can($self->{'dbh'}, 'disconnect'));
 	return undef;
 }
 

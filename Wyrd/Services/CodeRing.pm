@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::CodeRing;
-our $VERSION = '0.87';
+our $VERSION = '0.90';
 use Apache::Wyrd::Services::SAK qw(lc_hash);
 use Apache::Wyrd::Services::Key;
 use Digest::MD5 qw(md5_hex);
@@ -43,7 +43,7 @@ Apache::Wyrd::Services::CodeRing - Apache-resident crypto tool (Blowfish)
 
 The CodeRing is an encryption/decryption object for use primarily for
 encrypting state information into cookies or hidden variables without
-exposing the data to deconstruction or corruption in transferrence.
+exposing the data to deconstruction or corruption in transference.
 
 It uses the blowfish algorithm via either a Crypt::Blowfish or
 Crypt::Blowfish_PP module, depending on which one compiles on this

@@ -3,7 +3,6 @@ use ExtUtils::MakeMaker;
 use lib qw(../blib/lib lib );
 use Cwd;
 
-my $this_version = '0.86';
 push @ARGV, '-maxclients', '2';
 
 my $have_atest = 1;
@@ -95,10 +94,9 @@ if ($have_atest) {
 	print "\nOK... Generating Makefile...\n";
 };
 
-WriteMakefile(
+my $makefile = WriteMakefile(
 	'NAME'		=> 'Apache::Wyrd',
 	'VERSION_FROM'	=> 'Wyrd.pm',
-	'PREREQ_FATAL'	=> 1,
 	'PREREQ_PM'		=> {
 		Apache					=>	1.26,
 		Apache::Constants		=>	'',
@@ -123,6 +121,7 @@ WriteMakefile(
 	}
 );
 
+my $wyrd_version = $makefile->{VERSION};
 my $perl_version = $];
 my $os = $^O;
 my $mod_perl_version = $Apache::VERSION;
@@ -154,7 +153,7 @@ information would be sent by HTTP to the www.wyrdwright.com site which
 will log the time and the source of the information (IP address).  NO
 OTHER SYSTEM INFORMATION WILL BE SENT THAN THE FOLLOWING:
 
-	Apache::Wyrd version: $this_version
+	Apache::Wyrd version: $wyrd_version
 	perl version: $perl_version
 	Operating System: $os
 	mod_perl version: $mod_perl_version

@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::Tree;
-our $VERSION = '0.87';
+our $VERSION = '0.90';
 
 =head1 NAME
 
@@ -35,7 +35,7 @@ Very simple object for storing values of any sort with no checking.
 =head1 METHODS
 
 Tree uses an initialization hash for the initial state.  Tree items are added to/set
-by calling the tree-node name.  When an argument is supplied, it is assiged to the
+by calling the tree-node name.  When an argument is supplied, it is assigned to the
 key.
 
 =head1 AUTHOR

@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Debug;
-our $VERSION = '0.87';
+our $VERSION = '0.90';
 use base qw (Apache::Wyrd);
 
 =pod
@@ -39,7 +39,7 @@ default of 1/error.
 =item output
 
 The file (on the web site where the debugging is taking place) which
-will be used to monitor the debugging.  The file should be writeable by
+will be used to monitor the debugging.  The file should be writable by
 the server and should be visible to the browser.  It should begin with a
 '/' and contain the path from the document root to the file, as if it
 was an absolute path to another page on the same site inside the href
@@ -49,7 +49,7 @@ attribute of an anchor tag.
 
 The file where the log is temporarily stored while processing.  By
 default, this will be a file under /tmp, but if this is not possible,
-you should specify it. It must be writeable by the server.
+you should specify it. It must be writable by the server.
 
 =back
 

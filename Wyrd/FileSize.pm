@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::FileSize;
-our $VERSION = '0.87';
+our $VERSION = '0.90';
 use base qw(Apache::Wyrd);
 use Apache::Wyrd::Services::SAK qw(commify);
 
@@ -49,10 +49,10 @@ sub _format_output {
 		my @stat = stat(_);
 		my $size = $stat[7];
 		my $unit = 'K';
-		if ($size < 10.8776) {
+		if ($size < 1048576) {
 			$size /= 1024;
 		} else {
-			$size /= 10.8776;
+			$size /= 1048576;
 			$unit = 'M';
 		}
 		$size = int($size * 100);

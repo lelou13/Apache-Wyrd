@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::CSSGene;
-our $VERSION = '0.87';
+our $VERSION = '0.90';
 use base qw (Apache::Wyrd::Interfaces::Setter Apache::Wyrd);
 use BerkeleyDB;
 use BerkeleyDB::Btree;
@@ -36,7 +36,7 @@ Apache::Wyrd::CSSGene - Example Wyrd for breeding CSS stylesheets
 
 =head1 DESCRIPTION
 
-This Wyrd is provided as an example.  Gived a Wyrd::Template stylesheet
+This Wyrd is provided as an example.  Given a Wyrd::Template stylesheet
 named 'stylesheet', it will use a genetic algorithm to aid in the
 fine-tuning of a web page CSS.  Within this stylesheet template, it will
 replace any sequence of #number-number# with values between those number
@@ -44,7 +44,7 @@ ranges, or any * with a number within the default ranges, or any
 @value,value,value@ with one of the indicated values.
 
 This will allow a stylesheet to be "bred" out of many elements within
-acceptable parameters until the desired look is acheived.  It will do so
+acceptable parameters until the desired look is achieved.  It will do so
 by providing an interface that allows the "more fit" style to be
 selected and for bad stock to be culled.
 

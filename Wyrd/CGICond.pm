@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::CGICond;
-our $VERSION = '0.87';
+our $VERSION = '0.90';
 use base qw(Apache::Wyrd::Interfaces::Stealth Apache::Wyrd);
 use Apache::Wyrd::Services::SAK qw(:hash);
 
@@ -55,7 +55,7 @@ Defines the salient variable(s).  Multiple values are separated with
 commas or whitespace.
 
 The first characters of this value provide modifiers to determine the
-behavior.  If missing, the test will be simply for the availablilty of
+behavior.  If missing, the test will be simply for the availability of
 ALL the values.
 
 a '?' will show the text if ANY of the variables are non-null, a '!'

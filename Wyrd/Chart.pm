@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Chart;
-our $VERSION = '0.87';
+our $VERSION = '0.90';
 use base qw(Apache::Wyrd::Services::FileCache Apache::Wyrd::Interfaces::Setter Apache::Wyrd);
 use GD::Graph;
 use GD::Graph::colour qw(:colours :convert :lists);
@@ -54,7 +54,7 @@ Which column of the query to plot.  Default: 2.
 =item labels
 
 A comma or whitespace-separated list of label names.  If not enough labels
-are given, the remainder will be labelled "unknown"
+are given, the remainder will be labeled "unknown"
 
 =item label_col
 
@@ -230,11 +230,11 @@ I<(format: (returns) name (arguments after self))>
 sub _file_problems {
 	my ($self, $file) = @_;
 	if (-f $file) {
-		$self->_error("$file is not writeable.  Updates will fail.") unless (-w _);
+		$self->_error("$file is not writable.  Updates will fail.") unless (-w _);
 	} else {
 		my $dir = $file;
 		$dir =~ s/[^\/]+$//;
-		$self->_raise_exception("$dir is not writeable") unless (-w $dir);
+		$self->_raise_exception("$dir is not writable") unless (-w $dir);
 	}
 }
 

@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::Index;
-our $VERSION = '0.87';
+our $VERSION = '0.90';
 use Apache::Wyrd::Services::SAK qw(token_parse);
 use Apache::Wyrd::Services::SearchParser;
 use BerkeleyDB;
@@ -48,7 +48,7 @@ Apache::Wyrd::Services::Index - Metadata index for word/data search engines
 
 General purpose Index object for retrieving a variety of information on
 a class of objects.  The objects can have any type, but must implement
-at a minumum the C<Apache::Wyrd::Interfaces::Indexable> interface.
+at a minimum the C<Apache::Wyrd::Interfaces::Indexable> interface.
 
 The information stored is broken down into attributes.  The main builtin
 (and not override-able) attributes are B<data>, B<word>, B<title>, and
@@ -103,7 +103,7 @@ index is configured via a hashref argument.  Important keys for this hashref:
 
 =item file
 
-Absolute path and filename for the DB file.  Must be writeable by the Apache
+Absolute path and filename for the DB file.  Must be writable by the Apache
 process.
 
 =item strict
@@ -136,7 +136,7 @@ sub new {
 	die ('Must specify index file') unless($$init{'file'});
 	die ('Must specify an absolute path for the index file') unless ($$init{'file'} =~ /^\//);
 	my ($directory) = ($$init{'file'} =~ /(.+)\//);
-	die ('Must specify a valid, writeable directory location.  Directory given: ' . $directory) unless (-d $directory && -w _);
+	die ('Must specify a valid, writable directory location.  Directory given: ' . $directory) unless (-d $directory && -w _);
 	#Die on errors by default
 	$$init{'strict'} = 1 unless exists($$init{'strict'});
 	$$init{'quiet'} = 0 unless exists($$init{'quiet'});
@@ -512,7 +512,6 @@ sub update_key {
 sub delete_key {
 	my ($self, $key) = @_;
 	$self->db->db_del($key);
-	#warn "$key updated to $value";
 	return undef;
 }
 
@@ -565,6 +564,14 @@ sub purge_map {
 	$attribute = $self->attributes->{$attribute};
 	my ($key, $current, $removed) = ();
 	my $cursor = $self->db->db_cursor;
+	unless ($cursor) {
+		$self->read_db;
+		$cursor = $self->db->db_cursor;
+		unless ($cursor) {
+			warn 'Failed to obtain DB Cursor.  Aborting purge_map()';
+			return undef;
+		}
+	}
 	$cursor->c_get($key, $current, DB_FIRST);
 	do {
 		if ($key =~ /^$attribute\%/) {
@@ -599,6 +606,7 @@ this method -- the default method is pretty quick-and-dirty.
 =cut
 
 sub clean_html {
+	no warnings qw(utf8);
 	my ($self, $data) = @_;
 	$data = decode_entities($data);
 	$data =~ s/<>//g; # Strip out all empty tags
