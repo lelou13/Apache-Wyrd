@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::DBL;
-our $VERSION = '0.86';
+our $VERSION = '0.87';
 use DBI;
 use Apache;
 use Apache::Wyrd::Request;
@@ -501,6 +501,7 @@ close the C<dbh> connection if it was opened.
 sub close_db {
 	my ($self) = @_;
 	return undef unless ($self->{'dbh_ok'});
+	$self->{'dbh'}->finish;
 	$self->{'dbh'}->disconnect;
 	return undef;
 }

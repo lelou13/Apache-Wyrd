@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized redefine);
 
 package Apache::Wyrd::Cookie;
-our $VERSION = '0.86';
+our $VERSION = '0.87';
 use vars qw(@ISA);
 
 my $have_apr = 1;

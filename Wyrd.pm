@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd;
-our $VERSION = '0.86';
+our $VERSION = '0.87';
 use Apache::Wyrd::Services::SAK qw (token_parse);
 use Apache::Wyrd::Services::Tree;
 use Apache::Util;
@@ -364,20 +364,21 @@ sub AUTOLOAD {
 		#of what the CGI module does
 		return $self->_generate_tag($1, $newval);
 	}
-	if(defined($self->{$AUTOLOAD})){
-		#if the method is called with no argument it's a GET value request
-		return $self->{$AUTOLOAD} unless (scalar(@_) == 2);
-		#if the method is called with an argument, it's a SET value request
-		$self->{$AUTOLOAD} = $newval;
-		#set always returns the value it is set to (no reason, may be useful for catching
-		#errors down the road).
-		return $newval;
-	} elsif (ref($self) && $self->UNIVERSAL::can('_raise_exception')) {
-		$self->_error("Dead because of \$self->" . $AUTOLOAD . " being called.  You probably need to define this function/attribute or import it from somewhere else.");
-		return $self->_raise_exception("Undefined variable was accessed in AUTOLOAD: $AUTOLOAD at " . join(':', caller()));
-	} else {
-		die ("Dead because an undefined subroutine in a non-method call was executed: " . $AUTOLOAD . "() at " . join(':', caller()) . ".  You probably need to correct/define this subroutine or import it from somewhere else.  This error was reported by Wyrd.pm");
+	if (ref($self)) {
+		if(defined($self->{$AUTOLOAD})){
+			#if the method is called with no argument it's a GET value request
+			return $self->{$AUTOLOAD} unless (scalar(@_) == 2);
+			#if the method is called with an argument, it's a SET value request
+			$self->{$AUTOLOAD} = $newval;
+			#set always returns the value it is set to (no reason, may be useful for catching
+			#errors down the road).
+			return $newval;
+		} elsif (ref($self) && $self->UNIVERSAL::can('_raise_exception')) {
+			$self->_error("Dead because of \$self->" . $AUTOLOAD . " being called.  You probably need to define this function/attribute or import it from somewhere else.");
+			return $self->_raise_exception("Undefined variable was accessed in AUTOLOAD: $AUTOLOAD at " . join(':', caller()));
+		}
 	}
+	die ("Dead because an undefined subroutine in a non-method call was executed: " . $AUTOLOAD . "() at " . join(':', caller()) . ".  You probably need to correct/define this subroutine or import it from somewhere else.  This error was reported by Wyrd.pm");
 }
 
 =pod

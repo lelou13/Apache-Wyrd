@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Input;
-our $VERSION = '0.86';
+our $VERSION = '0.87';
 use Apache::Wyrd::Datum;
 use base qw(Apache::Wyrd::Interfaces::Setter Apache::Wyrd::Interfaces::SmartInput Apache::Wyrd);
 use Apache::Wyrd::Services::SAK qw(token_parse);
@@ -266,7 +266,7 @@ sub set {
 	$value = shift(@{$value}) if ((ref($value) eq 'ARRAY') and not($self->{'_multiple'}));
 	my $result = $self->_check_param($value); #check params and set error values
 	unless ($result) {
-		$self->_error("Failed to set the datum object for " . $self->{'name'} . " to the value $value");
+		$self->_warn("Failed to set the datum object for " . $self->{'name'} . " to the value $value");
 		unless ($self->_flags->no_fail) {
 			$self->{'_parent'}->register_errors($self);
 			$self->{'_parent'}->register_error_messages($self) unless ($self->_flags->quiet);

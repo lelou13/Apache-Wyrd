@@ -1,25 +1,25 @@
 #XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
 name:         Apache-Wyrd
-version:      0.86
+version:      0.87
 version_from: Wyrd.pm
 installdirs:  site
 requires:
-    XML::Dumper:                   0.67
-    Apache::Util:                  
-    Crypt::Blowfish:               
-    Apache::Request:               
     HTTP::Request::Common:         
-    LWP::UserAgent:                
-    Apache::URI:                   
-    BerkeleyDB:                    0.23
-    Digest::MD5:                   
-    Apache::Cookie:                
-    MIME::Base64:                  
-    Apache::Constants:             
-    Class::Singleton:              
     HTML::Entities:                
+    XML::Dumper:                   0.67
+    MIME::Base64:                  
+    Apache::Util:                  
+    Apache::URI:                   
     DBI:                           
+    BerkeleyDB:                    0.23
     Apache:                        1.26
+    Class::Singleton:              
+    Apache::Constants:             
+    Crypt::Blowfish:               
+    Apache::Cookie:                
+    LWP::UserAgent:                
+    Digest::MD5:                   
+    Apache::Request:               
 
 distribution_type: module
 generated_by: ExtUtils::MakeMaker version 6.12

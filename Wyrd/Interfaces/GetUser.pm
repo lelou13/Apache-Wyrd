@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Interfaces::GetUser;
-our $VERSION = '0.86';
+our $VERSION = '0.87';
 use Apache::Wyrd::Cookie;
 
 =pod
@@ -59,6 +59,14 @@ table of the current session or in a cookie provided by the browser.
 
 sub user {
 	my ($self, $user_object) = @_;
+	eval("use $user_object") unless ($INC{$user_object});
+	if ($@) {
+		if ($self->can('_error')) {
+			$self->_error("User object could not be use-d: $@");
+		} else {
+			warn("User object could not be use-d: $@");
+		}
+	}
 	my $user = undef;
 	#user may have been found in an earlier handler and left in the notes
 	my $user_info = $self->req->notes('User');
@@ -76,8 +84,8 @@ sub user {
 		return undef unless ($auth_cookie);
 		use Apache::Wyrd::Services::CodeRing;
 		my $cr = Apache::Wyrd::Services::CodeRing->new;
-		$user = ${$cr->decrypt(\$auth_cookie)};
-		eval('$user=' . $user_object . '->revive($user)');
+		$user_info = ${$cr->decrypt(\$auth_cookie)};
+		eval('$user=' . $user_object . '->revive($user_info)');
 		if ($@) {
 			if ($self->can('_error')) {
 				$self->_error("User could not be made from cookie because of: $@");

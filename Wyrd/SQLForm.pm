@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::SQLForm;
-our $VERSION = '0.86';
+our $VERSION = '0.87';
 use base qw(Apache::Wyrd::Form);
 use Apache::Wyrd::Services::SAK qw(:db);
 use warnings qw(all);
@@ -232,6 +232,7 @@ sub deleted {
 				$log_title = $self->default_error;
 				$log .= $self->primary_delete_error($err);
 			} else {
+				$self->_deleted_hook({table=>$table,column=>$index,value=>$var{$index}});
 				my ($log_title, $addendum) = $self->_perform_secondary_deletes;
 				$log .= $addendum;
 			}
@@ -287,6 +288,61 @@ Does nothing by default.
 sub _perform_secondary_deletes {
 	my ($self) = @_;
 	return undef;
+}
+
+=item (scalar) C<_logger_hook> (hashref, scalar)
+
+Generic logger for the hook methods (below).  Is the method called by
+the default hooks.  Takes a hook hashref and an action scalar.
+
+=cut
+
+sub _logger_hook {
+	my ($self, $spec, $action) = @_;
+	if (ref($spec) eq 'HASH') {
+		my $table = $spec->{'table'};
+		my $column = $spec->{'column'};
+		my $value = $spec->{'value'};
+		if ($table and $column and $value) {
+			$self->_info("$column=$value $action in $table");
+		}
+	}
+}
+
+=item (scalar) C<_deleted_hook> (hashref)
+
+Backend hook.  Allows a secondary device to be notified that a deletion,
+addition, or update has occurred.  Takes the argument of a hashref in
+the same format as Apache::Wyrd::Services::SAK::_exists_in_table.  By
+default only logs the event in the _info log via the _logger_hook above.
+
+=cut
+
+sub _deleted_hook {
+	my ($self, $spec) = @_;
+	$self->_logger_hook($spec, 'deleted');
+}
+
+=item (scalar) C<_added_hook> (hashref)
+
+Like the _deleted_hook above.
+
+=cut
+
+sub _added_hook {
+	my ($self, $spec) = @_;
+	$self->_logger_hook($spec, 'added');
+}
+
+=item (scalar) C<_updated_hook> (hashref)
+
+Like the _deleted_hook above.
+
+=cut
+
+sub _updated_hook {
+	my ($self, $spec) = @_;
+	$self->_logger_hook($spec, 'updated');
 }
 
 =item C<_sets>, C<_join_sets>, C<_split_sets>
@@ -448,10 +504,8 @@ sub _submit_primary {
 	my ($sh) = ();
 	my $must_update = $var{$index};
 	if ($self->_flags->check_index) {
-		my $sh = $self->dbl->dbh->prepare("select $index from $table where $index=" . $self->dbl->dbh->quote($var{$index}));
-		$sh->execute;
-		my $count = $sh->fetchrow_arrayref;
-		$must_update = 0 unless ($count->[0]);
+		my ($count) = $self->dbl->dbh->selectrow_array("select count(*) from $table where $index=" . $self->dbl->dbh->quote($var{$index}));
+		$must_update = 0 unless ($count);
 	}
 	if ($must_update) {#Perform an update, not an insert
 		my $sh = $self->do_query("update $table set " . set_clause(keys(%var)) . " where $index=\$:$index", \%var);
@@ -462,6 +516,7 @@ sub _submit_primary {
 		} else {
 			$log .= $self->default_update_ok;
 		}
+		$self->_updated_hook({table=>$table,column=>$index,value=>$var{$index}});
 	} else {#Perform an insert
 		delete($var{$index}) unless ($self->_flags->check_index);
 		my $sh = $self->do_query("insert into $table set " . set_clause(keys(%var)), \%var);
@@ -473,6 +528,7 @@ sub _submit_primary {
 			$self->{'_variables'}->{$index} = $self->_insert_id($sh);
 			$log .= $self->default_insert_ok;
 		}
+		$self->_added_hook({table=>$table,column=>$index,value=>$var{$index}});
 	}
 	return ($log_title, $log);
 }

@@ -28,7 +28,7 @@ I<(format: (returns) C<$wyrd-E<gt>name> (arguments))> for methods
 
 =cut
 
-our $VERSION = '0.86';
+our $VERSION = '0.87';
 our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(
 	array_4_get
@@ -36,6 +36,7 @@ our @EXPORT_OK = qw(
 	cgi_query
 	commify
 	data_clean
+	_exists_in_table
 	do_query
 	env_4_get
 	lc_hash
@@ -54,7 +55,7 @@ our @EXPORT_OK = qw(
 
 our %EXPORT_TAGS = (
 	all			=>	\@EXPORT_OK,
-	db			=>	[qw(cgi_query do_query set_clause)],
+	db			=>	[qw(cgi_query do_query set_clause _exists_in_table)],
 	file		=>	[qw(slurp_file spit_file)],
 	hash		=>	[qw(array_4_get data_clean env_4_get lc_hash sort_by_ikey sort_by_key token_hash token_parse uniquify_by_ikey uniquify_by_key uri_escape)],
 	mail		=>	[qw(send_mail)],
@@ -131,6 +132,35 @@ sub do_query {
 	my $err = $sh->errstr;
 	$self->_error("DB Error: $err") if ($err);
 	return $sh;
+}
+
+=pod
+
+=item (scalar) _exists_in_table (hashref)
+
+Determines if there exists in a table an entry with a given value in a
+given column.  Accepts a hashref with the keys "table", "column", and
+"value".  These should all be scalar string values.  Returns the number
+of matching cases.
+
+=cut
+
+sub _exists_in_table {
+	my ($self, $spec) = @_;
+	if (ref($spec) eq 'HASH') {
+		my $table = $spec->{'table'};
+		my $column = $spec->{'column'};
+		my $value = $spec->{'value'};
+		my $count = 0;
+		if ($table and $column and $value) {
+			$value = $self->dbl->dbh->quote($value);
+			($count) = $self->_dbh->selectrow_array("select count(*) from $table where $column=$value")
+				|| $self->_error("DBH error: " . $self->_dbh->errstr);
+		}
+		return $count;
+	}
+	$self->_error("_exists_in_table requires a hashref with keys table, column, and value");
+	return undef;
 }
 
 =pod
@@ -484,7 +514,7 @@ Add commas to numbers, thanks to the perlfaq.
 
 =cut
 
- sub commify {
+sub commify {
 	my $number = shift;
 	1 while ($number =~ s/^([-+]?\d+)(\d{3})/$1,$2/);
 	return $number;

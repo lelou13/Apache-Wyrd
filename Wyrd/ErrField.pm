@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::ErrField;
-our $VERSION = '0.86';
+our $VERSION = '0.87';
 use strict;
 use base qw(Apache::Wyrd::ErrTag);
 

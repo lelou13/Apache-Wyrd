@@ -8,7 +8,7 @@ no warnings qw(uninitialized);
 no warnings qw(redefine);
 
 package Apache::Wyrd::Datum;
-our $VERSION = '0.86';
+our $VERSION = '0.87';
 
 use constant TYPE => 0;
 use constant VALUE => 1;
@@ -118,7 +118,6 @@ sub set {
 	unless ($ok) {
 		return undef if ($self->[Apache::Wyrd::Datum::PARAMS]->{'strict'});
 		$value = $self->_suggest($value);
-		warn $value;
 	}
 	$self->_set($value);
 	return 1;
@@ -130,7 +129,6 @@ sub type {
 }
 
 package Apache::Wyrd::Datum::Blob;
-our $VERSION = '0.86';
 use base qw(Apache::Wyrd::Datum);
 
 sub _type {
@@ -138,7 +136,6 @@ sub _type {
 }
 
 package Apache::Wyrd::Datum::Char;
-our $VERSION = '0.86';
 use base qw(Apache::Wyrd::Datum);
 
 sub _type {
@@ -168,7 +165,6 @@ sub _check_value {
 }
 
 package Apache::Wyrd::Datum::Enum;
-our $VERSION = '0.86';
 use base qw(Apache::Wyrd::Datum::Char);
 
 sub _type {
@@ -204,7 +200,6 @@ sub _check_value {
 }
 
 package Apache::Wyrd::Datum::Set;
-our $VERSION = '0.86';
 use base qw(Apache::Wyrd::Datum::Enum);
 
 sub _type {
@@ -233,7 +228,6 @@ sub _check_value {
 }
 
 package Apache::Wyrd::Datum::Text;
-our $VERSION = '0.86';
 use base qw(Apache::Wyrd::Datum);
 
 sub _type {
@@ -248,7 +242,6 @@ sub _process_incoming {
 }
 
 package Apache::Wyrd::Datum::Varchar;
-our $VERSION = '0.86';
 use base qw(Apache::Wyrd::Datum::Char);
 
 sub _type {
@@ -263,7 +256,6 @@ sub _default_params {
 }
 
 package Apache::Wyrd::Datum::Integer;
-our $VERSION = '0.86';
 use base qw(Apache::Wyrd::Datum::Char);
 
 sub _type {
@@ -293,7 +285,6 @@ sub _default_params {
 }
 
 package Apache::Wyrd::Datum::Null;
-our $VERSION = '0.86';
 use base qw(Apache::Wyrd::Datum);
 
 sub _type {

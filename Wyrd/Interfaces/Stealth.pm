@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Interfaces::Stealth;
-our $VERSION = '0.86';
+our $VERSION = '0.87';
 
 =pod
 

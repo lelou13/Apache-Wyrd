@@ -1,6 +1,23 @@
 Changes
 =======
 
+    0.87   October 31, 2004
+
+           Added post-procesing hooks to SQLForm
+
+           New sub for SAK
+
+           Fixed a problem causing incorrect sorts on some Set Wyrds
+
+           Returned handling of initial requests to Apache, and decline only
+           non-text/html types
+
+           Improved error reporting when a Wyrd mistakenly calls an
+           undefined method
+
+           Fixed occasional User object loading problems by explicitly checking
+           %INC in GetUser interface
+
     0.86   (September 22, 2004)
 
            Minor change in Makefile.PL to allow non-blocking of

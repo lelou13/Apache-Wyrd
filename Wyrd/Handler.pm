@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Handler;
-our $VERSION = '0.86';
+our $VERSION = '0.87';
 use Apache::Wyrd::DBL;
 use Apache::Wyrd;
 use Apache::Wyrd::Services::SAK qw(slurp_file);
@@ -35,7 +35,7 @@ This module has been developed for and only been tested in Apache E<lt>
 typical set of appropriate Apache directives.  Global Perl warnings are
 turned off, as they are more granularly handled within the package. Note
 that the Handler that is used is an B<instance> of this handler. It is
-named, in this example, C<BASNAME::Handler> and is found in a BASNAME
+named, in this example, C<BASNAME::Handler> and is found in a BASENAME
 directory which in @INC of a local mod_perl installation. Traditionally,
 this is in C<E<lt>apache configuration directoryE<gt>/lib/perl/>.  If
 the perl module BASENAME::Handler has a C<use base
@@ -144,37 +144,19 @@ sub add_headers {
 
 =item get_file
 
-Based on the request, locates the file to be used and sets the file attribute to
-that path.  It declines non-html (*.html) files and passes the mtime and size of
-the file to the init hashref for use by the Apache::Wyrd object.
+Based on the request, locates the file to be used and sets the file
+attribute to that path.  It declines non-text/html files (via mime type)
+and, on accepting a file, passes the mtime and size of the file to the
+init hashref for use by the Apache::Wyrd object.
 
 =cut
 
 sub get_file {
 	my ($self) = @_;
 	my $file = $self->{'req'}->filename;
-	$file =~ s#/$##;
-	if (-d $file){
-		my $found = 0;
-		foreach my $index ('/index.html', '/index.htm', '/home.html', '/home.htm') {
-			my $try = $file . $index;
-			if (-f $try) {
-				$file = $try;
-				$self->{'send_header'} = 1;
-				$found = 1;
-			}
-			last if ($found);
-		}
-		return NOT_FOUND unless ($found);
-	}
-	return DECLINED unless ($file =~ /\.html?$/);
-	unless (-r _) {
-		if (-f _) {
-			return FORBIDDEN
-		} else {
-			return NOT_FOUND
-		}
-	}
+	return DECLINED if (-d $file and $self->{'req'}->next);
+	return DECLINED unless (-r _);
+	return DECLINED unless ($self->{'req'}->content_type eq 'text/html');
 	$self->{'file'} = $file;
 	my @stats = stat _;
 	$self->{'init'}->{'mtime'} = $stats[9];

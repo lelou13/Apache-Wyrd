@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Input::Set;
-our $VERSION = '0.86';
+our $VERSION = '0.87';
 use Apache::Wyrd::Datum;
 use base qw(
 	Apache::Wyrd::Interfaces::Mother
@@ -212,7 +212,8 @@ sub _startup_radiobuttons {
 	$self->{'_on_button'} = ' checked';
 	$params->{'options'} = [keys(%{$self->{'_options'}})];
 	$self->{'_datum'} ||= (Apache::Wyrd::Datum::Enum->new($value, $params));
-	my @sort = (token_parse($self->{'sort'}) || 'value');
+	$self->{'sort'} ||= 'value';
+	my @sort = token_parse($self->{'sort'});
 	my $name = $self->name;
 	my $template = qq(<input type="hidden" name="_being_submitted_$name" value="1">);
 	my $emptyname = $self->{'emptyname'};
@@ -255,7 +256,8 @@ sub _startup_checkboxes {
 	$self->{'_on_button'} = ' checked';
 	$params->{'options'} = [keys(%{$self->{'_options'}})];
 	$self->{'_datum'} ||= (Apache::Wyrd::Datum::Set->new($value, $params));
-	my @sort = (token_parse($self->{'sort'}) || 'value');
+	$self->{'sort'} ||= 'value';
+	my @sort = token_parse($self->{'sort'});
 	my $name = $self->name;
 	my $template = qq(<input type="hidden" name="_being_submitted_$name" value="1">);
 	my $emptyname = $self->{'emptyname'};
@@ -297,7 +299,8 @@ sub _startup_selection {
 	$self->{'_on_button'} = ' selected';
 	$params->{'options'} = [keys(%{$self->{'_options'}})];
 	$self->{'_datum'} ||= (Apache::Wyrd::Datum::Set->new($value, $params));
-	my @sort = (token_parse($self->{'sort'}) || 'name');
+	$self->{'sort'} ||= 'value';
+	my @sort = token_parse($self->{'sort'});
 	my $emptyname = $self->{'emptyname'};
 	my $template = '';
 	my @objects = sort {sort_by_ikey($a, $b, @sort)} @{$self->{'_children'}};
@@ -310,7 +313,7 @@ sub _startup_selection {
 				$self->_process_child($object);
 				unshift @objects, $object;
 			} else {
-				$self->_error(ref($object) . ' object cannot make a checkbox for the requested emptyname');
+				$self->_error(ref($object) . ' object cannot make a selection for the requested emptyname');
 			}
 		}
 	}
@@ -331,7 +334,8 @@ sub _startup_pulldown {
 	$self->{'_on_button'} = ' selected';
 	$params->{'options'} = [keys(%{$self->{'_options'}})];
 	$self->{'_datum'} ||= (Apache::Wyrd::Datum::Enum->new($value, $params));
-	my @sort = (token_parse($self->{'sort'}) || 'name');
+	$self->{'sort'} ||= 'name';
+	my @sort = token_parse($self->{'sort'});
 	my $emptyname = $self->{'emptyname'};
 	my $template = qq(<option value="">$emptyname</option>);
 	$template = '' if ($self->_flags->noempty);
