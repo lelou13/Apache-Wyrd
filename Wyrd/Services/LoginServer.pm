@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::LoginServer;
-our $VERSION = '0.85';
+our $VERSION = '0.86';
 use Apache::Wyrd::Services::CodeRing;
 use Apache::Wyrd::Services::TicketPad;
 use Apache::Wyrd::Request;

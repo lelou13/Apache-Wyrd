@@ -1,6 +1,11 @@
 Changes
 =======
 
+    0.86   (September 22, 2004)
+
+           Minor change in Makefile.PL to allow non-blocking of
+           automated processes.
+
     0.85   (September 22, 2004)
 
            Wyrd Framework now works with CGI, not just libapreq/

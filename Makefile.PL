@@ -3,7 +3,7 @@ use ExtUtils::MakeMaker;
 use lib qw(../blib/lib lib );
 use Cwd;
 
-my $this_version = '0.85';
+my $this_version = '0.86';
 push @ARGV, '-maxclients', '2';
 
 my $have_atest = 1;
@@ -23,10 +23,10 @@ The test suite for this module requires Apache::Test version > 1.08,
 which is apparently not available.  It is highly recommended that you
 run the test suite, but it is not absolutely required.  If you choose to
 continue, you may install Apache::Wyrd, but it may be unuseable.  Do you
-want to continue? [Y/N]
+want to continue?
 
 __MSG__
-	my $ok = getc;
+	my $ok = prompt('Continue (y/n)?', 'n');
 	if (lc($ok) ne 'y') {
 		print "OK, aborting...\n\n";
 		exit 0;
@@ -160,11 +160,11 @@ OTHER SYSTEM INFORMATION WILL BE SENT THAN THE FOLLOWING:
 	mod_perl version: $mod_perl_version
 	Berkeley DB version: $bdb
 
-May I send this information to the Author? [Y/N]
+May I send this information to the Author?
 
 __MSG__
 
-my $ok = getc;
+my $ok = prompt('Send info (y/n)?', 'y');
 if (lc($ok) ne 'y') {
 	print "OK, I won't send it...\n\n";
 	exit 0;
