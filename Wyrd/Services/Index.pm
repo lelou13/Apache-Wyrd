@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::Index;
-our $VERSION = '0.8';
+our $VERSION = '0.81';
 use Apache::Wyrd::Services::SAK qw(token_parse);
 use Apache::Wyrd::Services::SearchParser;
 use BerkeleyDB;
@@ -313,7 +313,7 @@ sub read_db {
 	}
 	my %index = ();
 	my $index = tie %index, 'BerkeleyDB::Btree', -Filename => $self->file, -Flags => DB_RDONLY, -Env => $self->env, -Mode => 0660;
-	$self->set_error ("Can't open/create the index for reading.") unless ($index);
+	$self->set_error ("Can't open the index for reading.") unless ($index);
 	$self->check_error;
 	$self->newstatus('R');
 	$self->{'db'} = $index;

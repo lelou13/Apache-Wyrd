@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Form;
-our $VERSION = '0.8';
+our $VERSION = '0.81';
 use base qw(Apache::Wyrd::Interfaces::Mother Apache::Wyrd::Interfaces::Setter Apache::Wyrd);
 #use XML::Simple;
 use XML::Dumper;
@@ -785,7 +785,7 @@ sub _get_value {
 			my @value = $self->dbl->param($param);
 			$param = [@value];
 			$param = $value[0] if (scalar(@value) == 1);
-			param = undef if (scalar(@value) == 0);
+			$param = undef if (scalar(@value) == 0);
 		} else {
 			$param = undef;
 			$success = 0;

@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd;
-our $VERSION = '0.8';
+our $VERSION = '0.81';
 use Apache::Wyrd::Services::SAK qw (token_parse);
 use Apache::Wyrd::Services::Tree;
 use Apache::Util;
@@ -97,7 +97,7 @@ sub _raise_exception {
 
 =head1 NAME
 
-Apache::Wyrd
+Apache::Wyrd - HTML embeddable perl objects under mod_perl
 
 =head1 SYNOPSIS
 

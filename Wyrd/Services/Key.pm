@@ -6,13 +6,14 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::Key;
-our $VERSION = '0.8';
+our $VERSION = '0.81';
 use base qw(Class::Singleton);
 
 my $pure_perl = 0;
 eval ('use Crypt::Blowfish');
 if ($@) {
-	use Crypt::Blowfish_PP;
+	eval ('use Crypt::Blowfish_PP');
+	die "$@" if ($@);
 	$pure_perl = 1;
 }
 

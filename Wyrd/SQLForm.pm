@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::SQLForm;
-our $VERSION = '0.8';
+our $VERSION = '0.81';
 use base qw(Apache::Wyrd::Form);
 use Apache::Wyrd::Services::SAK qw(:db);
 use warnings qw(all);
@@ -309,7 +309,9 @@ sub _sets {
 
 =item (void) C<_split_sets> (void)
 
-method description
+depending how sets data types are treated in your DBA, use this method
+for splitting the set value into an arrayref of the values of the set. 
+The default is to split the sets by comma.
 
 =cut
 
@@ -322,9 +324,11 @@ sub _split_sets {
 	}
 }
 
-=item (void) C<method> (void)
+=item (void) C<_join_sets> (void)
 
-method description
+the opposite of _split_sets.  How to turn an arrayref of values into a
+value acceptable by your DBA.  By default, joins the values with a
+comma.
 
 =cut
 

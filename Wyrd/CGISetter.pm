@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::CGISetter;
-our $VERSION = '0.8';
+our $VERSION = '0.81';
 use base qw(Apache::Wyrd::Interfaces::Stealth Apache::Wyrd::Interfaces::Setter Apache::Wyrd);
 
 =pod

@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Interfaces::Mother;
-our $VERSION = '0.8';
+our $VERSION = '0.81';
 
 =pod
 
@@ -92,9 +92,9 @@ sub register_child {
 
 =pod
 
-=item (scalar) C<method> (void)
+=item (scalar) C<_process_child> (Apache::Wyrd-derived object)
 
-method description
+Hook method for performing some action on or using each child.
 
 =cut
 

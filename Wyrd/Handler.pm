@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Handler;
-our $VERSION = '0.8';
+our $VERSION = '0.81';
 use Apache::Wyrd::DBL;
 use Apache::Wyrd;
 use Apache::Wyrd::Services::SAK qw(slurp_file);
@@ -33,7 +33,7 @@ handlers, see L<http://perl.apache.org/docs/index.html>
 This module has been developed for and only been tested in Apache E<lt> 2.0 /
 mod_perl E<lt> 1.99.  In this environment, the SYNOPSIS shows a typical set of
 appropriate Apache directives.  Global Perl warnings are turned off, as they are
-more granularly handled within the package.  Note that the Handler that is usedour $VERSION = '0.8';
+more granularly handled within the package.  Note that the Handler that is usedour $VERSION = '0.81';
 is an B<instance> of this handler.  It is named, in this example,
 C<BASNAME::Handler> and is found in a BASNAME directory which in @INC of a local
 mod_perl installation.  Traditionally, this is in C<E<lt>apache configuration
@@ -41,7 +41,7 @@ directoryE<gt>/lib/perl/>.  If the perl module BASENAME::Handler has a C<use
 base qw(Apache::Wyrd::Handler)> pragma, the C<handler> method should properly
 determine the base class for the BASENAME set of Wyrds and the handler should
 interpret only those tags beginning E<lt>BASENAME::...  A rudimentary sample of
-this usage is available in the t/lib directory of this package and is used forour $VERSION = '0.8';
+this usage is available in the t/lib directory of this package and is used forour $VERSION = '0.81';
 testing.
 
 This way, several sites using Wyrds can be built, each subclassing Apache::Wyrd

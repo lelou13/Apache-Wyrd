@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::CodeRing;
-our $VERSION = '0.8';
+our $VERSION = '0.81';
 use Apache::Wyrd::Services::SAK qw(lc_hash);
 use Apache::Wyrd::Services::Key;
 use Digest::MD5 qw(md5_hex);
@@ -14,7 +14,8 @@ use Digest::MD5 qw(md5_hex);
 my $pure_perl = 0;
 eval ('use Crypt::Blowfish');
 if ($@) {
-	use Crypt::Blowfish_PP;
+	eval ('use Crypt::Blowfish_PP');
+	die "$@" if ($@);
 	$pure_perl = 1;
 }
 

@@ -80,6 +80,7 @@ t/htdocs/12.html
 t/htdocs/13.html
 t/htdocs/14.html
 t/htdocs/15.html
+t/htdocs/16.html
 t/htdocs/cookies.html
 t/htdocs/lib/testlib.html
 t/htdocs/login.html
@@ -87,6 +88,7 @@ t/htdocs/loginform.html
 t/htdocs/lsdown.html
 t/htdocs/restricted/test.html
 t/lib/perl/TESTCLIENT/DBL.pm
+t/lib/perl/TESTCLIENT/DBTest.pm
 t/lib/perl/TESTCLIENT/Form.pm
 t/lib/perl/TESTCLIENT/Handler.pm
 t/lib/perl/TESTCLIENT/Page.pm
