@@ -127,7 +127,7 @@ my $makefile = WriteMakefile(
 		BerkeleyDB				=>	.23,
 		Class::Singleton		=>	0,
 		DBI						=>	0,
-		Digest::MD5				=>	0,
+		Digest::SHA1			=>	0,
 		HTML::Entities			=>	0,
 		HTTP::Request::Common	=>	0,
 		LWP::UserAgent			=>	0,
@@ -139,7 +139,7 @@ my $makefile = WriteMakefile(
 	},
 	AUTHOR			=> 'barry king <wyrd@nospam.wyrdwright.com>',
 	clean			=> {
-			FILES	=> q(t/TEST t/data/testindex.db t/data/ticketbook.db t/data/cookies.txt t/logs t/conf/modperl_startup.pl t/htdocs/index.html)
+			FILES	=> q(t/TEST t/data/testindex.db t/data/testindex2.db t/data/testindex3.db t/data/testindex2_big.db t/data/ticketbook.db t/data/cookies.txt t/logs t/conf/modperl_startup.pl t/htdocs/index.html)
 	}
 );
 

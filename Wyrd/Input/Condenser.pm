@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Input::Condenser;
-our $VERSION = '0.92';
+our $VERSION = '0.93';
 use base qw(Apache::Wyrd::Input::Complex);
 use Apache::Wyrd::Services::SAK qw(token_parse);
 
@@ -48,9 +48,6 @@ the input names/ids to be able to distinguish them from each other.
 The result of the generation should be stored under the _data attribute.
 
 =cut
-
-#This, plus the correlates in the Input::Complex Wyrd is the method which needs to be implemented to make an
-#Input::Condenser Wyrd, minus final_output which is defined above.
 
 sub _generate_inputs {
 	my ($self) = @_;
@@ -172,7 +169,7 @@ General-purpose HTML-embeddable perl object
 
 =head1 LICENSE
 
-Copyright 2002-2004 Wyrdwright, Inc. and licensed under the GNU GPL.
+Copyright 2002-2005 Wyrdwright, Inc. and licensed under the GNU GPL.
 
 See LICENSE under the documentation for C<Apache::Wyrd>.
 

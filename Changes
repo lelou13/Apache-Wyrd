@@ -1,6 +1,45 @@
 Changes
 =======
 
+    0.93   March 25, 2005
+
+           New Wyrd: Apache::Wyrd::Services::Bot for defining a process
+           to be invoked and monitoring that process from a browser
+           window.
+
+           Added post_process hook for Handler.
+
+           Replaced MD5 with SHA1 for all internal hashing because of
+           UTF problems with Digest::MD5
+
+           Index now defaults to using concurrency instead of locking in
+           BerkeleyDB if version 4 or greater is installed.
+
+           Fixed fatal error in Index when exact matching whole phrases
+           with a - or + qualifier
+
+           Improvements to Index: "reversemaps" and "dirty" options for
+           quicker updates, "bigfile" option for large pagesize
+           secondary database for storing wholetext in a separate file,
+           new tests
+
+           Fixed bug where plain options passed to an Input::Set would
+           be reversed between value and name
+
+           Fixed bug where simple attributes composed entirely of
+           non-word characters could cause parsing errors.
+
+           Fixed bug where Lookup would have a fatal error on the use of
+           a joiner
+
+           Handler now checks for a set content-type header before
+           defaulting to text/html
+
+           Fixed error reporting problem where unblessed references
+           could be unintentionally treated as objects
+
+           documentation changes, additional debugging info
+
     0.92   January 13, 2005
 
            SearchParser operator precidence change to AND/OR/NOT/DIFF in
@@ -14,7 +53,7 @@ Changes
 
     0.91   January 9, 2005
 
-           Fixed self_path bug where leading slashes were preserved a
+           Fixed self_path bug where leading slashes were preserved in a
            path
 
            Added removal of purged entries' IDs from Index objects.  Bug

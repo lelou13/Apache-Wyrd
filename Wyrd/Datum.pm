@@ -8,7 +8,7 @@ no warnings qw(uninitialized);
 no warnings qw(redefine);
 
 package Apache::Wyrd::Datum;
-our $VERSION = '0.92';
+our $VERSION = '0.93';
 
 use constant TYPE => 0;
 use constant VALUE => 1;
@@ -467,7 +467,7 @@ Barry King E<lt>wyrd@nospam.wyrdwright.comE<gt>
 
 =head1 LICENSE
 
-Copyright 2002-2004 Wyrdwright, Inc. and licensed under the GNU GPL.
+Copyright 2002-2005 Wyrdwright, Inc. and licensed under the GNU GPL.
 
 See LICENSE under the documentation for C<Apache::Wyrd>.
 

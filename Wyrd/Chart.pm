@@ -4,12 +4,12 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Chart;
-our $VERSION = '0.92';
+our $VERSION = '0.93';
 use base qw(Apache::Wyrd::Services::FileCache Apache::Wyrd::Interfaces::Setter Apache::Wyrd);
 use GD::Graph;
 use GD::Graph::colour qw(:colours :convert :lists);
 use Apache::Wyrd::Services::SAK qw(:tag :file token_parse token_hash);
-use Digest::MD5 qw(md5_hex);
+use Digest::SHA1 qw(sha1_hex);
 use Data::Dumper;
 
 =pod
@@ -431,7 +431,7 @@ sub _get_data {
 	my $sh = $self->{'sh'};
 	my @data = ();
 	my $truncate = 0;
-	my $file = 'Signature: ' . md5_hex($self->_as_html) . "\n";
+	my $file = 'Signature: ' . sha1_hex($self->_as_html) . "\n";
 	while (my $line = $sh->fetchrow_arrayref) {
 		push @data, [@$line];
 		$file .= join("\t", @$line) . "\n";
@@ -735,7 +735,7 @@ General-purpose HTML-embeddable perl object
 
 =head1 LICENSE
 
-Copyright 2002-2004 Wyrdwright, Inc. and licensed under the GNU GPL.
+Copyright 2002-2005 Wyrdwright, Inc. and licensed under the GNU GPL.
 
 See LICENSE under the documentation for C<Apache::Wyrd>.
 

@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Lattice::Footer;
-our $VERSION = '0.92';
+our $VERSION = '0.93';
 use base qw(Apache::Wyrd);
 
 sub _format_output {

@@ -6,10 +6,10 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::CodeRing;
-our $VERSION = '0.92';
+our $VERSION = '0.93';
 use Apache::Wyrd::Services::SAK qw(lc_hash);
 use Apache::Wyrd::Services::Key;
-use Digest::MD5 qw(md5_hex);
+use Digest::SHA1 qw(sha1_hex);
 
 my $pure_perl = 0;
 eval ('use Crypt::Blowfish');
@@ -49,7 +49,7 @@ It uses the blowfish algorithm via either a Crypt::Blowfish or
 Crypt::Blowfish_PP module, depending on which one compiles on this
 system, preferring the C-based one.
 
-The CodeRing uses an internal hashing algorithm (MD5) to check the
+The CodeRing uses an internal hashing algorithm (SHA1) to check the
 validity of the decrypt.  If the decrypt shows alteration, it returns an
 empty string.
 
@@ -122,7 +122,7 @@ sub encrypt {
 	die ("you must use a scalar ref in encrypt at " . join(':', caller)) unless (ref($textref) eq 'SCALAR');
 	my ($i, @out, $block, $cyphertext) = ();
 	#Note: 7 nulls are added to ensure a full final octet.
-	my $crc = md5_hex($$textref);
+	my $crc = sha1_hex($$textref);
 	my @in = split ('', $$textref . "\0". $crc . "\0\0\0\0\0\0\0\0");
 	while ($#in > 0) {
 		$block = $self->{'cypher'}->encrypt(pack('a8', join('', splice (@in, 0, 8))));
@@ -156,8 +156,8 @@ sub decrypt {
 		$plaintext .= $self->{'cypher'}->decrypt($block);
 	}
 	#remove tail nulls and all trailing garbage
-	$plaintext =~ s/\0([A-Fa-f0-9]{32})\0*$//s;
-	my $crc = md5_hex($plaintext);
+	$plaintext =~ s/\0([A-Fa-f0-9]{40})\0*$//s;
+	my $crc = sha1_hex($plaintext);
 	#If the CRC check fails, assume the key is bad and return null;
 	$plaintext = '' if ($crc ne $1);
 	return \$plaintext
@@ -190,7 +190,7 @@ Shared-memory encryption key and cypher.
 
 =head1 LICENSE
 
-Copyright 2002-2004 Wyrdwright, Inc. and licensed under the GNU GPL.
+Copyright 2002-2005 Wyrdwright, Inc. and licensed under the GNU GPL.
 
 See LICENSE under the documentation for C<Apache::Wyrd>.
 

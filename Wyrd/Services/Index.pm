@@ -6,12 +6,12 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::Index;
-our $VERSION = '0.92';
-use Apache::Wyrd::Services::SAK qw(token_parse);
+our $VERSION = '0.93';
+use Apache::Wyrd::Services::SAK qw(token_parse strip_html);
 use Apache::Wyrd::Services::SearchParser;
 use BerkeleyDB;
 use BerkeleyDB::Btree;
-use HTML::Entities;
+use Digest::SHA1 qw(sha1_hex);
 
 =pod
 
@@ -55,7 +55,8 @@ The information stored is broken down into attributes.  The main builtin
 B<description>, as well as three internal attributes of B<reverse>,
 B<timestamp>, and B<digest>.  Additional attributes are specified via
 the hashref argument to the C<new> method (see below).  There can be
-only 255 total attributes.
+only 254 total attributes, unless reversemaps are turned on, in which
+case all map attributes count as two attributes.
 
 Attributes are of two types, either regular or map, and these relate to
 the main index, B<id>.  A regular attribute stores information on a
@@ -81,7 +82,10 @@ C<BerkeleyDB::Btree> perl module.  Because of concurrence of usage
 between different Apache demons in a pool of servers, it is important
 that this be a reasonably current version of BerkeleyDB which supports
 locking and read-during-update.  This module was developed using
-Berkeley DB v. 3.3-4.1 on Darwin and Linux.
+Berkeley DB v. 3.3-4.1 on Darwin and Linux.  Your results may vary.
+
+When used with Berkeley DB versions above 4, Index will invoke
+concurrency and not locking.
 
 Use with vast amounts of large documents is not recommended, but a
 reasonably large (hundreds of 1000-word pages) web site can be indexed
@@ -115,6 +119,37 @@ Die on errors.  Default 1 (yes).
 If not strict, be quiet in the error log about problems.  Use at your
 own risk.
 
+=item bigfile
+
+By default (0), the data attribute is stored in the same DB file as the
+rest of the data.  If the argument to this option is 1, the data
+attribute of the indexed objects is stored in a separate DB file with a
+much larger page value (64k) rather than the system default (usually
+around 2k). This may allow some lookups to be performed faster.  The
+name of this file is based on the file attribute, above, by adding
+"_big" at the end of the filename, but before the ".db" extension, if
+present.
+
+=item reversemaps
+
+By default (0), when an indexed item is changed, it's mapped elements
+(like the words) are purged from every word entry.  This is usually very
+CPU-intensive.  This option tracks a reverse index on the map so that
+this purge can be done as quickly as possible.  However, it doubles the
+space used to store mapped attributes, causing an overall, but usually
+smaller, speed decrease.
+
+=item dirty
+
+This is another potential speed increase, off (0) by default.  When a
+purge is required, the data is not removed from the mapped attributes. 
+Rather, a new reference is made for the entry and the previous
+references are removed.  If, however, map data in the Index object is
+accessed directly via the C<db> method and not through
+C<search>/C<word_search>, erroneous data will result unless "nameless"
+data is removed from the results.  Therefore, reversemaps is the
+preferred method, if not the fastest.
+
 =item attributes
 
 Arrayref of attributes other than the default to use.  For every attribute
@@ -124,8 +159,8 @@ B<foo>.
 
 =item maps
 
-Arrayref of which attributes to treat as maps.  Anny attribute that is a map
-must also be included in the list of attributes.
+Arrayref of which attributes to treat as maps.  Any attribute that is a
+map must also be included in the list of attributes.
 
 =back
 
@@ -137,36 +172,64 @@ sub new {
 	die ('Must specify an absolute path for the index file') unless ($$init{'file'} =~ /^\//);
 	my ($directory) = ($$init{'file'} =~ /(.+)\//);
 	die ('Must specify a valid, writable directory location.  Directory given: ' . $directory) unless (-d $directory && -w _);
+	my $bigfilename = $$init{'file'};
+	$bigfilename =~ s/(.+[^.\/]+)(\.[^.]+)$/$1\_big$2/i;
 	#Die on errors by default
+	$$init{'debug'} = 0 unless exists($$init{'debug'});
 	$$init{'strict'} = 1 unless exists($$init{'strict'});
 	$$init{'quiet'} = 0 unless exists($$init{'quiet'});
-	my @attributes = qw(reverse timestamp digest data word title description);
+	$$init{'dirty'} = 0 unless exists($$init{'dirty'});
+	$$init{'reversemaps'} = 0 unless exists($$init{'reversemaps'});
+	$$init{'bigfile'} = 0 unless exists($$init{'bigfile'});
+	if ($$init{'dirty'} and $$init{'reversemaps'}) {
+		$$init{'dirty'} = 0;
+		$$init{'debug'} && warn('Turning off dirty option since reversemaps is on');
+	}
+	my @attributes = qw(reverse timestamp digest data word title keywords description);
 	my @check_reserved = ();
 	foreach my $reserved (@attributes, 'id', 'score') {
 		push @check_reserved, $reserved if (grep {$reserved eq $_} @{$$init{'attributes'}});
+		push @check_reserved, $reserved if ($$init{'reversemaps'} and $reserved =~ /^_/);
 	}
 	my $s = '';
 	$s = 's' if (@check_reserved > 1);
-	die ("Reserved attribute$s specified.  Use different name$s: " . join(', ', @check_reserved)) if (@check_reserved);
+	die ("Reserved/Illegal attribute$s specified.  Use different name$s: " . join(', ', @check_reserved)) if (@check_reserved);
 	my @maps = qw(word);
 	my (%attributes, %maps) = ();
-	@attributes = (@attributes, @{$init->{'attributes'}}) if (ref($init->{'attributes'}) eq 'ARRAY');
-	warn ("Too many attributes.  First 255 will be used.") if (@attributes > 255);
-	my $attr_index = 0;
-	foreach my $attribute (@attributes) {
-		$attributes{$attribute} = chr($attr_index);
-		$attr_index++;
-		last if ($attr_index > 255);
-	}
 	@maps = (@maps, @{$init->{'maps'}}) if (ref($init->{'maps'}) eq 'ARRAY');
 	foreach my $map (@maps) {
 		$maps{$map} = 1;
 	}
+	@attributes = (@attributes, @{$init->{'attributes'}}) if (ref($init->{'attributes'}) eq 'ARRAY');
+	my $attr_index = 0;
+	#key values \xff%<foo> are reserved for index metadata, so value 255 is reserved
+	my $max_attrs = 254;
+	$max_attrs -= @maps if ($$init{'reversemaps'});
+	foreach my $attribute (@attributes) {
+		if ($attr_index > $max_attrs) {
+			warn "Too many attributes initialized in the Index.  Stopping at $attribute.  The rest will not be used";
+			last;
+		}
+		$attributes{$attribute} = chr($attr_index);
+		$attr_index++;
+	}
+	if ($$init{'reversemaps'}) {
+		foreach my $attribute (@maps) {
+			$attributes{"_$attribute"} = chr($attr_index);
+			$attr_index++;
+		}
+	}
 	my $env = BerkeleyDB::Env->new(
 		-Home			=> $directory,
-		-Flags			=> DB_INIT_LOCK | DB_INIT_LOG | DB_INIT_MPOOL,
+		-Flags			=> DB_INIT_LOCK | DB_INIT_MPOOL,
 		-LockDetect		=> DB_LOCK_DEFAULT
 	);
+	if ($BerkeleyDB::db_version >= 4) {
+		$env = BerkeleyDB::Env->new(
+			-Home			=> $directory,
+			-Flags			=> DB_INIT_CDB | DB_INIT_MPOOL
+		);
+	}
 	#Note: die_no_lock is ignored if strict is not set
 	my $data = {
 		file			=>	$$init{'file'},
@@ -174,17 +237,23 @@ sub new {
 		db				=>	undef,
 		env				=>	$env,
 		status			=>	undef,
+		debug			=>	$$init{'debug'},
 		strict			=>	$$init{'strict'},
+		dirty			=>	$$init{'dirty'},
+		reversemaps		=>	$$init{'reversemaps'},
+		bigfile			=>	$$init{'bigfile'},
+		bigfilename		=>	$bigfilename,
 		quiet			=>	$$init{'quiet'},
 		error			=>	[],
 		attributes		=>	\%attributes,
 		attribute_list	=>	\@attributes,
 		maps			=>	\%maps,
 		map_list		=>	\@maps,
-		extended		=>	((scalar(keys %attributes) > 7) ? 7 : 0)
+		extended		=>	((scalar(keys %attributes) > 8) ? 8 : 0)
 	};
 	bless $data, $class;
 	$data->write_db unless (-e $$init{'file'});
+	$data->write_db if ($$init{'bigfile'} and not(-e $bigfilename));
 	$data->read_db;
 	return $data;
 }
@@ -197,6 +266,11 @@ sub DESTROY {
 sub db {
 	my ($self) = @_;
 	return $self->{'db'};
+}
+
+sub db_big {
+	my ($self) = @_;
+	return $self->{'db_big'};
 }
 
 sub env {
@@ -234,9 +308,24 @@ sub status {
 	return $self->{'status'};
 }
 
+sub debug {
+	my ($self) = @_;
+	return $self->{'debug'};
+}
+
 sub strict {
 	my ($self) = @_;
 	return $self->{'strict'};
+}
+
+sub dirty {
+	my ($self) = @_;
+	return $self->{'dirty'};
+}
+
+sub reversemaps {
+	my ($self) = @_;
+	return $self->{'reversemaps'};
 }
 
 sub quiet {
@@ -247,6 +336,16 @@ sub quiet {
 sub file {
 	my ($self) = @_;
 	return $self->{'file'};
+}
+
+sub bigfile {
+	my ($self) = @_;
+	return $self->{'bigfile'};
+}
+
+sub bigfilename {
+	my ($self) = @_;
+	return $self->{'bigfilename'};
 }
 
 sub directory {
@@ -278,6 +377,9 @@ sub delete_index {
 	$self->write_db;
 	$self->close_db;
 	$self->set_error("Could not delete the index: $!") unless (unlink $self->file);
+	if ($self->bigfile) {
+		$self->set_error("Could not delete the fulltext index: $!") unless (unlink $self->bigfilename);
+	}
 	$self->check_error;
 	$self->write_db;
 	$self->read_db;
@@ -314,8 +416,15 @@ sub read_db {
 	my $index = tie %index, 'BerkeleyDB::Btree', -Filename => $self->file, -Flags => DB_RDONLY, -Env => $self->env, -Mode => 0660;
 	$self->set_error ("Can't open the index for reading.") unless ($index);
 	$self->check_error;
-	$self->newstatus('R');
 	$self->{'db'} = $index;
+	if ($self->bigfile) {
+		my %bindex = ();
+		my $bindex = tie %bindex, 'BerkeleyDB::Btree', -Filename => $self->bigfilename, -Pagesize => 65536, -Flags => DB_RDONLY, -Env => $self->env, -Mode => 0660;
+		$self->set_error ("Can't open the wholetext index for reading.") unless ($bindex);
+		$self->check_error;
+		$self->{'db_big'} = $bindex;
+	}
+	$self->newstatus('R');
 	return $index;
 }
 
@@ -330,14 +439,28 @@ sub write_db {
 	my $index = tie (%index, 'BerkeleyDB::Btree', -Filename => $self->file, -Flags => DB_CREATE, -Env => $self->env, -Mode => 0660);
 	$self->set_error ("Can't open/create the index for writing.") unless ($index);
 	$self->check_error;
-	$self->newstatus('RW');
 	$self->{'db'} = $index;
+	if ($self->bigfile) {
+		my %bindex = ();
+		my $bindex = tie %bindex, 'BerkeleyDB::Btree', -Filename => $self->bigfilename, -Pagesize => 65536, -Flags => DB_CREATE, -Env => $self->env, -Mode => 0660;
+		$self->{'db_big'} = $bindex;
+		$self->set_error("Can't open/create the wholetext index for writing.") unless ($bindex);
+		$self->check_error;
+	}
+	$self->newstatus('RW');
 	return $index;
 }
 
 sub close_db {
 	my ($self) = @_;
 	my $index = $self->db;
+	if ($index) {
+		$index->db_sync;
+		$self->{'db'} = undef;
+		delete ($self->{'status'}); #close the DB ref
+		$self->{'status'} = undef;
+	}
+	$index = $self->db_big;
 	if ($index) {
 		$index->db_sync;
 		$self->{'db'} = undef;
@@ -363,13 +486,16 @@ C<force_update>.
 
 =cut
 
-#attributes - integer=name (self_path), 0=reverse, 1=timestamp, 2=digest, 3=data, 4=word, 5=title, 6=description
+#attributes - integer=name (self_path), 0=reverse, 1=timestamp, 2=digest, 3=data, 4=word, 5=title, 6=keywords, 7=description
 sub update_entry {
 	my ($self, $entry) = @_;
 	$self->set_error = "Index entries must be objects " unless (ref($entry));
 	foreach my $function (qw/no_index index_name index_timestamp index_digest index_data/) {
 		$self->set_error = "Index entries must implement the method $function\(\)" unless ($entry->can($function));
 	}
+	$self->check_error;
+	$self->set_error = "<DELETED> is an invalid name for index entries " if ($entry->index_name eq '<DELETED>');
+	$self->set_error = $entry->index_name . " is an invalid name for index entries " if ($entry->index_name =~ /^.%/s);
 	$self->check_error;
 	my $index = $self->read_db;
 	my $null = undef;#used for DB checks where no value needs be returned
@@ -384,30 +510,59 @@ sub update_entry {
 		return $result;
 	}
 	my ($id, $id_is_new) = $self->get_id($entry->index_name);
+	$self->debug && warn $entry->index_name . " is new" if ($id_is_new);
 	unless ($entry->force_update) {
 		$index->db_get("\x01\%$id", my $timestamp);
+		$self->debug && warn "Comparing timestamps: $timestamp <-> " . $entry->index_timestamp . " for " . $entry->index_name;
 		if ($timestamp eq $entry->index_timestamp) {
+			$self->debug && warn "No update needed.  Timestamp is $timestamp." ;
 			return "No update needed.  Timestamp is $timestamp." ;
 		}
-		$index->db_get("\x02\%$id", my $digest);
-		#warn "Comparing digests: $digest <-> " . $entry->index_digest;
-		if ($digest eq $entry->index_digest) {
-			$index = $self->write_db;
-			$self->update_key("\x01\%$id", $entry->index_timestamp);
-			$self->close_db;
-			return "Updated timestamp only, since digest was identical.";
+		if ($timestamp) {
+			#Timestamp was found and is different, so calculate an sha1 fingerprint and see if there really
+			#has been a change.
+			$index->db_get("\x02\%$id", my $digest);
+			$self->debug && warn "Comparing digests: $digest <-> " . $entry->index_digest . " for " . $entry->index_name;
+			if ($digest eq $entry->index_digest) {
+				$index = $self->write_db;
+				$self->update_key("\x01\%$id", $entry->index_timestamp);
+				$self->close_db;
+				$self->debug && warn "Updated timestamp only, since digest was identical.";
+				return "Updated timestamp only, since digest was identical.";
+			}
+		#} else {
+		#	warn "skipping digest check and updating index, since no timestamp was found."
 		}
 	}
 	$index = $self->write_db;
-	$self->purge_entry($id); #necessary to clear out words which will not match
+	if ($self->dirty) {
+		unless ($id_is_new) {
+			#allow a major speedup by not purging bad entries, only rendering them invalid.
+			$self->debug && warn "dirty purging $id";
+			$self->db->db_del($id); #Get rid of the chance of finding by ID
+			$self->db->db_get("\x00\%". $entry->index_name, my $tempid);
+			if ($tempid == $id) {
+				$self->db->db_del("\x00\%" . $entry->index_name);
+			}
+			my ($newid, $id_is_new) = $self->get_id($entry->index_name);
+			unless ($id_is_new and ($tempid == $id)) {
+				$self->set_error("Could not get rid of old ID.  Database is likely corrupt." . ($self->strict ? "" : "  Will attempt a regular purge."));
+				$self->check_error;
+			} else {
+				$id = $newid;
+			}
+		}
+	}
+	$self->purge_entry($id) unless ($id_is_new); #necessary to clear out words which will not match
 	$self->update_key("\x01\%$id", $entry->index_timestamp);
 	$self->update_key("\x02\%$id", $entry->index_digest);
 	$self->process_html($id, $entry->index_data);
 	$self->update_key("\x05\%$id", $entry->index_title) if ($entry->can('index_title'));
-	$self->update_key("\x06\%$id", $entry->index_description) if ($entry->can('index_description'));
+	$self->update_key("\x06\%$id", $entry->index_keywords) if ($entry->can('index_keywords'));
+	$self->update_key("\x07\%$id", $entry->index_description) if ($entry->can('index_description'));
 	if ($self->extended) {
 		my @attributes = @{$self->attribute_list};
-		splice(@attributes, 0, 7);
+		splice(@attributes, 0, 8);
 		foreach my $attribute (@attributes) {
 			my $value = undef;
 			if ($entry->can("index_$attribute")) {
@@ -421,7 +576,7 @@ sub update_entry {
 				eval('$entry->handle_' . $attribute . '($id, $value)');
 				$self->set_error($@) if ($@);
 				$self->check_error;
-			} elsif ($value) {
+			} else {
 				if ($self->maps->{$attribute}) {
 					$self->index_map($attribute, $id, [token_parse($value)]);
 				} else {
@@ -429,11 +584,13 @@ sub update_entry {
 				}
 			}
 		}
-		$self->update_key($id, $entry->index_name);
-		$self->update_key("\x00%" . $entry->index_name, $id);
-		$self->close_db;
-		return "Update of entry $id " . ($self->error ? "unsuccessful." : "successful.");
 	}
+	$self->update_key($id, $entry->index_name);
+	$self->update_key("\x00%" . $entry->index_name, $id);
+	$self->db->db_get("\xff%greatest_id", my $greatest_id);
+	$self->db->db_put("\xff%greatest_id", $id) if ($id > $greatest_id);
+	$self->close_db;
+	return "Update of entry $id " . ($self->error ? "unsuccessful." : "successful.");
 }
 
 sub purge_entry {
@@ -451,13 +608,13 @@ sub purge_entry {
 	}
 	foreach my $attribute (@{$self->attribute_list}) {
 		if ($self->maps->{$attribute}) {
-			$self->purge_map($attribute, $id);
+			$self->purge_map($attribute, $id) unless ($self->dirty);
 		} else {
 			$self->delete_key($self->attributes->{$attribute} . "%$id");
 		}
 	}
 	$self->db->db_del($id);
-	return "Entry $entry ($id) successfully purged";
+	return "Entry (BerkeleyDB ID# $id) successfully purged";
 }
 
 =pod
@@ -482,6 +639,10 @@ sub get_entry {
 	foreach my $attribute (@{$self->attribute_list}) {
 		next if (grep {$_ eq $attribute} @{$self->map_list});
 		$self->db->db_get($self->attributes->{$attribute} . '%' . $id, $entry{$attribute});
+		if ($self->bigfile and $entry{$attribute} =~ s/^\x00://) {
+			my $key = $entry{$attribute};
+			$self->db_big->db_get($key, $entry{$attribute});
+		}
 	}
 	return \%entry;
 }
@@ -490,17 +651,9 @@ sub get_id {
 	my ($self, $name) = @_;
 	my $result = $self->db->db_get("\x00%$name", my $id);
 	return $id unless ($result);
-	my $cursor = $self->db->db_cursor;
-	$cursor->c_get($id, my $string, DB_FIRST);
-	my $greatest = 0;
-	do {
-		if ($id =~ /^\d+$/) {
-			return $id if ($string eq $name); #existing id
-			$greatest = $id if ($id > $greatest);
-		}
-	} until ($cursor->c_get($id, $string, DB_NEXT));
-	$greatest++;
-	return ($greatest, 1);#new id + flag
+	$self->db->db_get("\xff%greatest_id", $id);
+	$id++;
+	return ($id, 1);#new id + flag
 }
 
 sub update_key {
@@ -518,19 +671,33 @@ sub delete_key {
 
 sub process_html {
 	my ($self, $id, $data) = @_;
-	$self->check_error;
 	# Index all the words under the current key
 	$data = $self->clean_html($data);
+	$self->index_words($id, $data);
+	my $bigkey = undef;
+	if ($self->bigfile and length($data) >= 2048) {
+		$bigkey = sha1_hex($data);
+		$self->db_big->db_put($bigkey, $data);
+		$data = "\x00:$bigkey"
+	}
 	$self->db->db_put("\x03\%$id", $data);
 	#warn "\x03\%$id updated to $data";
-	$self->index_words($id, $data);
 	return undef;
 }
 
+sub extract_html {
+	my ($self, $id) = @_;
+	$self->db->db_get("\x03\%$id", my $data);
+	if ($data =~ s/^\x00:(.+)//) {
+		$self->db_big->db_get($1, $data);
+	}
+	return $data;
+}
+
 sub index_map {
-	my ($self, $attribute, $id, $data) = @_;
+	my ($self, $attribute_name, $id, $data) = @_;
 	#warn "mapping $id - $attribute : " . join (':', @$data);
-	$attribute = $self->attributes->{$attribute};
+	my $attribute = $self->attributes->{$attribute_name};
 	my (%unique, $item, @items) = (); # for unique-ifying word list
 	#remove duplicates if necessary
 	if (ref($data) eq 'ARRAY') {
@@ -544,7 +711,7 @@ sub index_map {
 	}
 	# For each item, add key to word database
 	foreach my $item (sort @items) {
-		next unless ($item);
+		next unless ($item or ($item =~ /^0+$/o));
 		my $value = undef;
 		my $not_found = $self->db->db_get("$attribute\%$item", my $data);
 		my(%entries) = ();
@@ -557,35 +724,68 @@ sub index_map {
 		#warn($self->translate_packed($attribute) . "\%$item: " . $self->translate_packed($value));
 		$self->db->db_put("$attribute\%$item", $value);
 	}
+	if ($self->reversemaps) {
+		my $rev_attribute = $self->attributes->{"_$attribute_name"};
+		$self->db->db_put("$rev_attribute\%$id", join ("\x00", @items));
+	}
 	return undef;
 }
 
 sub purge_map {
-	my ($self, $attribute, $id) = @_;
-	$attribute = $self->attributes->{$attribute};
-	my ($key, $current, $removed) = ();
-	my $cursor = $self->db->db_cursor;
-	unless ($cursor) {
-		$self->read_db;
-		$cursor = $self->db->db_cursor;
-		unless ($cursor) {
-			warn 'Failed to obtain DB Cursor.  Aborting purge_map()';
-			return undef;
-		}
-	}
-	$cursor->c_get($key, $current, DB_FIRST);
-	do {
-		if ($key =~ /^$attribute\%/) {
-			my $value = undef;
+	my ($self, $attribute_name, $id) = @_;
+	my $attribute = $self->attributes->{$attribute_name};
+	my $rev_attribute = $self->attributes->{"_$attribute_name"};
+	my $reverse_index = '';
+	my $reversemap_notfound = $self->db->db_get("$rev_attribute\%$id", $reverse_index) if ($self->reversemaps);
+	if (not($reversemap_notfound)) {
+		$self->debug && warn ("Found reverse index for map $attribute_name.  Will purge based on that value.");
+		foreach my $entry (split "\x00", $reverse_index) {
+			my $result = $self->db->db_get("$attribute\%$entry", my $current);
+			#if ($result and ($current ne '0')) {
+			#Seems to be that the index is allergic to entries of the value '0'.  Don't know why.
+			#Perhaps something in BerkeleyDB?
+			if ($result) {
+				$self->debug && warn "Reverse index for $attribute_name has a corrupt entry: $entry.  Will do a complete purge.";
+				$reversemap_notfound = 1;
+				last;
+			}
 			my(%entries) = unpack("n*", $current);
+			my $value = undef;
 			foreach my $item (keys %entries) {
 				next if ($item eq $id);
 				$value .= pack "n", $item;
 				$value .= pack "n", $entries{$item};
 			}
-			$self->db->db_put($key, $value);
+			$self->db->db_put("$attribute\%$entry", $value);
 		}
-	} until ($cursor->c_get($key, $current, DB_NEXT));
+		$self->db->db_del("$rev_attribute\%$id");
+	}
+	if ($reversemap_notfound) {
+		$self->debug && $self->reversemaps && warn ("No reverse index for map $attribute_name.  Doing a full purge of $id from the map.");
+		my ($key, $current, $removed) = ();
+		my $cursor = $self->db->db_cursor;
+		unless ($cursor) {
+			$self->read_db;
+			$cursor = $self->db->db_cursor;
+			unless ($cursor) {
+				warn 'Failed to obtain DB Cursor.  Aborting purge_map()';
+				return undef;
+			}
+		}
+		$cursor->c_get($key, $current, DB_FIRST);
+		do {
+			if ($key =~ /^$attribute\%/) {
+				my $value = undef;
+				my(%entries) = unpack("n*", $current);
+				foreach my $item (keys %entries) {
+					next if ($item eq $id);
+					$value .= pack "n", $item;
+					$value .= pack "n", $entries{$item};
+				}
+				$self->db->db_put($key, $value);
+			}
+		} until ($cursor->c_get($key, $current, DB_NEXT));
+	}
 	return undef;
 }
 
@@ -609,10 +809,7 @@ this method -- the default method is pretty quick-and-dirty.
 sub clean_html {
 	no warnings qw(utf8);
 	my ($self, $data) = @_;
-	$data = decode_entities($data);
-	$data =~ s/<>//g; # Strip out all empty tags
-	$data =~ s/<--.*?-->/ /g; # Strip out all comments
-	$data =~ s/<[^>]*?>/ /g; # Strip out all HTML tags
+	$data = strip_html($data);
 	$data =~ s/[,.!?;"'_\xD0\xD1\+=]/ /g; # Strip out all standard punctuation
 	$data =~ s/\s+/ /g; # Flatten all whitespace
 	{
@@ -627,7 +824,7 @@ sub clean_html {
 
 sub clean_searchstring {
 	my ($self, $data) = @_;
-	$data = decode_entities($data);
+	$data = strip_html($data);
 	$data =~ s/[,.!?;"'_\xD0\xD1\+=]/ /g; # Strip out all standard punctuation
 	$data =~ s/\s+/ /g; # Flatten all whitespace
 	{
@@ -722,7 +919,7 @@ sub word_search { #accepts a search string, returns an arrayref of entry matches
 	foreach my $word (@match){
 		if ($word =~ s/^_//) {
 			foreach my $entry ($self->get_all_entries) {
-				$index->db_get("\x03%$entry", my $data);
+				my $data = $self->extract_html($entry);
 				my @count = $data =~ m/($word)/g;
 				my $count = @count;
 				$match{$entry} += $count;
@@ -742,7 +939,7 @@ sub word_search { #accepts a search string, returns an arrayref of entry matches
 	foreach my $word (@add){
 		if ($word =~ s/^_//) {
 			foreach my $entry ($self->get_all_entries) {
-				$index->db_get("\x03%$entry", my $data);
+				my $data = $self->extract_html($entry);
 				my @count = $data =~ m/($word)/g;
 				my $count = @count;
 				$match{$entry} += $count;
@@ -764,7 +961,7 @@ sub word_search { #accepts a search string, returns an arrayref of entry matches
 	foreach my $word (@remove){
 		if ($word =~ s/^_//) {
 			foreach my $entry ($self->get_all_entries) {
-				$index->db_get("\x03%$entry", my $data);
+				my $data = $self->extract_html($entry);
 				$mustnot{$entry}=$word if ($data =~ m/$word/);
 			}
 		} else {
@@ -810,6 +1007,9 @@ sub word_search { #accepts a search string, returns an arrayref of entry matches
 			}
 		}
 	}
+	if ($self->dirty) {#Dirt has no name, so drop it if the database is dirty
+		@out = grep {$_->{'name'}} @out;
+	}
 	return @out;
 }
 
@@ -830,8 +1030,11 @@ sub search {
 
 =item (array) C<parsed_search> (scalar, [scalar])
 
-Same as word_search, but with the logical qualifiers AND, OR, and NOT.  More
-complex searches can be accomplished, at a cost of speed.
+Same as word_search, but with the logical qualifiers AND, OR, NOT and
+DIFF. More complex searches can be accomplished, at a cost of reduced
+speed proportional to the complexity of the logical phrase.  See
+C<Apache::Wyrd::Services::SearchParser> for a description of this type
+of search.
 
 =cut
 
@@ -847,7 +1050,7 @@ sub get_all_entries {
 	my $cursor = $self->db->db_cursor;
 	$cursor->c_get(my $id, my $entry, DB_FIRST);
 	do {
-		push @entries, $entry if ($id =~ /^\0%/);
+		push @entries, $entry if ($id =~ /^\x00%/);
 	} until ($cursor->c_get($id, $entry, DB_NEXT));
 	return @entries;
 }
@@ -893,7 +1096,7 @@ Parser for handling logical searches (AND/OR/NOT/DIFF).
 
 =head1 LICENSE
 
-Copyright 2002-2004 Wyrdwright, Inc. and licensed under the GNU GPL.
+Copyright 2002-2005 Wyrdwright, Inc. and licensed under the GNU GPL.
 
 See LICENSE under the documentation for C<Apache::Wyrd>.
 

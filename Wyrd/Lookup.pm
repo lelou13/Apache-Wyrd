@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Lookup;
-our $VERSION = '0.92';
+our $VERSION = '0.93';
 use base qw (Apache::Wyrd Apache::Wyrd::Interfaces::Setter);
 use Apache::Wyrd::Services::SAK qw(:db);
 
@@ -124,7 +124,7 @@ sub _generate_output {
 		$self->_info("Interpreting data as a raw query.");
 		while (my $data = $sh->fetchrow_arrayref) {
 			if (scalar(@$data) > 1) {
-				push @parts, $self->do_join(@$data);
+				push @parts, $self->_do_join(@$data);
 			} else {
 				push @parts, $$data[0];
 			}
@@ -156,7 +156,7 @@ General-purpose HTML-embeddable perl object
 
 =head1 LICENSE
 
-Copyright 2002-2004 Wyrdwright, Inc. and licensed under the GPL.
+Copyright 2002-2005 Wyrdwright, Inc. and licensed under the GPL.
 
 See LICENSE under the documentation for C<Apache::Wyrd>.
 

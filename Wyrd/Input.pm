@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Input;
-our $VERSION = '0.92';
+our $VERSION = '0.93';
 use Apache::Wyrd::Datum;
 use base qw(Apache::Wyrd::Interfaces::Setter Apache::Wyrd::Interfaces::SmartInput Apache::Wyrd);
 use Apache::Wyrd::Services::SAK qw(token_parse);
@@ -503,10 +503,8 @@ sub _format_output {
 			$self->_raise_exception("Don't know how to handle a '$type'");
 		}
 	}
-	#use Data::Dumper;
-	#$self->_verbose(Dumper($self));
 	$self->_input_size;
-	$self->_raise_exception('Input must be a top-level item in a Form-family Wyrd.')
+	$self->_raise_exception('Input must be a top-level item in a Form-family Wyrd.  This parent is:' . $self->_parent->class_name)
 		unless ($self->{'_parent'}->can('register_input'));
 	$self->{'_id'} = $self->{'_parent'}->register_input($self);
 }
@@ -552,7 +550,7 @@ General-purpose HTML-embeddable perl object
 
 =head1 LICENSE
 
-Copyright 2002-2004 Wyrdwright, Inc. and licensed under the GNU GPL.
+Copyright 2002-2005 Wyrdwright, Inc. and licensed under the GNU GPL.
 
 See LICENSE under the documentation for C<Apache::Wyrd>.
 

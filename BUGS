@@ -6,7 +6,17 @@ List of known problems:
 -	General audit needed to enforce object-model integrity and
 	interface consistency
 
+-	Concurrent access modes (CDB_<FOO>)of the BerkeleyDB module have
+	not been widely tested.
+
 List of known problems which will not be fixed, and why:
+
+-	Until there's a good reason to do so, Apache::Wyrd will continue to
+	use the "old-style" file semantics, since they are slightly more
+	efficient than the IO::<FOO> packages.  A general attempt has been
+	made to make it reasonably easy to override these methods if you
+	must use another method of dealing with files.  Please report a bug
+	to the author if the offending code is not easy enough to override.
 
 -	Wyrds should be case-insensitive: too cycle-costly and only encourages
 	sloppiness.  Attributes are already case-insensitive.

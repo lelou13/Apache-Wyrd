@@ -8,6 +8,7 @@ TODO
 WISHLIST
 Wyrd.pm
 Wyrd/Attribute.pm
+Wyrd/Bot.pm
 Wyrd/CGICond.pm
 Wyrd/CGISetter.pm
 Wyrd/Chart.pm
@@ -91,6 +92,12 @@ t/htdocs/15.html
 t/htdocs/16.html
 t/htdocs/17.html
 t/htdocs/18.html
+t/htdocs/19.html
+t/htdocs/20.html
+t/htdocs/21.html
+t/htdocs/22.html
+t/htdocs/23.html
+t/htdocs/24.html
 t/htdocs/cookies.html
 t/htdocs/lib/testlib.html
 t/htdocs/login.html
@@ -102,6 +109,8 @@ t/lib/perl/TESTCLIENT/DBTest.pm
 t/lib/perl/TESTCLIENT/Form.pm
 t/lib/perl/TESTCLIENT/Handler.pm
 t/lib/perl/TESTCLIENT/Page.pm
+t/lib/perl/TESTCLIENT/Page2.pm
+t/lib/perl/TESTCLIENT/Page3.pm
 t/lib/perl/TESTCLIENT/Parent.pm
 t/lib/perl/TESTCLIENT/User.pm
 t/lib/perl/TESTCLIENT/UserCond.pm

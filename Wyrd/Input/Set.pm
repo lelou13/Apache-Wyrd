@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Input::Set;
-our $VERSION = '0.92';
+our $VERSION = '0.93';
 use Apache::Wyrd::Datum;
 use base qw(
 	Apache::Wyrd::Interfaces::Mother
@@ -178,7 +178,7 @@ Options of the multi-value Input.
 
 =head1 LICENSE
 
-Copyright 2002-2004 Wyrdwright, Inc. and licensed under the GNU GPL.
+Copyright 2002-2005 Wyrdwright, Inc. and licensed under the GNU GPL.
 
 See LICENSE under the documentation for C<Apache::Wyrd>.
 
@@ -191,7 +191,7 @@ sub _parse_options {
 	if (ref($options) eq 'ARRAY') {
 		use Apache::Wyrd::Input::Opt;
 		foreach my $option (@$options) {
-			my $object = Apache::Wyrd::Input::Opt->new($self->dbl, {name => $option});
+			my $object = Apache::Wyrd::Input::Opt->new($self->dbl, {value => $option});
 			$self->register_child($object);
 		}
 	} elsif (ref($options) eq 'HASH') {

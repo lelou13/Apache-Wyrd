@@ -4,10 +4,10 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::User;
-our $VERSION = '0.92';
+our $VERSION = '0.93';
 use XML::Dumper;
 use Apache::Wyrd::Services::SAK qw(data_clean);
-use Digest::MD5 qw(md5_hex);
+use Digest::SHA1 qw(sha1_hex);
 
 =pod
 
@@ -217,7 +217,7 @@ sub is {
 
 sub make_credentials {
 	my ($self) = @_;
-	return md5_hex($self->{'username'} . ':' . $self->{'password'});
+	return sha1_hex($self->{'username'} . ':' . $self->{'password'});
 }
 
 sub check_credentials {
@@ -257,7 +257,7 @@ General-purpose HTML-embeddable perl object
 
 =head1 LICENSE
 
-Copyright 2002-2004 Wyrdwright, Inc. and licensed under the GNU GPL.
+Copyright 2002-2005 Wyrdwright, Inc. and licensed under the GNU GPL.
 
 See LICENSE under the documentation for C<Apache::Wyrd>.
 

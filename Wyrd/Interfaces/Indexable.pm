@@ -6,8 +6,8 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Interfaces::Indexable;
-our $VERSION = '0.92';
-use Digest::MD5 qw(md5_hex);
+our $VERSION = '0.93';
+use Digest::SHA1 qw(sha1_hex);
 
 =pod
 
@@ -25,7 +25,20 @@ Indexable provides the minimum methods required by an object to be indexed using
 the Apache::Wyrd::Services::Index object.  An indexable object can be inserted
 into the index via the C<update_entry> method of the index.
 
-=head1 METHODS
+=head1 HTML ATTRIBUTES
+
+name
+
+=over
+
+=item keyword_weight
+
+How much more, relative to an instance of the word in the body (_data),
+a keyword is worth.  Defaults to 5.
+
+=back
+
+=head1 PERL METHODS
 
 I<(format: (returns) name (arguments after self))>
 
@@ -60,7 +73,7 @@ sub force_update {
 
 =item (scalar) C<index_foo> (void)
 
-Where B<foo> is at a minimum of name, timestamp, digest, data, title, and
+Where B<foo> is at a minimum of name, timestamp, digest, data, title, keywords, and
 description.  Any attributes specified in the B<attributes> option of the
 Apache::Wyrd::Services::Index object will also need to be implemented in an
 indexable object.  If the attribute is a map, it needs only to return a string
@@ -88,17 +101,27 @@ sub index_timestamp {
 
 sub index_digest {
 	my ($self) = @_;
-	return md5_hex($self->index_data . $self->index_title . $self->index_description);
+	my $weight = ($self->{keyword_weight} || 5);
+	my $keywords = $self->{'keywords'} . ' ';
+	return sha1_hex($self->index_data . $self->index_title . $self->index_description . $keywords x $weight);
 }
 
 sub index_data {
 	my ($self) = @_;
-	return $self->{'title'} . ' ' . $self->{'description'} . ' ' . $self->{'_data'};
+	my $weight = ($self->{keyword_weight} || 5);
+	my $keywords = $self->{'keywords'} . ' ';
+	$keywords = $keywords x $weight;
+	return $self->{'title'} . ' ' . $self->{'description'} . ' ' . $keywords . $self->{'_data'};
 }
 
 sub index_title {
 	my ($self) = @_;
 	return $self->{'title'};
+}
+
+sub index_keywords {
+	my ($self) = @_;
+	return $self->{'keywords'};
 }
 
 sub index_description {
@@ -130,7 +153,7 @@ Berkeley DB-based reverse index for search engines and other meta-data-bases.
 
 =head1 LICENSE
 
-Copyright 2002-2004 Wyrdwright, Inc. and licensed under the GNU GPL.
+Copyright 2002-2005 Wyrdwright, Inc. and licensed under the GNU GPL.
 
 See LICENSE under the documentation for C<Apache::Wyrd>.
 

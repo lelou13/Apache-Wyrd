@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Input::Complex;
-our $VERSION = '0.92';
+our $VERSION = '0.93';
 use base qw(
 	Apache::Wyrd::Interfaces::Mother
 	Apache::Wyrd::Interfaces::Setter
@@ -66,31 +66,17 @@ The name of the Complex Input.
 =head2 PERL METHODS
 
 see C<Apache::Wyrd::Input> for "normal" Input Wyrd behavior.  The
-methods requiring overriding are:
+methods requiring overriding are (in the order of recommended implementation):
 
-=item (scalar) C<final_output> (void)
+=item (STRUCTURE) C<default> (void)
 
-This should manipulate _template to produce the appropriate HTML.
+This should return the default, or baseline, data structure.
 
 =cut
 
-sub final_output {
+sub default {
 	my ($self) = @_;
-	$self->_unimplemented('It should manipulate _template to produce the appropriate HTML.');
-}
-
-=pod
-
-=item (scalar, scalar) C<check> (STRUCTURE)
-
-This should accept the data structure and return (1, undef) if OK,
-(undef, "error message") if not.
-
-=cut
-
-sub check {
-	my ($self, $structure) = @_;
-	$self->_unimplemented('It should accept the data structure and return (1, undef) if OK, (undef, "error message") if not.');
+	$self->_unimplemented('It should return the default data structure.');
 }
 
 =item (STRUCTURE) C<current_value> (void)
@@ -102,6 +88,18 @@ This should return the data structure based on the current state of CGI.
 sub current_value {
 	my ($self) = @_;
 	$self->_unimplemented('It should return the data structure based on the current state of CGI.');
+}
+
+=item (scalar, scalar) C<check> (STRUCTURE)
+
+This should accept the data structure and return (1, undef) if OK,
+(undef, "error message") if not.
+
+=cut
+
+sub check {
+	my ($self, $structure) = @_;
+	$self->_unimplemented('It should accept the data structure and return (1, undef) if OK, (undef, "error message") if not.');
 }
 
 =item (void) C<set> (STRUCTURE)
@@ -117,17 +115,6 @@ sub set {
 	$self->_unimplemented('It should accept the data structure , call check, and parent->register_errors, parent->register_error_messages when there are errors, and set the value that value() returns.');
 }
 
-=item (STRUCTURE) C<default> (void)
-
-This should return the default, or baseline, data structure.
-
-=cut
-
-sub default {
-	my ($self) = @_;
-	$self->_unimplemented('It should return the default data structure.');
-}
-
 =item (STRUCTURE) C<value> (void)
 
 This should return the data structure.
@@ -137,6 +124,20 @@ This should return the data structure.
 sub value {
 	my ($self) = @_;
 	$self->_unimplemented('It should return the data structure.)');
+}
+
+=pod
+
+=item (scalar) C<final_output> (void)
+
+This should manipulate _template to produce the appropriate HTML.  By
+default, _template is defined as the enclosed text.
+
+=cut
+
+sub final_output {
+	my ($self) = @_;
+	$self->_unimplemented('It should manipulate _template (default: _data) to produce the appropriate HTML.');
 }
 
 =pod
@@ -216,7 +217,7 @@ General-purpose HTML-embeddable perl object
 
 =head1 LICENSE
 
-Copyright 2002-2004 Wyrdwright, Inc. and licensed under the GNU GPL.
+Copyright 2002-2005 Wyrdwright, Inc. and licensed under the GNU GPL.
 
 See LICENSE under the documentation for C<Apache::Wyrd>.
 

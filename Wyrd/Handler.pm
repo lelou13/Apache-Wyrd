@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Handler;
-our $VERSION = '0.92';
+our $VERSION = '0.93';
 use Apache::Wyrd::DBL;
 use Apache::Wyrd;
 use Apache::Wyrd::Services::SAK qw(slurp_file);
@@ -115,8 +115,9 @@ sub handler : method {
 	return $response if ($response);
 	$response = $self->respond;
 	if ($response eq OK) {
+		$self->post_process;
 		$self->add_headers;
-		$req->send_http_header('text/html');
+		$req->send_http_header($self->req->headers_out->get('Content-Type') || 'text/html');
 		$req->print($self->{'output'});
 	} else{
 		my $new_response = $self->_exception_handler($response, $req);
@@ -147,6 +148,22 @@ sub _exception_handler {
 	return undef;
 }
 
+=pod
+
+=item post_process
+
+Called by handler on a successful responses from C<process> and
+C<respond>.  A hook for post-processing the final output.  At the point
+this method is called, all the output is ready to be sent and is waiting
+in the C<output> attribute, so this method traditionally manipulates
+C<$self->{'output'}> directly.
+
+=cut
+
+sub post_process {
+	my ($self) = @_;
+	return undef;
+}
 =pod
 
 =item add_headers
@@ -242,6 +259,7 @@ it's own headers.
 
 sub process {
 	my ($self) = @_;
+	warn "in process, damn you";
 	return undef;
 };
 
@@ -374,7 +392,7 @@ to the Apache process or an associated DBI-type database.
 
 =head1 LICENSE
 
-Copyright 2002-2004 Wyrdwright, Inc. and licensed under the GNU GPL.
+Copyright 2002-2005 Wyrdwright, Inc. and licensed under the GNU GPL.
 
 See LICENSE under the documentation for C<Apache::Wyrd>.
 

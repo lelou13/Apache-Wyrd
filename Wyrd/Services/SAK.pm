@@ -6,6 +6,7 @@ no warnings qw(uninitialized);
 package Apache::Wyrd::Services::SAK;
 use Exporter;
 use Apache::Util;
+use HTML::Entities;
 
 =pod
 
@@ -28,7 +29,7 @@ I<(format: (returns) C<$wyrd-E<gt>name> (arguments))> for methods
 
 =cut
 
-our $VERSION = '0.92';
+our $VERSION = '0.93';
 our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(
 	array_4_get
@@ -39,6 +40,7 @@ our @EXPORT_OK = qw(
 	_exists_in_table
 	do_query
 	env_4_get
+	file_attribute
 	lc_hash
 	send_mail
 	set_clause
@@ -46,6 +48,7 @@ our @EXPORT_OK = qw(
 	sort_by_ikey
 	sort_by_key
 	spit_file
+	strip_html
 	token_hash
 	token_parse
 	uri_escape
@@ -56,10 +59,10 @@ our @EXPORT_OK = qw(
 our %EXPORT_TAGS = (
 	all			=>	\@EXPORT_OK,
 	db			=>	[qw(cgi_query do_query set_clause _exists_in_table)],
-	file		=>	[qw(slurp_file spit_file)],
+	file		=>	[qw(file_attribute slurp_file spit_file)],
 	hash		=>	[qw(array_4_get data_clean env_4_get lc_hash sort_by_ikey sort_by_key token_hash token_parse uniquify_by_ikey uniquify_by_key uri_escape)],
 	mail		=>	[qw(send_mail)],
-	string		=>	[qw(commify)],
+	string		=>	[qw(commify strip_html)],
 	tag			=>	[qw(attopts_template)]
 );
 
@@ -184,7 +187,67 @@ sub set_clause {
 
 =head2 FILES (:file)
 
-Old-style file routines.
+Old-style file routines and file-related methods.
+
+=over
+
+=item (scalarref) C<file_attribute>(scalar, scalar, scalar)
+
+Convert and check a file attribute based on tests.  The tests are 'r'
+for read, 'w' for write, 'f' for exists (file) and 'd' for exists
+(directory), similar to the builtin -E<lt>fooE<gt> tests of the same
+name.  If the file does not exist, but the test is w and not f or d,
+this method will check if the item is in a writeable directory.
+
+If the file path under the attribute is not absolute, the relative path
+will be calculated first from the current location (of the file in which
+the wyrd is located) or from the document root, in that order.
+
+The method returns C<undef> on failure and the resolved path on success,
+leaving the attribute intact.
+
+=cut
+
+sub file_attribute {
+	my ($self, $attr, $tests) = @_;
+	$self->_error("file_attribute() accepts only the r, w,d , and f tests") if ($tests =~ /[^rwdf]/);
+	#warn "File is " . $self->{$attr};
+	my @paths = ($self->{$attr});
+	#warn "File is $paths[0]";
+	unless (-e $paths[0]) {
+		$paths[0] =~ s#^/##;
+		my ($curdir) = ($self->dbl->file_path =~ m#(.+)/([^/]+)#);
+		push @paths, "$curdir/$paths[0]";
+		my ($rootdir) = ($self->dbl->req->document_root);
+		push @paths, "$rootdir/$paths[0]";
+	}
+	foreach my $path (@paths) {
+		#warn "testing $path";
+		my $result = 1;
+		foreach my $test (split '', $tests) {
+			my $write_ok = (-w $path);
+			$result = 0 if ($test eq 'w' and not ($write_ok));
+			$result = 0 if ($test eq 'r' and not (-r _));
+			$result = 0 if ($test eq 'd' and not (-d _));
+			$result = 0 if ($test eq 'f' and not (-f _));
+		}
+		return $path if ($result);
+	}
+	#at this point, the tests have failed for all paths.
+	#test the special case of a file for writing that does
+	#not yet exist
+	if (($tests =~ /w/) and ($tests !~ /d|f/)) {
+		foreach my $path (@paths) {
+			my ($testdir, @null) = ($path =~ m#(.+)/([^/]+)#);
+			if ($tests =~ /r/) {
+				return $path if (-d $testdir and -w _ and -r _)
+			} else {
+				return $path if (-d $testdir and -w _)
+			}
+		}
+	}
+	return undef;
+}
 
 =over
 
@@ -524,6 +587,23 @@ sub commify {
 
 =pod
 
+=item (scalar) C<strip_html>(scalar)
+
+Escape out entities and strip tags from a given string.
+
+=cut
+
+sub strip_html {
+	my ($data) = @_;
+	$data = decode_entities($data);
+	$data =~ s/<>//g; # Strip out all empty tags
+	$data =~ s/<--.*?-->/ /g; # Strip out all comments
+	$data =~ s/<[^>]*?>/ /g; # Strip out all HTML tags
+	return $data;
+}
+
+=pod
+
 =back
 
 =head2 TAGS (:tag)
@@ -566,7 +646,7 @@ General-purpose HTML-embeddable perl object
 
 =head1 LICENSE
 
-Copyright 2002-2004 Wyrdwright, Inc. and licensed under the GNU GPL.
+Copyright 2002-2005 Wyrdwright, Inc. and licensed under the GNU GPL.
 
 See LICENSE under the documentation for C<Apache::Wyrd>.
 

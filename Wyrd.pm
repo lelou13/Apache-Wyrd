@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd;
-our $VERSION = '0.92';
+our $VERSION = '0.93';
 use Apache::Wyrd::Services::SAK qw (token_parse);
 use Apache::Wyrd::Services::Tree;
 use Apache::Util;
@@ -374,7 +374,7 @@ sub AUTOLOAD {
 			#set always returns the value it is set to (no reason, may be useful for catching
 			#errors down the road).
 			return $newval;
-		} elsif (ref($self) && $self->UNIVERSAL::can('_raise_exception')) {
+		} elsif (ref($self) && &UNIVERSAL::can($self, '_raise_exception')) {
 			$self->_error("Dead because of \$self->" . $AUTOLOAD . " being called.  You probably need to define this function/attribute or import it from somewhere else.");
 			return $self->_raise_exception("Undefined variable was accessed in AUTOLOAD: $AUTOLOAD at " . join(':', caller()));
 		}
@@ -436,6 +436,20 @@ sub dbl {
 	return $_dbl;
 }
 
+
+=pod
+
+=item (scalar) C<class_name> (void)
+
+The full name of this Wyrd.
+
+=cut
+
+#defined to make this a read-only method
+sub class_name {
+	my $self = shift;
+	return $self->{'_class_name'};
+}
 
 =pod
 
@@ -661,7 +675,7 @@ See the MANIFEST.
 
 =head1 LICENSE
 
-Copyright 2002-2004 Wyrdwright, Inc. and licensed under the GNU GPL.
+Copyright 2002-2005 Wyrdwright, Inc. and licensed under the GNU GPL.
 
 You should have received a copy of the GNU General Public License along
 with Apache::Wyrd (see LICENSE); if not, write to the Free Software
@@ -826,7 +840,7 @@ sub _return_object {
 			\W*					#any amount of non-word space
 			(?:					#non-capturing cluster 1
 				([^=]+)			#non-equals
-				\W*=\W*			#an equals with or without whitespace around it
+				\s*=\s*			#an equals with or without whitespace around it
 					(?:			#non-capturing cluster 2
 					"([^"]+)"	#non-double-quotes surrounded by double-quotes
 					|			#or

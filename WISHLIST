@@ -5,3 +5,11 @@ commenting out of all debugging code.
 
 -	Security-enhanced version that prevents read-access to CodeRing
 cryptography key values or "cookie-stealing"
+
+-	Apache::Wyrd::Interfaces::SmartInput needs to be integrated with a
+style-sheet generator of some kind
+
+-	Trace and debugging information from DBI automatically using
+$dbh->handle_<foo>
+
+-	Automatic useage message via override on errors

@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::Auth;
-our $VERSION = '0.92';
+our $VERSION = '0.93';
 use Apache::Wyrd::Services::CodeRing;
 use Apache::Wyrd::Request;
 use Apache::Constants qw(AUTH_REQUIRED HTTP_SERVICE_UNAVAILABLE REDIRECT DECLINED);
@@ -403,7 +403,7 @@ Perl Handler for login services.
 
 =head1 LICENSE
 
-Copyright 2002-2004 Wyrdwright, Inc. and licensed under the GNU GPL.
+Copyright 2002-2005 Wyrdwright, Inc. and licensed under the GNU GPL.
 
 See LICENSE under the documentation for C<Apache::Wyrd>.
 

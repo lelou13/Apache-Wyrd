@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Form;
-our $VERSION = '0.92';
+our $VERSION = '0.93';
 use base qw(Apache::Wyrd::Interfaces::Mother Apache::Wyrd::Interfaces::Setter Apache::Wyrd);
 #use XML::Simple;
 use XML::Dumper;
@@ -650,6 +650,7 @@ sub _dump_errors {
 sub _fire_triggers {
 	my ($self) = @_;
 	foreach my $error (@{$self->{'_errors'}}) {
+		$self->_debug("Firing triggers: $error");
 		foreach my $error_tag (@{$self->{'_triggers'}->{$error}}) {
 			$error_tag->fire;
 		}
@@ -664,24 +665,15 @@ sub _unpack_data {
 	my $ring = Apache::Wyrd::Services::CodeRing->new;
 	my $counter = undef;
 	my $stored_data = undef;
-	#base 64 method commented-out
-	#do {
-	#	#$stored_data .= decode_base64($storage);
-	#	$counter++;
-	#	$storage = $self->dbl->param("_storage$counter");
-	#} while ($self->dbl->param("_storage$counter"));
 	do {
 		$stored_data .= $storage;
 		$counter++;
 		$storage = $self->dbl->param("_storage$counter");
 	} while ($self->dbl->param("_storage$counter"));
-	#warn "Stored data: \n$stored_data";
 	#now that you have it, decrypt it (CodeRing);
 	$stored_data = ${$ring->decrypt(\$stored_data)};
 	my $xd = new XML::Dumper;
 	my $hash = $xd->xml2pl($stored_data);
-	#use Data::Dumper;
-	#warn Dumper($hash);
 	foreach my $var_name (keys(%{$hash})) {
 		#warn("Unpacked data: " . $var_name .'='. $hash->{$var_name});
 		my $value = $hash->{$var_name};
@@ -694,27 +686,10 @@ sub _unpack_data {
 
 sub _pack_data {
 	my ($self) = @_;
-	#use Data::Dumper;
-	#warn Dumper($self->{_variables});
 	my $xd = new XML::Dumper;
 	my $out = $xd->pl2xml($self->{_variables});
 	my $ring = Apache::Wyrd::Services::CodeRing->new;
 	$out = ${$ring->encrypt(\$out)};
-	#Commented out: works with encode_base64 but not with CodeRing;
-	#$out = encode_base64($out);
-	#my $counter = 0;
-	#my $unit = undef;
-	#my @outs = ();
-	#foreach my $line (split ("\n", $out)) {
-	#	$unit .= "$line\n";
-	#	$counter++;
-	#	if ($counter == 380) {
-	#		$counter = 0;
-	#		push @outs, $unit;
-	#		$unit = undef;
-	#	}
-	#}
-	#Uncommented: works with CodeRing
 	my $length_out = length($out)/30000 + 1;
 	my @outs = unpack ('a30000' x $length_out, $out);
 	#rebuild out out of 30K pieces to overcome crappy IE cgi submission
@@ -977,7 +952,7 @@ General-purpose HTML-embeddable perl object
 
 =head1 LICENSE
 
-Copyright 2002-2004 Wyrdwright, Inc. and licensed under the GNU GPL.
+Copyright 2002-2005 Wyrdwright, Inc. and licensed under the GNU GPL.
 
 See LICENSE under the documentation for C<Apache::Wyrd>.
 

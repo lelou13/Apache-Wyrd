@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Interfaces::Setter;
-our $VERSION = '0.92';
+our $VERSION = '0.93';
 use Apache::Util;
 
 =pod
@@ -327,6 +327,19 @@ sub _cgi_hash {
 	return $hash
 }
 
+=item (scalar) C<_attribute_template> (array)
+
+Shortcut method for quickly creating templates of all attributes in a
+wyrd, given an array of attribute names.
+
+=cut
+
+sub _attribute_template {
+	my ($self, @attributes) = @_;
+	my $string = join ('', map {qq(\?\:$_\{ $_="\$\:$_\"})} @attributes);
+	return $string;
+}
+
 =pod
 
 =back
@@ -353,7 +366,7 @@ General-purpose HTML-embeddable perl object
 
 =head1 LICENSE
 
-Copyright 2002-2004 Wyrdwright, Inc. and licensed under the GNU GPL.
+Copyright 2002-2005 Wyrdwright, Inc. and licensed under the GNU GPL.
 
 See LICENSE under the documentation for C<Apache::Wyrd>.
 
