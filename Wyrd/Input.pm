@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Input;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 use Apache::Wyrd::Datum;
 use base qw(Apache::Wyrd::Interfaces::Setter Apache::Wyrd::Interfaces::SmartInput Apache::Wyrd);
 use Apache::Wyrd::Services::SAK qw(token_parse);
@@ -13,7 +13,7 @@ use Apache::Wyrd::Services::SAK qw(token_parse);
 
 =head1 NAME
 
-Apache::Wyrd::Input
+Apache::Wyrd::Input - Form Input Wyrds (scalar)
 
 =head1 SYNOPSIS
 

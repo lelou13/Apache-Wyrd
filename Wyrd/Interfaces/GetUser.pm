@@ -6,14 +6,14 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Interfaces::GetUser;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 use Apache::Cookie;
 
 =pod
 
 =head1 NAME
 
-Apache::Wyrd::Interfaces::GetUser
+Apache::Wyrd::Interfaces::GetUser - Get User data from Auth service/Auth Cookies
 
 =head1 SYNOPSIS
 

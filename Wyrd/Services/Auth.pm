@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::Auth;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 use Apache::Wyrd::Services::CodeRing;
 use Apache::Wyrd::Request;
 use Apache::Constants qw(AUTH_REQUIRED HTTP_SERVICE_UNAVAILABLE REDIRECT DECLINED);
@@ -18,7 +18,7 @@ use HTTP::Request::Common;
 
 =head1 NAME
 
-Apache::Wyrd::Services::Auth
+Apache::Wyrd::Services::Auth - Cookie-based authorization handler
 
 =head1 SYNOPSIS
 

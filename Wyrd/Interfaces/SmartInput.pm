@@ -4,13 +4,13 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Interfaces::SmartInput;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 
 =pod
 
 =head1 NAME
 
-Apache::Wyrd::Interfaces::SmartInput
+Apache::Wyrd::Interfaces::SmartInput - Interface for estimating pixel widths of Input Wyrds
 
 =head1 SYNOPSIS
 

@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::Key;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 use base qw(Class::Singleton);
 
 my $pure_perl = 0;
@@ -21,7 +21,7 @@ if ($@) {
 
 =head1 NAME
 
-Apache::Wyrd::Services::Key
+Apache::Wyrd::Services::Key - Apache-resident crypto key (Blowfish)
 
 =head1 SYNOPSIS
 

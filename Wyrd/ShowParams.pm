@@ -4,14 +4,14 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::ShowParams;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 use base qw (Apache::Wyrd);
 
 =pod
 
 =head1 NAME
 
-Apache::Wyrd::ShowParams
+Apache::Wyrd::ShowParams - Dump CGI state to browser for debugging
 
 =head1 SYNOPSIS
 

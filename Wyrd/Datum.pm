@@ -8,7 +8,7 @@ no warnings qw(uninitialized);
 no warnings qw(redefine);
 
 package Apache::Wyrd::Datum;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 
 use constant TYPE => 0;
 use constant VALUE => 1;
@@ -119,7 +119,7 @@ sub type {
 }
 
 package Apache::Wyrd::Datum::Blob;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 use base qw(Apache::Wyrd::Datum);
 
 sub _type {
@@ -127,7 +127,7 @@ sub _type {
 }
 
 package Apache::Wyrd::Datum::Char;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 use base qw(Apache::Wyrd::Datum);
 
 sub _type {
@@ -157,7 +157,7 @@ sub _check_value {
 }
 
 package Apache::Wyrd::Datum::Enum;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 use base qw(Apache::Wyrd::Datum::Char);
 
 sub _type {
@@ -193,7 +193,7 @@ sub _check_value {
 }
 
 package Apache::Wyrd::Datum::Set;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 use base qw(Apache::Wyrd::Datum::Enum);
 
 sub _type {
@@ -222,7 +222,7 @@ sub _check_value {
 }
 
 package Apache::Wyrd::Datum::Text;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 use base qw(Apache::Wyrd::Datum);
 
 sub _type {
@@ -230,7 +230,7 @@ sub _type {
 }
 
 package Apache::Wyrd::Datum::Varchar;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 use base qw(Apache::Wyrd::Datum::Char);
 
 sub _type {
@@ -245,7 +245,7 @@ sub _default_params {
 }
 
 package Apache::Wyrd::Datum::Integer;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 use base qw(Apache::Wyrd::Datum::Char);
 
 sub _type {
@@ -275,7 +275,7 @@ sub _default_params {
 }
 
 package Apache::Wyrd::Datum::Null;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 use base qw(Apache::Wyrd::Datum);
 
 sub _type {
@@ -304,7 +304,7 @@ sub force_set {
 
 =head1 NAME
 
-Apache::Wyrd::Datum
+Apache::Wyrd::Datum - Abstract data-checking objects for Wyrd Input objects
 
 =head1 SYNOPSIS
 

@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Lib;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 use strict;
 use base qw(Apache::Wyrd::Interfaces::Stealth Apache::Wyrd);
 use Apache::Wyrd::Services::FileCache;
@@ -15,7 +15,7 @@ use Apache::Wyrd::Services::FileCache;
 
 =head1 NAME
 
-Apache::Wyrd::Lib
+Apache::Wyrd::Lib - SSI for Wyrds
 
 =head1 SYNOPSIS
 

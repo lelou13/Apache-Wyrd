@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::CodeRing;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 use Apache::Wyrd::Services::SAK qw(lc_hash);
 use Apache::Wyrd::Services::Key;
 use Digest::MD5 qw(md5_hex);
@@ -26,7 +26,7 @@ my $key = Apache::Wyrd::Services::Key->instance();
 
 =head1 NAME
 
-Apache::Wyrd::Services::CodeRing
+Apache::Wyrd::Services::CodeRing - Apache-resident crypto tool (Blowfish)
 
 =head1 SYNOPSIS
 

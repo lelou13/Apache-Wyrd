@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::LoginServer;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 use Apache::Wyrd::Services::CodeRing;
 use Apache::Wyrd::Services::TicketPad;
 use Apache::Wyrd::Request;
@@ -16,7 +16,7 @@ use MIME::Base64;
 
 =head1 NAME
 
-Apache::Wyrd::Services::LoginServer
+Apache::Wyrd::Services::LoginServer - Login service For Auth object
 
 =head1 SYNOPSIS
 

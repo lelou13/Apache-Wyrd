@@ -4,13 +4,13 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Interfaces::Stealth;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 
 =pod
 
 =head1 NAME
 
-Apache::Wyrd::Interfaces::Stealth
+Apache::Wyrd::Interfaces::Stealth - Interface for hidden Wyrds
 
 =head1 SYNOPSIS
 

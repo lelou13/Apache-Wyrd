@@ -6,14 +6,14 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Debug;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 use base qw (Apache::Wyrd);
 
 =pod
 
 =head1 NAME
 
-Apache::Wyrd::Debug
+Apache::Wyrd::Debug - Debugging Wyrd
 
 =head1 SYNOPSIS
 

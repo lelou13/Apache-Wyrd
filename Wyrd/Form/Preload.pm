@@ -4,14 +4,14 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Form::Preload;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 use base qw (Apache::Wyrd);
 
 =pod
 
 =head1 NAME
 
-Apache::Wyrd::Form::Preload
+Apache::Wyrd::Form::Preload - Wyrd to load a Form Wyrd with existing data
 
 =head1 SYNOPSIS
 

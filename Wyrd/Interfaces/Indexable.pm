@@ -6,14 +6,14 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Interfaces::Indexable;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 use Digest::MD5 qw(md5_hex);
 
 =pod
 
 =head1 NAME
 
-Apache::Wyrd::Interfaces::Indexable
+Apache::Wyrd::Interfaces::Indexable - Pass metadata to Wyrd Index service
 
 =head1 SYNOPSIS
 

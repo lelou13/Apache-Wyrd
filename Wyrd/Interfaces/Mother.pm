@@ -6,13 +6,13 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Interfaces::Mother;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 
 =pod
 
 =head1 NAME
 
-Apache::Wyrd::Interfaces::Mother
+Apache::Wyrd::Interfaces::Mother - Reverse-parsing interface for Wyrds
 
 =head1 SYNOPSIS
 

@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::CGICond;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 use base qw(Apache::Wyrd::Interfaces::Stealth Apache::Wyrd);
 use Apache::Wyrd::Services::SAK qw(:hash);
 
@@ -14,7 +14,7 @@ use Apache::Wyrd::Services::SAK qw(:hash);
 
 =head1 NAME
 
-Apache::Wyrd::CGICond
+Apache::Wyrd::CGICond - Selectively display or hide data based on CGI state
 
 =head1 SYNOPSIS
 

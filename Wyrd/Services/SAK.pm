@@ -11,7 +11,7 @@ use Apache::Util;
 
 =head1 NAME
 
-Apache::Wyrd::Services::SAK
+Apache::Wyrd::Services::SAK - Swiss Army Knife of common subs
 
 =head1 SYNOPSIS
 
@@ -28,7 +28,7 @@ I<(format: (returns) C<$wyrd-E<gt>name> (arguments))> for methods
 
 =cut
 
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(
 	array_4_get

@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::Index;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 use Apache::Wyrd::Services::SAK qw(token_parse);
 use Apache::Wyrd::Services::SearchParser;
 use BerkeleyDB;
@@ -17,7 +17,7 @@ use HTML::Entities;
 
 =head1 NAME
 
-Apache::Wyrd::Services::Index
+Apache::Wyrd::Services::Index - Metadata index for word/data search engines
 
 =head1 SYNOPSIS
 
@@ -81,8 +81,7 @@ C<BerkeleyDB::Btree> perl module.  Because of concurrence of usage
 between different Apache demons in a pool of servers, it is important
 that this be a reasonably current version of BerkeleyDB which supports
 locking and read-during-update.  This module was developed using
-Berkeley DB v. 3.3 on Darwin and Linux and has been tested a bit on Berkeley DB
-versions 4.0 and 4.1.
+Berkeley DB v. 3.3-4.1 on Darwin and Linux.
 
 Use with vast amounts of large documents is not recommended, but a
 reasonably large (hundreds of 1000-word pages) web site can be indexed
@@ -794,10 +793,10 @@ sub word_search { #accepts a search string, returns an arrayref of entry matches
 	}
 	#put matches in order of highest relevance down to lowest by mapping known
 	#counts of words against the pages that are known to match that word.
-	foreach my $relevance (reverse(sort(sort_numerically(keys(%matches))))){
+	foreach my $relevance (sort {$b <=> $a} keys %matches){
 		next unless $relevance;
 		foreach my $id (sort keys(%output)) {
-			if ($output{$id}->{'score'} eq $relevance){
+			if ($output{$id}->{'score'} == $relevance){
 				push (@out, $output{$id});
 			}
 		}
@@ -847,10 +846,6 @@ sub get_all_entries {
 sub make_key {
 	my ($self, $attribute, $id) = @_;
 	return $self->attributes->{$attribute} . '%' . $id;
-}
-
-sub sort_numerically {
-	$a <=> $b;
 }
 
 sub translate_packed {

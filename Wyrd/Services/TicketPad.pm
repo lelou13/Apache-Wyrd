@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::TicketPad;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 use BerkeleyDB;
 use BerkeleyDB::Btree;
 
@@ -14,7 +14,7 @@ use BerkeleyDB::Btree;
 
 =head1 NAME
 
-Apache::Wyrd::Services::TicketPad
+Apache::Wyrd::Services::TicketPad - Key storage for LoginServer Service
 
 =head1 SYNOPSIS
 

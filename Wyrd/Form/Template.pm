@@ -6,14 +6,14 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Form::Template;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 use base qw(Apache::Wyrd);
 
 =pod
 
 =head1 NAME
 
-Apache::Wyrd::Form::Template
+Apache::Wyrd::Form::Template - Sub-form unit Wyrd
 
 =head1 SYNOPSIS
 

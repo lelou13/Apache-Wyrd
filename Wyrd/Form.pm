@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Form;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 use base qw(Apache::Wyrd::Interfaces::Mother Apache::Wyrd::Interfaces::Setter Apache::Wyrd);
 #use XML::Simple;
 use XML::Dumper;
@@ -18,7 +18,7 @@ use Apache::Wyrd::Services::SAK qw(send_mail);
 
 =head1 NAME
 
-Apache::Wyrd::Form
+Apache::Wyrd::Form - Interactive HTML form Wyrd
 
 =head1 SYNOPSIS
 

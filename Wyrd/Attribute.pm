@@ -4,14 +4,14 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Attribute;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 use base qw (Apache::Wyrd);
 
 =pod
 
 =head1 NAME
 
-Apache::Wyrd::Attribute
+Apache::Wyrd::Attribute - Unparsed Wyrd template/attribute
 
 =head1 SYNOPSIS
 

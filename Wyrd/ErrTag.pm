@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::ErrTag;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 use base qw(Apache::Wyrd);
 use Apache::Wyrd::Services::SAK qw(token_parse);
 
@@ -12,7 +12,7 @@ use Apache::Wyrd::Services::SAK qw(token_parse);
 
 =head1 NAME
 
-Apache::Wyrd::ErrTag
+Apache::Wyrd::ErrTag - Indicate errors on a Form Wyrd
 
 =head1 SYNOPSIS
 

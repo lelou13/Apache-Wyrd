@@ -1,6 +1,11 @@
 Changes
 =======
 
+  0.82   - Documentation changes.
+
+           Fix in Apache::Wyrd::Services::Index for failed tests in libdb4+
+           w/ perl 5.8+
+
   0.81   - documentation/testing changes, March 18, 2004
 
   0.8    - first public beta, March 17, 2004

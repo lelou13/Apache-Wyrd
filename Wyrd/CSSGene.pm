@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::CSSGene;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 use base qw (Apache::Wyrd::Interfaces::Setter Apache::Wyrd);
 use BerkeleyDB;
 use BerkeleyDB::Btree;
@@ -18,7 +18,7 @@ my $default_population = 20;
 
 =head1 NAME
 
-Apache::Wyrd::CSSGene
+Apache::Wyrd::CSSGene - "Silly" Wyrd for breeding CSS stylesheets
 
 =head1 SYNOPSIS
 

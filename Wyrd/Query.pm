@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Query;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 use base qw(Apache::Wyrd::Interfaces::Setter Apache::Wyrd);
 use Apache::Wyrd::Services::SAK qw(token_parse);
 
@@ -12,7 +12,7 @@ use Apache::Wyrd::Services::SAK qw(token_parse);
 
 =head1 NAME
 
-Apache::Wyrd::Query
+Apache::Wyrd::Query - SQL-handle (DBI) object for Wyrds
 
 =head1 SYNOPSIS
 

@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Input::Complex;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 use base qw(
 	Apache::Wyrd::Interfaces::Mother
 	Apache::Wyrd::Interfaces::Setter
@@ -18,7 +18,7 @@ use Apache::Wyrd::Services::SAK qw(token_parse);
 
 =head1 NAME
 
-Apache::Wyrd::Input::Complex
+Apache::Wyrd::Input::Complex - Abstract class for more complex Wyrds (hashes/structures)
 
 =head1 SYNOPSIS
 

@@ -4,14 +4,14 @@ use warnings;
 no warnings qw(uninitialized redefine);
 
 package Apache::Wyrd::Request;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 use base qw (Apache::Request);
 
 =pod
 
 =head1 NAME
 
-Apache::Wyrd::Request
+Apache::Wyrd::Request - Object for unifying libapreq configurations across Wyrds
 
 =head1 SYNOPSIS
 

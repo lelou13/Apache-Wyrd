@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Handler;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 use Apache::Wyrd::DBL;
 use Apache::Wyrd;
 use Apache::Wyrd::Services::SAK qw(slurp_file);
@@ -15,7 +15,7 @@ use Apache::Constants qw(:common);
 
 =head1 NAME
 
-Apache::Wyrd::Handler
+Apache::Wyrd::Handler - Apache Handler object for Apache::Wyrd modules
 
 =head1 SYNOPSIS
 
@@ -27,28 +27,30 @@ Apache::Wyrd::Handler
 
 =head1 DESCRIPTION
 
-Handler for Apache::Wyrd documents.  For more information on mod_perl and
-handlers, see L<http://perl.apache.org/docs/index.html>
+Handler for Apache::Wyrd documents.  For more information on mod_perl
+and handlers, see L<http://perl.apache.org/docs/index.html>
 
-This module has been developed for and only been tested in Apache E<lt> 2.0 /
-mod_perl E<lt> 1.99.  In this environment, the SYNOPSIS shows a typical set of
-appropriate Apache directives.  Global Perl warnings are turned off, as they are
-more granularly handled within the package.  Note that the Handler that is usedour $VERSION = '0.81';
-is an B<instance> of this handler.  It is named, in this example,
-C<BASNAME::Handler> and is found in a BASNAME directory which in @INC of a local
-mod_perl installation.  Traditionally, this is in C<E<lt>apache configuration
-directoryE<gt>/lib/perl/>.  If the perl module BASENAME::Handler has a C<use
-base qw(Apache::Wyrd::Handler)> pragma, the C<handler> method should properly
-determine the base class for the BASENAME set of Wyrds and the handler should
-interpret only those tags beginning E<lt>BASENAME::...  A rudimentary sample of
-this usage is available in the t/lib directory of this package and is used forour $VERSION = '0.81';
-testing.
+This module has been developed for and only been tested in Apache E<lt>
+2.0 / mod_perl E<lt> 1.99.  In this environment, the SYNOPSIS shows a
+typical set of appropriate Apache directives.  Global Perl warnings are
+turned off, as they are more granularly handled within the package. Note
+that the Handler that is used is an B<instance> of this handler. It is
+named, in this example, C<BASNAME::Handler> and is found in a BASNAME
+directory which in @INC of a local mod_perl installation. Traditionally,
+this is in C<E<lt>apache configuration directoryE<gt>/lib/perl/>.  If
+the perl module BASENAME::Handler has a C<use base
+qw(Apache::Wyrd::Handler)> pragma, the C<handler> method should properly
+determine the base class for the BASENAME set of Wyrds and the handler
+should interpret only those tags beginning E<lt>BASENAME::...  A
+rudimentary sample of this usage is available in the t/lib directory of
+this package and is used for testing.
 
-This way, several sites using Wyrds can be built, each subclassing Apache::Wyrd
-objects in their own idiom without interfering in the interpretation of the same
-objects in another BASENAME class.  (However, nothing prevents a second BASENAME
-from including the first BASENAME in its C<use base> pragma array).  This is a
-feature(tm) of Apache::Wyrd and is intended to promote code re-use.
+This way, several sites using Wyrds can be built, each subclassing
+Apache::Wyrd objects in their own idiom without interfering in the
+interpretation of the same objects in another BASENAME class.  (However,
+nothing prevents a second BASENAME from including the first BASENAME in
+its C<use base> pragma array).  This is a feature(tm) of Apache::Wyrd
+and is intended to promote code re-use.
 
 The Handler also dumps out the error log, if needed from the DBL, where
 it accumulates from it's own internal calls and calls by Wyrds to the

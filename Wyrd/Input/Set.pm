@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Input::Set;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 use Apache::Wyrd::Datum;
 use base qw(
 	Apache::Wyrd::Interfaces::Mother
@@ -17,7 +17,7 @@ use Apache::Wyrd::Services::SAK qw(token_parse sort_by_ikey);
 
 =head1 NAME
 
-Apache::Wyrd::Input::Set
+Apache::Wyrd::Input::Set - Form Input Wyrds (array)
 
 =head1 SYNOPSIS
 

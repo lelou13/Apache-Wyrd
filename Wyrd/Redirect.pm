@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Redirect;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 use base qw (Apache::Wyrd);
 use Apache::Constants qw(REDIRECT);
 
@@ -14,7 +14,7 @@ use Apache::Constants qw(REDIRECT);
 
 =head1 NAME
 
-Apache::Wyrd::Redirect
+Apache::Wyrd::Redirect - Redirect a browser via a Wyrd
 
 =head1 SYNOPSIS
 

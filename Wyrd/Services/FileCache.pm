@@ -8,7 +8,7 @@ use strict;
 use Apache::Wyrd::Services::SAK qw(slurp_file token_parse);
 use Exporter;
 
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 our @ISA = qw(Exporter);
 our @EXPORT = qw(get_cached);
 
@@ -21,7 +21,7 @@ my $timeout = 30;
 
 =head1 NAME
 
-Apache::Wyrd::Services::FileCache
+Apache::Wyrd::Services::FileCache - Cache service for frequently-accessed files
 
 =head1 SYNOPSIS
 

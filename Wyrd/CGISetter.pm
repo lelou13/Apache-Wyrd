@@ -4,14 +4,14 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::CGISetter;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 use base qw(Apache::Wyrd::Interfaces::Stealth Apache::Wyrd::Interfaces::Setter Apache::Wyrd);
 
 =pod
 
 =head1 NAME
 
-Apache::Wyrd::CGISetter
+Apache::Wyrd::CGISetter - Set values in a Wyrd according to CGI state
 
 =head1 SYNOPSIS
 

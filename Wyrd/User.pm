@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::User;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 use XML::Dumper;
 use Apache::Wyrd::Services::SAK qw(data_clean);
 use Digest::MD5 qw(md5_hex);
@@ -13,7 +13,7 @@ use Digest::MD5 qw(md5_hex);
 
 =head1 NAME
 
-Apache::Wyrd::User
+Apache::Wyrd::User - Abstract user object
 
 =head1 SYNOPSIS
 

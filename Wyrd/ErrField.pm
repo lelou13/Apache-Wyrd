@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::ErrField;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 use strict;
 use base qw(Apache::Wyrd::ErrTag);
 
@@ -12,7 +12,7 @@ use base qw(Apache::Wyrd::ErrTag);
 
 =head1 NAME
 
-Apache::Wyrd::ErrField
+Apache::Wyrd::ErrField - Alter layout of an Apache Wyrd to indicate errors
 
 =head1 SYNOPSIS
 

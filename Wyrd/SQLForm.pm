@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::SQLForm;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 use base qw(Apache::Wyrd::Form);
 use Apache::Wyrd::Services::SAK qw(:db);
 use warnings qw(all);
@@ -14,7 +14,7 @@ no warnings qw(uninitialized);
 
 =head1 NAME
 
-Apache::Wyrd::SQLForm
+Apache::Wyrd::SQLForm - Abstract Form Wyrd for editing data via SQL
 
 =head1 SYNOPSIS
 

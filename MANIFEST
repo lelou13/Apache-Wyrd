@@ -96,3 +96,4 @@ t/lib/perl/TESTCLIENT/Parent.pm
 t/lib/perl/TESTCLIENT/User.pm
 t/lib/perl/TESTCLIENT/UserCond.pm
 t/lib/perl/TESTCLIENT/Wyrd.pm
+META.yml                                Module meta-data (added by MakeMaker)

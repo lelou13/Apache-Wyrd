@@ -6,14 +6,14 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Form::View;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 use base qw(Apache::Wyrd::Interfaces::Setter Apache::Wyrd);
 
 =pod
 
 =head1 NAME
 
-Apache::Wyrd::Form::View
+Apache::Wyrd::Form::View - Preview Wyrd for Form Wyrds
 
 =head1 DESCRIPTION
 

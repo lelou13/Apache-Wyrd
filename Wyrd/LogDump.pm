@@ -6,14 +6,14 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::LogDump;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 use base qw (Apache::Wyrd::Interfaces::Setter Apache::Wyrd);
 
 =pod
 
 =head1 NAME
 
-Apache::Wyrd::LogDump
+Apache::Wyrd::LogDump - Debug Wyrd tool
 
 =head1 SYNOPSIS
 

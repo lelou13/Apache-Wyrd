@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Lookup;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 use base qw (Apache::Wyrd Apache::Wyrd::Interfaces::Setter);
 use Apache::Wyrd::Services::SAK qw(:db);
 
@@ -14,7 +14,7 @@ use Apache::Wyrd::Services::SAK qw(:db);
 
 =head1 NAME
 
-Apache::Wyrd::Lookup
+Apache::Wyrd::Lookup - Wyrd for returning an SQL query result
 
 =head1 SYNOPSIS
 

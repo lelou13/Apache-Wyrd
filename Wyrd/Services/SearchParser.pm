@@ -6,13 +6,13 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::SearchParser;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 
 =pod
 
 =head1 NAME
 
-Apache::Wyrd::Services::SearchParser
+Apache::Wyrd::Services::SearchParser - Object for performing logical word-searches
 
 =head1 SYNOPSIS
 

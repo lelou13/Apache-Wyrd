@@ -4,14 +4,14 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Defaults;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 use base qw(Apache::Wyrd::Query);
 
 =pod
 
 =head1 NAME
 
-Apache::Wyrd::Defaults
+Apache::Wyrd::Defaults - Default data for a Form Wyrd
 
 =head1 SYNOPSIS
 

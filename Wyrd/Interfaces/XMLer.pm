@@ -4,14 +4,14 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Interfaces::XMLer;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 use XML::Simple qw(:strict);
 
 =pod
 
 =head1 NAME
 
-Apache::Wyrd::Interfaces::XMLer
+Apache::Wyrd::Interfaces::XMLer - Convenience interface for XML::Simple
 
 =head1 SYNOPSIS
 

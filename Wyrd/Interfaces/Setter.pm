@@ -4,14 +4,14 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Interfaces::Setter;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 use Apache::Util;
 
 =pod
 
 =head1 NAME
 
-Apache::Wyrd::Interfaces::Setter
+Apache::Wyrd::Interfaces::Setter - Templating Interface for Wyrds
 
 =head1 SYNOPSIS
 

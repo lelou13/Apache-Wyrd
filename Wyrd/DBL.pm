@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::DBL;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 use DBI;
 use Apache;
 use Apache::Wyrd::Request;
@@ -15,7 +15,7 @@ use Apache::URI;
 
 =head1 NAME
 
-Apache::Wyrd::DBL
+Apache::Wyrd::DBL - Object for Wyrds to access "Das Blinkenlights" (Apache internals, etc.)
 
 =head1 SYNOPSIS
 

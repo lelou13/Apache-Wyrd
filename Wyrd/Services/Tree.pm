@@ -6,11 +6,11 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::Tree;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 
 =head1 NAME
 
-Apache::Wyrd::Services::Tree
+Apache::Wyrd::Services::Tree - Data-tree storage object
 
 =head1 DESCRIPTION
 

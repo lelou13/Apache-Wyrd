@@ -4,14 +4,14 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Input::Opt;
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 use Apache::Wyrd::Datum;
 use base qw(Apache::Wyrd::Interfaces::Setter Apache::Wyrd);
 =pod
 
 =head1 NAME
 
-Apache::Wyrd::Input::Opt
+Apache::Wyrd::Input::Opt - Wyrd for passing options to Apache::Wyrd::Input::Set
 
 =head1 SYNOPSIS
 
