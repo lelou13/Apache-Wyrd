@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Interfaces::Indexable;
-our $VERSION = '0.90';
+our $VERSION = '0.91';
 use Digest::MD5 qw(md5_hex);
 
 =pod

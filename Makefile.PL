@@ -7,9 +7,9 @@ push @ARGV, '-maxclients', '2';
 
 my $have_atest = 1;
 my $atest_version = 0;
-eval {'use Apache::Test qw(VERSION)'};
+eval 'use Apache::Test';
 unless ($@) {
-	use Apache::Test;
+	eval 'use Apache::Test';
 	$atest_version = $Apache::Test::VERSION;
 }
 
@@ -99,21 +99,21 @@ my $makefile = WriteMakefile(
 	'VERSION_FROM'	=> 'Wyrd.pm',
 	'PREREQ_PM'		=> {
 		Apache					=>	1.26,
-		Apache::Constants		=>	'',
-		Apache::URI				=>	'',
-		Apache::Util			=>	'',
+		Apache::Constants		=>	0,
+		Apache::URI				=>	0,
+		Apache::Util			=>	0,
 		BerkeleyDB				=>	.23,
-		Class::Singleton		=>	'',
-		DBI						=>	'',
-		Digest::MD5				=>	'',
-		HTML::Entities			=>	'',
-		HTTP::Request::Common	=>	'',
-		LWP::UserAgent			=>	'',
-		MIME::Base64			=>	'',
+		Class::Singleton		=>	0,
+		DBI						=>	0,
+		Digest::MD5				=>	0,
+		HTML::Entities			=>	0,
+		HTTP::Request::Common	=>	0,
+		LWP::UserAgent			=>	0,
+		MIME::Base64			=>	0,
 		XML::Dumper				=>	.67,
-		$blowfish				=>	'',
-		$cgi					=>	'',
-		$cookie					=>	''
+		$blowfish				=>	0,
+		$cgi					=>	0,
+		$cookie					=>	0
 	},
 	AUTHOR			=> 'barry king <wyrd@nospam.wyrdwright.com>',
 	clean			=> {
@@ -169,6 +169,7 @@ if (lc($ok) ne 'y') {
 	exit 0;
 } else {
 	print "Thanks.  Sending...\n\n";
+	eval '
 	use LWP::UserAgent;
 	use HTTP::Request::Common;
 	$ua = LWP::UserAgent->new;
@@ -182,4 +183,5 @@ if (lc($ok) ne 'y') {
 			wyrds		=>	$this_version
 		]
 	);
+	';
 }

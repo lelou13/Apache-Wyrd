@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized redefine);
 
 package Apache::Wyrd::Request;
-our $VERSION = '0.90';
+our $VERSION = '0.91';
 my $have_apr = 1;
 eval ('use Apache::Request');
 if ($@) {

@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Handler;
-our $VERSION = '0.90';
+our $VERSION = '0.91';
 use Apache::Wyrd::DBL;
 use Apache::Wyrd;
 use Apache::Wyrd::Services::SAK qw(slurp_file);
@@ -189,7 +189,7 @@ sub get_file {
 	$self->{'init'}->{'size'} = $stats[7];
 	my $root = $self->{'req'}->document_root;
 	$self->{'init'}->{'file_path'} = $file;
-	$file =~ s/$root//;
+	$file =~ s#$root/*#/#;
 	$self->{'init'}->{'self_path'} = $file;
 	return undef;
 }

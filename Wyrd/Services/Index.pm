@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::Index;
-our $VERSION = '0.90';
+our $VERSION = '0.91';
 use Apache::Wyrd::Services::SAK qw(token_parse);
 use Apache::Wyrd::Services::SearchParser;
 use BerkeleyDB;
@@ -456,6 +456,7 @@ sub purge_entry {
 			$self->delete_key($self->attributes->{$attribute} . "%$id");
 		}
 	}
+	$self->db->db_del($id);
 	return "Entry $entry ($id) successfully purged";
 }
 
