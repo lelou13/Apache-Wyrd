@@ -1,6 +1,25 @@
 Changes
 =======
 
+    0.85   (September 22, 2004)
+
+           Wyrd Framework now works with CGI, not just libapreq/
+           Apache::Request
+
+           New Cookie object to work with either CGI or libapreq
+
+           More interactive testing w/survey
+
+           Added auto-preloading of values to SQL Forms
+
+           Turned off debugging line in Apache::Wyrd which was
+           accidentally left on
+
+           No longer interpret null documents as a SERVER_ERROR
+
+           SAK checks for Setter interface on callers to setter-required
+           subroutines
+
     0.84   (September 3, 2004)
 
            Default behavior now for Text Datum objects is to trim

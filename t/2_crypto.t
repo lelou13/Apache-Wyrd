@@ -5,6 +5,10 @@ use warnings;
 use Apache::Wyrd::Services::SAK qw(:all);
 use Apache::Wyrd::Services::CodeRing;
 
+BEGIN {
+	chdir 't' if -d 't';
+}
+
 my $count = &count;
 
 print "1..$count\n";

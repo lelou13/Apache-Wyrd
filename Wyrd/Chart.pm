@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Chart;
-our $VERSION = '0.84';
+our $VERSION = '0.85';
 use base qw(Apache::Wyrd::Services::FileCache Apache::Wyrd::Interfaces::Setter Apache::Wyrd);
 use GD::Graph;
 use GD::Graph::colour qw(:colours :convert :lists);

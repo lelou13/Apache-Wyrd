@@ -4,11 +4,11 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::Auth;
-our $VERSION = '0.84';
+our $VERSION = '0.85';
 use Apache::Wyrd::Services::CodeRing;
 use Apache::Wyrd::Request;
 use Apache::Constants qw(AUTH_REQUIRED HTTP_SERVICE_UNAVAILABLE REDIRECT DECLINED);
-use Apache::Cookie;
+use Apache::Wyrd::Cookie;
 use Apache::URI;
 use MIME::Base64;
 use LWP::UserAgent;
@@ -122,7 +122,7 @@ sub handler {
 	my $auth_path = $req->dir_config('AuthPath');
 	die "Must define UserObject in Apache Config to use Apache::Wyrd::Services::Auth." unless ($user_object);
 	my $cr = Apache::Wyrd::Services::CodeRing->new;
-	my %cookie = Apache::Cookie->fetch;
+	my %cookie = Apache::Wyrd::Cookie->fetch;
 	my $user_info = undef;
 	my $auth_cookie = $cookie{'auth_cookie'};
 	my $user = undef;
@@ -136,10 +136,10 @@ sub handler {
 		eval "use $user_object;";
 		eval('$user = ' . $user_object . '->revive($user_info)');
 		if (($user_info and not($user->check_credentials)) or ($auth_cookie and not($user_info))) {
-			my $cookie = Apache::Cookie->new(
+			my $cookie = Apache::Wyrd::Cookie->new(
 				$req,
 				-name=>'auth_cookie',
-				-value=> undef,
+				-value=> '',
 				-domain=>$req->hostname,
 				-path=> ($auth_path || '/')
 			);
@@ -168,7 +168,7 @@ sub handler {
 				$debug && warn ("User info is:\n$user_info");
 				$req->notes->add('User' => $user_info);
 				$user_info = $cr->encrypt(\$user_info);
-				my $cookie = Apache::Cookie->new(
+				my $cookie = Apache::Wyrd::Cookie->new(
 					$req,
 					-name=>'auth_cookie',
 					-value=>$$user_info,
@@ -209,7 +209,7 @@ sub handler {
 	#with the cookie_check variable set.
 	} else {
 		unless ($cookie{'check_cookie'}) {
-			my $cookie = Apache::Cookie->new(
+			my $cookie = Apache::Wyrd::Cookie->new(
 				$req,
 				-name=>'check_cookie',
 				-value=>'checking',

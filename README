@@ -73,6 +73,7 @@ Apache::Wyrd::DBL       The "switchboard" of Apache and DBI connnections
 
 Then the support classes provide much-used functionality:
 
+Apache::Wyrd::Cookie
 Apache::Wyrd::Request
 Apache::Wyrd::Template
 Apache::Wyrd::Attribute

@@ -6,8 +6,8 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Interfaces::GetUser;
-our $VERSION = '0.84';
-use Apache::Cookie;
+our $VERSION = '0.85';
+use Apache::Wyrd::Cookie;
 
 =pod
 
@@ -69,10 +69,10 @@ sub user {
 		}
 		return $user;
 	}
-	my %cookie = Apache::Cookie->fetch;
+	my %cookie = Apache::Wyrd::Cookie->fetch;
 	my $auth_cookie = $cookie{'auth_cookie'};
 	if ($auth_cookie) {
-		$auth_cookie = $cookie{'auth_cookie'}->value;
+		$auth_cookie = $auth_cookie->value;
 		return undef unless ($auth_cookie);
 		use Apache::Wyrd::Services::CodeRing;
 		my $cr = Apache::Wyrd::Services::CodeRing->new;

@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd;
-our $VERSION = '0.84';
+our $VERSION = '0.85';
 use Apache::Wyrd::Services::SAK qw (token_parse);
 use Apache::Wyrd::Services::Tree;
 use Apache::Util;
@@ -49,7 +49,7 @@ my $_enabled_error_handler = sub {
 my $_fatal_error_handler = sub {
 	my ($self, $value) = @_;
 	die "_raise_exception called without object.  Always call _raise_exception as a method, not a subroutine."
-		unless UNIVERSAL::can($self, 'new');
+		unless UNIVERSAL::isa($self, 'Apache::Wyrd');
 	my @caller = caller();
 	$caller[0] =~ s/.+://;
 	$caller[2] =~ s/.+://;
@@ -834,7 +834,7 @@ sub _return_object {
 			\W*					#and any amount of non-word space
 			/xmsg);
 		if ($match) {
-			warn "1: $1 2: $2 3: $3 4: $4";
+			#warn "1: $1 2: $2 3: $3 4: $4";
 			if ($1) {
 				$init{lc($1)} = ($2 || $3);
 				$self->_debug(lc($1) . " is '" . $init{$1} . "'\n");

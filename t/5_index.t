@@ -8,8 +8,13 @@ use Apache::TestUtil;
 use Apache::TestRequest qw(GET_BODY GET_OK);
 use Cwd;
 
-my $directory = getcwd;
-$directory =~ s#(/t/?)*$#/t#;
+BEGIN {
+	chdir 't' if -d 't';
+	if (-f 'no_test') {
+		print "1..0 #Skipping... Apache::Test not available...";
+		exit 0;
+	}
+}
 
 my $count = &count;
 eval {use Apache::Wyrd::Services::Index};
@@ -26,6 +31,7 @@ my $index = undef;
 print "not " unless (GET_OK '/13.html');
 print "ok 1 - Index creation\n";
 
+my $directory = getcwd;
 eval {$index = Apache::Wyrd::Services::Index->new({
 	file => "$directory/data/testindex.db",
 	attributes => [qw(regular map)],

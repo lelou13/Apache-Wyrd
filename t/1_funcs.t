@@ -5,10 +5,11 @@ use warnings;
 use Apache::Wyrd::Services::SAK qw(:all);
 use Apache::Wyrd::Services::CodeRing;
 use Apache::Wyrd::Interfaces::Setter;
-use Cwd;
 
-my $directory = getcwd;
-$directory =~ s#(/t/?)*$#/t#;
+BEGIN {
+	chdir 't' if -d 't';
+}
+
 my $count = &count;
 
 print "1..$count\n";
@@ -34,7 +35,7 @@ my %hash = (
 print "not " unless (keys %hash == 3 and ($hash{yes} and $hash{no} and $hash{maybe}));
 print "ok 5 - lc_hash\n";
 
-print "not " if (${slurp_file("$directory/data/slurp")} ne "slurp");
+print "not " if (${slurp_file("data/slurp")} ne "slurp");
 print "ok 6 - slurp_file\n";
 
 my @hashes = (

@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::DBL;
-our $VERSION = '0.84';
+our $VERSION = '0.85';
 use DBI;
 use Apache;
 use Apache::Wyrd::Request;
@@ -50,7 +50,7 @@ The startup params can have several keys set.  These may be:
 
 =item apr
 
-the param/cookie subsystem (Apache::Request object initialized by a Apache::Wyrd::Request object);
+the param/cookie subsystem (CGI or Apache::Request object initialized by a Apache::Wyrd::Request object);
 
 =item dba
 
@@ -412,9 +412,9 @@ sub user {
 
 =pod
 
-=item (Apache::Request) C<apr> (void)
+=item (CGI/Apache::Request) C<apr> (void)
 
-Apache::Request object
+Apache::Wyrd::Request object (handle to either a CGI or Apache::Request object)
 
 =cut
 

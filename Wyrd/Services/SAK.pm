@@ -28,7 +28,7 @@ I<(format: (returns) C<$wyrd-E<gt>name> (arguments))> for methods
 
 =cut
 
-our $VERSION = '0.84';
+our $VERSION = '0.85';
 our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(
 	array_4_get
@@ -89,6 +89,8 @@ is then executes and the DBI handle to the query is returned.
 
 sub cgi_query {
 	my ($self, $query) = @_;
+	$self->_raise_exception("Wyrd must be a Setter before you can use cgi_query.  Include Apache::Wyrd::Interfaces::Setter in your use base declaration.")
+		unless (UNIVERSAL::isa($self, 'Apache::Wyrd::Interfaces::Setter'));
 	$query=Apache::Wyrd::Interfaces::Setter::_cgi_quote_set($self, $query);
 	#replace unknown variables with null
 	$query =~ s/\$:[a-zA-Z_0-9]+/NULL/g;
@@ -120,6 +122,8 @@ query is returned.
 
 sub do_query {
 	my ($self, $query, $hash) = @_;
+	$self->_raise_exception("Wyrd must be a Setter before you can use do_query.  Include Apache::Wyrd::Interfaces::Setter in your use base declaration.")
+		unless (UNIVERSAL::isa($self, 'Apache::Wyrd::Interfaces::Setter'));
 	$query = Apache::Wyrd::Interfaces::Setter::_quote_set($self, $hash, $query) if (ref($hash) eq 'HASH');
 	my $sh = $self->dbl->dbh->prepare($query);
 	$self->_info("Executing $query");

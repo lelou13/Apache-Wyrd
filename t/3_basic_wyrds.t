@@ -4,6 +4,14 @@ use Apache::Test;
 use Apache::TestUtil;
 use Apache::TestRequest 'GET_BODY';
 
+BEGIN {
+	chdir 't' if -d 't';
+	if (-f 'no_test') {
+		print "1..0 #Skipping... Apache::Test not available...";
+		exit 0;
+	}
+}
+
 plan tests => 15;
 
 ok t_cmp("success", GET_BODY '/1.html', "Wyrd Load");

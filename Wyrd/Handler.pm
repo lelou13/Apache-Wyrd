@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Handler;
-our $VERSION = '0.84';
+our $VERSION = '0.85';
 use Apache::Wyrd::DBL;
 use Apache::Wyrd;
 use Apache::Wyrd::Services::SAK qw(slurp_file);
@@ -95,7 +95,7 @@ with the appropriate headers set.
 
 =cut
 
-sub handler ($$) {
+sub handler : method {
 	my ($class, $req) = @_;
 	unless ($class =~ /^([a-zA-Z][a-zA-Z0-9_:]*)::Handler/) {
 		die "Must instantiate Apache::Wyrd::Handler as a XXXXX::Handler Object  where XXXXX is the base class of the Wyrd-derived objects.";
@@ -268,7 +268,9 @@ sub respond {
 	if ($self->{'init'}->{'error_page'}) {
 		my $output = undef;
 		eval{$output = $object->output()};
-		if ($@ or not($output)) {
+		if ($@) {
+#		9.7.04 - Decided to allow null pages
+#		if ($@ or not($output)) {
 			my $log = undef;
 			$log = ${$dbl->dump_log} if ($dbl->debug);
 			$self->{'req'}->custom_response(SERVER_ERROR, $self->errorpage($@, $log));

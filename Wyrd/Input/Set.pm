@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Input::Set;
-our $VERSION = '0.84';
+our $VERSION = '0.85';
 use Apache::Wyrd::Datum;
 use base qw(
 	Apache::Wyrd::Interfaces::Mother

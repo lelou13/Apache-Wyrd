@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::CodeRing;
-our $VERSION = '0.84';
+our $VERSION = '0.85';
 use Apache::Wyrd::Services::SAK qw(lc_hash);
 use Apache::Wyrd::Services::Key;
 use Digest::MD5 qw(md5_hex);

@@ -4,8 +4,14 @@ use warnings;
 no warnings qw(uninitialized redefine);
 
 package Apache::Wyrd::Request;
-our $VERSION = '0.84';
-use base qw (Apache::Request);
+our $VERSION = '0.85';
+my $have_apr = 1;
+eval ('use Apache::Request');
+if ($@) {
+	eval ('use CGI qw(param)');
+	die "$@" if ($@);
+	$have_apr=0;
+}
 
 =pod
 
@@ -24,10 +30,11 @@ in Apache config:
 
 =head1 DESCRIPTION
 
-Wrapper for Apache::Request as a singleton.  The wrapper is for the
-convenience of allowing a consistent set of parameters to be used in
-initializing the Apache::Request object between stacked/different
-handlers.
+Wrapper for C<Apache::Request> or C<CGI> object with C<Apache::Request>-type
+assurances that this is the first and only invocation for this
+PerlResponseHandler.  The wrapper is for the convenience of allowing a
+consistent set of parameters to be used in initializing the
+C<Apache::Request> object between stacked/different handlers.
 
 These parameters are handed to the object via the RequestParms directory
 config variable.  As this is a hash, items must be added in pairs using
@@ -47,12 +54,23 @@ configuration via PerlSetVar/PerlAddVar directives.
 =cut
 
 sub instance {
-	my ($self, $req) = @_;
+	my ($class, $req) = @_;
+	return $req->pnotes($class . '_req_object') if ($req->pnotes($class . '_req_object'));
 	my @parms = $req->dir_config->get('RequestParms');
 	@parms = () unless ($parms[0]);
 	die "Uneven number of RequestParms in configuration.  See Apache::Wyrd::Request documentation."
 		if (scalar(@parms) % 2);
-	return $self->SUPER::instance($req, @parms);
+	$req->warn("Ignoring RequestParms because Apache::Request is not available and CGI is being substituted.  Install libapreq/Apache::Request to use RequestParms.") if (@parms and not($have_apr));
+	my $req_object = undef;
+	if ($have_apr) {
+		$req_object = Apache::Request->new($req, @parms);
+		bless $req_object, 'Apache::Request';
+	} else {
+		$req_object = CGI->new;
+		bless $req_object, 'CGI';
+	}
+	$req->pnotes($class . '_req_object' => $req_object);
+	return $req_object;
 }
 
 =pod

@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::SQLForm;
-our $VERSION = '0.84';
+our $VERSION = '0.85';
 use base qw(Apache::Wyrd::Form);
 use Apache::Wyrd::Services::SAK qw(:db);
 use warnings qw(all);
@@ -385,6 +385,22 @@ sub _submit_data {
 
 sub _prep_preloads {
 	my ($self) = @_;
+	if (($self->_flags->preload and not($self->_flags->preloaded)) or $self->_flags->autopreload) {
+		my $id = $self->dbl->param($self->index);
+		if ($id) {
+			my $query = 'select * from ' . $self->table . ' where ' . $self->index . '=' . $self->dbl->dbh->quote($id);
+			$self->_info("Auto-Prepping the Form with the query '$query;'");
+			my $sh = $self->dbl->dbh->prepare($query);
+			$sh->execute;
+			my $hashref = $sh->fetchrow_hashref;
+			$self->_raise_exception("Asked to auto-preload, but data is ambiguous.") if ($sh->fetchrow_hashref);
+			foreach my $key (keys %$hashref) {
+				$self->{'_variables'}->{$key} = $hashref->{$key};
+			}
+		} else {
+			$self->_error("Asked to auto-preload, but no CGI variable for the index was set");
+		}
+	}
 	$self->_split_sets;
 	return undef;
 }

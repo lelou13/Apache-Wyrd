@@ -1,3 +1,4 @@
+PerlTaintCheck on
 <Perl>
 	use strict;
 	use lib '@ServerRoot@/../blib/lib';

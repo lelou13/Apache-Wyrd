@@ -11,6 +11,7 @@ Wyrd/Attribute.pm
 Wyrd/CGICond.pm
 Wyrd/CGISetter.pm
 Wyrd/Chart.pm
+Wyrd/Cookie.pm
 Wyrd/CSSGene.pm
 Wyrd/Datum.pm
 Wyrd/DBL.pm

@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::LoginServer;
-our $VERSION = '0.84';
+our $VERSION = '0.85';
 use Apache::Wyrd::Services::CodeRing;
 use Apache::Wyrd::Services::TicketPad;
 use Apache::Wyrd::Request;
@@ -62,7 +62,7 @@ The handler handles all functions.
 
 sub handler {
 	my $req = shift;
-	my $apr = Apache::Request->instance($req);
+	my $apr = Apache::Wyrd::Request->instance($req);
 	my $debug = $req->dir_config('Debug');
 	my $ticket = $apr->param('ticket');
 	my $key = $apr->param('key');
