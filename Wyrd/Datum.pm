@@ -8,7 +8,7 @@ no warnings qw(uninitialized);
 no warnings qw(redefine);
 
 package Apache::Wyrd::Datum;
-our $VERSION = '0.83';
+our $VERSION = '0.84';
 
 use constant TYPE => 0;
 use constant VALUE => 1;
@@ -86,6 +86,14 @@ sub _set {
 	return $value;
 }
 
+sub _process_incoming {
+	return $_[1];
+}
+
+sub _process_outgoing {
+	return $_[1];
+}
+
 #Public Methods
 
 sub check {
@@ -97,12 +105,15 @@ sub check {
 
 sub get {
 	my ($self) = shift;
-	return $self->[Apache::Wyrd::Datum::PARAMS]->{_rev_translate_key}->{$self->[Apache::Wyrd::Datum::VALUE]} if ($self->[Apache::Wyrd::Datum::PARAMS]->{translate_key});
-	return $self->[Apache::Wyrd::Datum::VALUE];
+	my $value = undef;
+	$value = $self->[Apache::Wyrd::Datum::PARAMS]->{_rev_translate_key}->{$self->[Apache::Wyrd::Datum::VALUE]} if ($self->[Apache::Wyrd::Datum::PARAMS]->{translate_key});
+	$value = $self->[Apache::Wyrd::Datum::VALUE];
+	return $self->_process_outgoing($value);
 }
 
 sub set {
 	my($self, $value) = @_;
+	$value = $self->_process_incoming($value);
 	my ($ok, undef) = $self->check($value);
 	unless ($ok) {
 		return undef if ($self->[Apache::Wyrd::Datum::PARAMS]->{'strict'});
@@ -119,7 +130,7 @@ sub type {
 }
 
 package Apache::Wyrd::Datum::Blob;
-our $VERSION = '0.83';
+our $VERSION = '0.84';
 use base qw(Apache::Wyrd::Datum);
 
 sub _type {
@@ -127,7 +138,7 @@ sub _type {
 }
 
 package Apache::Wyrd::Datum::Char;
-our $VERSION = '0.83';
+our $VERSION = '0.84';
 use base qw(Apache::Wyrd::Datum);
 
 sub _type {
@@ -157,7 +168,7 @@ sub _check_value {
 }
 
 package Apache::Wyrd::Datum::Enum;
-our $VERSION = '0.83';
+our $VERSION = '0.84';
 use base qw(Apache::Wyrd::Datum::Char);
 
 sub _type {
@@ -193,7 +204,7 @@ sub _check_value {
 }
 
 package Apache::Wyrd::Datum::Set;
-our $VERSION = '0.83';
+our $VERSION = '0.84';
 use base qw(Apache::Wyrd::Datum::Enum);
 
 sub _type {
@@ -222,15 +233,22 @@ sub _check_value {
 }
 
 package Apache::Wyrd::Datum::Text;
-our $VERSION = '0.83';
+our $VERSION = '0.84';
 use base qw(Apache::Wyrd::Datum);
 
 sub _type {
 	return "text";
 }
 
+sub _process_incoming {
+	my ($self, $value) = @_;
+	$value =~ s/\s+$//s;
+	$value =~ s/^\s+//s;
+	return $value;
+}
+
 package Apache::Wyrd::Datum::Varchar;
-our $VERSION = '0.83';
+our $VERSION = '0.84';
 use base qw(Apache::Wyrd::Datum::Char);
 
 sub _type {
@@ -245,7 +263,7 @@ sub _default_params {
 }
 
 package Apache::Wyrd::Datum::Integer;
-our $VERSION = '0.83';
+our $VERSION = '0.84';
 use base qw(Apache::Wyrd::Datum::Char);
 
 sub _type {
@@ -275,7 +293,7 @@ sub _default_params {
 }
 
 package Apache::Wyrd::Datum::Null;
-our $VERSION = '0.83';
+our $VERSION = '0.84';
 use base qw(Apache::Wyrd::Datum);
 
 sub _type {

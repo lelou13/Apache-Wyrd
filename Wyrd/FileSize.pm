@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::FileSize;
-our $VERSION = '0.83';
+our $VERSION = '0.84';
 use base qw(Apache::Wyrd);
 use Apache::Wyrd::Services::SAK qw(commify);
 
@@ -12,7 +12,7 @@ use Apache::Wyrd::Services::SAK qw(commify);
 
 =head1 NAME
 
-Apache::Wyrd::FileSize
+Apache::Wyrd::FileSize - Display a File's Size
 
 =head1 SYNOPSIS
 

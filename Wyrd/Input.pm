@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Input;
-our $VERSION = '0.83';
+our $VERSION = '0.84';
 use Apache::Wyrd::Datum;
 use base qw(Apache::Wyrd::Interfaces::Setter Apache::Wyrd::Interfaces::SmartInput Apache::Wyrd);
 use Apache::Wyrd::Services::SAK qw(token_parse);
@@ -260,6 +260,7 @@ stored by the Input, and HTML esacaped if the B<escape> flag is set.
 
 sub set {
 	my ($self, $value) = @_;
+	$value = $self->_unescape($value) if ($self->_flags->escape);
 	#convert value to appropriate type
 	$value = [$value] if ((ref($value) ne 'ARRAY') and ($self->{'_multiple'}));
 	$value = shift(@{$value}) if ((ref($value) eq 'ARRAY') and not($self->{'_multiple'}));
@@ -385,10 +386,52 @@ entity.
 
 sub _escape {
 	my ($self, $value) = @_;
+	$value =~ s/\&/\&amp;/g;
 	$value =~ s/'/\&apos;/g;
 	$value =~ s/"/\&quot;/g;
-	$value =~ s/\&/\&amp;/g;
 	return $value;
+}
+
+=pod
+
+=item (scalar) C<_escape> (scalar)
+
+the C<_unescape> method should reverse-mirror the C<_escape> method exactly.
+
+=cut
+
+sub _unescape {
+	my ($self, $value) = @_;
+	$value =~ s/\&amp;/\&/g;
+	$value =~ s/\&apos;/'/g;
+	$value =~ s/\&quot;/"/g;
+	return $value;
+}
+
+=pod
+
+=item (scalar) C<_template_foo> (scalar)
+
+the C<_template> methods should provide an
+C<Apache::Wyrd::Interfaces::Setter>-style template for a given input.
+Built-in templates are text, textarea, password
+
+=cut
+
+sub _template_text {
+	return '<input type="text" name="$:name" value="$:value"?:size{ size="$:size"}?:class{ class="$:class"}?:id{ id="$:id"}?:maxlength{ maxlength="$:maxlength"}?:tabindex{ tabindex="$:tabindex"}?:accesskey{ accesskey="$:tabindex"}?:onchange{ onchange="$:onchange"}?:onselect{ onselect="$:onselect"}?:onblur{ onblur="$:onblur"}?:onfocus{ onfocus="$:onfocus"}?:disabled{ disabled}?:readonly{ readonly}>';
+}
+
+sub _template_textarea {
+	return '<textarea name="$:name"?:cols{ cols="$:cols"}?:rows{ rows="$:rows"}?:wrap{ wrap="$:wrap"}?:id{ id="$:id"}?:class{ class="$:class"}?:tabindex{ tabindex="$:tabindex"}?:accesskey{ accesskey="$:accesskey"}?:onblur{ onblur="$:onblur"}?:onchange{ onchange="$:onchange"}?:onfocus{ onfocus="$:onfocus"}?:onselect{ onselect="$:onselect"}?:disabled{ disabled}?:readonly{ readonly}>$:value</textarea>';
+}
+
+sub _template_password {
+	return '<input type="password" name="$:name" value="$:value"?:size{ size="$:size"}?:id{ id="$:id"}?:maxlength{ maxlength="$:maxlength"}?:class{ class="$:class"}?:tabindex{ tabindex="$:tabindex"}?:accesskey{ accesskey="$:tabindex"}?:onchange{ onchange="$:onchange"}?:onselect{ onselect="$:onselect"}?:onblur{ onblur="$:onblur"}?:onfocus{ onfocus="$:onfocus"}?:disabled{ disabled}?:readonly{ readonly}>';
+}
+
+sub _template_hidden {
+	return '<input type="hidden" name="$:name" value="$:value">';
 }
 
 =pod
@@ -437,18 +480,18 @@ sub _format_output {
 		} else {
 			$self->{'_datum'} ||= (Apache::Wyrd::Datum::Text->new($self->{'value'}, \%params));
 		};
-		$self->{'_template'} ||= '<input type="text" name="$:name" value="$:value"?:size{ size="$:size"}?:class{ class="$:class"}?:id{ id="$:id"}?:maxlength{ maxlength="$:maxlength"}?:tabindex{ tabindex="$:tabindex"}?:accesskey{ accesskey="$:tabindex"}?:onchange{ onchange="$:onchange"}?:onselect{ onselect="$:onselect"}?:onblur{ onblur="$:onblur"}?:onfocus{ onfocus="$:onfocus"}?:disabled{ disabled}?:readonly{ readonly}>';
+		$self->{'_template'} ||= $self->_template_text;
 	} elsif ($type eq 'textarea') {
 		$self->{'value'} ||= $self->_data;#value may be enclosed in a textarea input
 		$self->{'_datum'} ||= Apache::Wyrd::Datum::Text->new($self->{'value'}, \%params);
-		$self->{'_template'} ||= '<textarea name="$:name"?:cols{ cols="$:cols"}?:rows{ rows="$:rows"}?:wrap{ wrap="$:wrap"}?:id{ id="$:id"}?:class{ class="$:class"}?:tabindex{ tabindex="$:tabindex"}?:accesskey{ accesskey="$:accesskey"}?:onblur{ onblur="$:onblur"}?:onchange{ onchange="$:onchange"}?:onfocus{ onfocus="$:onfocus"}?:onselect{ onselect="$:onselect"}?:disabled{ disabled}?:readonly{ readonly}>$:value</textarea>';
+		$self->{'_template'} ||= $self->_template_textarea;
 	} elsif ($type eq 'hidden') {
 		$self->_flags->escape(1);
 		$self->{'_datum'} ||= Apache::Wyrd::Datum::Text->new($self->{'value'}, \%params);
-		$self->{'_template'} ||= '<input type="hidden" name="$:name" value="$:value">';
+		$self->{'_template'} ||= $self->_template_hidden;
 	} elsif ($type eq 'password') {
 		$self->{'_datum'} ||= Apache::Wyrd::Datum::Text->new($self->{'value'}, \%params);
-		$self->{'_template'} ||= '<input type="password" name="$:name" value="$:value"?:size{ size="$:size"}?:id{ id="$:id"}?:maxlength{ maxlength="$:maxlength"}?:class{ class="$:class"}?:tabindex{ tabindex="$:tabindex"}?:accesskey{ accesskey="$:tabindex"}?:onchange{ onchange="$:onchange"}?:onselect{ onselect="$:onselect"}?:onblur{ onblur="$:onblur"}?:onfocus{ onfocus="$:onfocus"}?:disabled{ disabled}?:readonly{ readonly}>';
+		$self->{'_template'} ||= $self->_template_password;
 	} elsif ($type eq 'plaintext') {
 		$self->{'_datum'} ||= Apache::Wyrd::Datum::Text->new($self->{'value'}, \%params);
 		$self->{'_template'} ||= '$:value<input type="hidden" name="$:name" value="$:value">';

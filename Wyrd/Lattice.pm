@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Lattice;
-our $VERSION = '0.83';
+our $VERSION = '0.84';
 use base qw(Apache::Wyrd::Interfaces::Setter Apache::Wyrd);
 use Apache::Wyrd::Services::SAK qw(token_parse);
 use Apache::Wyrd::Services::Tree;
@@ -14,7 +14,7 @@ use Apache::Wyrd::Query;
 
 =head1 NAME
 
-Apache::Wyrd::Lattice
+Apache::Wyrd::Lattice - Generate HTML Tables from Tabular Data
 
 =head1 SYNOPSIS
 

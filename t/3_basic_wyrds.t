@@ -4,7 +4,7 @@ use Apache::Test;
 use Apache::TestUtil;
 use Apache::TestRequest 'GET_BODY';
 
-plan tests => 13;
+plan tests => 15;
 
 ok t_cmp("success", GET_BODY '/1.html', "Wyrd Load");
 ok t_cmp("test\n", GET_BODY '/2.html?test=1', "CGICond on");
@@ -19,3 +19,5 @@ ok t_cmp("variable: N'i\"l\n", GET_BODY '/12.html', "enclosed single quotes");
 ok t_cmp("variable: N'i'l\n", GET_BODY '/10.html', "enclosed single quotes");
 ok t_cmp("variable: N\"i\"l\n", GET_BODY '/11.html', "enclosed double quotes");
 ok t_cmp("This is a cached file.", GET_BODY '/14.html', "File Caching/Lib");
+ok t_cmp('$12,345,678.8765', GET_BODY '/17.html', "File Caching/Lib");
+ok t_cmp('Forty-six', GET_BODY '/18.html', "File Caching/Lib");

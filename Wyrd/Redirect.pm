@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Redirect;
-our $VERSION = '0.83';
+our $VERSION = '0.84';
 use base qw (Apache::Wyrd);
 use Apache::Constants qw(REDIRECT);
 

@@ -8,7 +8,7 @@ use strict;
 use Apache::Wyrd::Services::SAK qw(slurp_file token_parse);
 use Exporter;
 
-our $VERSION = '0.83';
+our $VERSION = '0.84';
 our @ISA = qw(Exporter);
 our @EXPORT = qw(get_cached);
 

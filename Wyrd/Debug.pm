@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Debug;
-our $VERSION = '0.83';
+our $VERSION = '0.84';
 use base qw (Apache::Wyrd);
 
 =pod
@@ -65,7 +65,7 @@ Reserves the _setup method.
 
 sub _setup{
 	my ($self) = @_;
-	my $templatefile = join('/', $self->dbl->req->document_root, $self->{output});
+	my $templatefile = join('/', $self->dbl->req->document_root, $self->{'output'});
 	my $dumpfile = ($self->dbl->globals->{logfile} || '/tmp/' . $self->dbl->req->hostname . '.debuglog');
 	$self->_info("using $dumpfile to record debugging.");
 	open (OUTLOG, "> $dumpfile") || die ("Could not open $dumpfile");

@@ -36,7 +36,7 @@ WriteMakefile(
 		HTTP::Request::Common	=>	'',
 		LWP::UserAgent			=>	'',
 		MIME::Base64			=>	'',
-		XML::Dumper				=>	'',
+		XML::Dumper				=>	.67,
 		$blowfish				=>	''
 	},
 	AUTHOR			=> 'barry king <wyrd@nospam.wyrdwright.com>',

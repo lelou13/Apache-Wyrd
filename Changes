@@ -1,6 +1,31 @@
 Changes
 =======
 
+    0.84   (September 3, 2004)
+
+           Default behavior now for Text Datum objects is to trim
+           whitespace
+
+           Established minimum version dependency for XML::Dumper
+
+           Put escaping of HTML entities in proper order for text-type
+           inputs in Apache::Wyrd::Input
+
+           Added hook methods to Datum Objects to allow translation of data
+           from data store to browser and vice versa
+
+           Abstracted template creation for Input Wyrds
+
+           Fixed broken "rounding" value on Number Wyrds
+
+           Wyrds with attributes of value "0" to be interpreted
+           mathmatically rather than as undef
+
+           Wyrds with attributes containing $, %, or @ longer interpret
+           these as special variables under some conditions
+
+           Documentation changes and code cleanup
+
     0.83   (August 19, 2004)
 
            New Wyrds: Automatic graphical charts from Query Wyrds

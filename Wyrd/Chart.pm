@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Chart;
-our $VERSION = '0.83';
+our $VERSION = '0.84';
 use base qw(Apache::Wyrd::Services::FileCache Apache::Wyrd::Interfaces::Setter Apache::Wyrd);
 use GD::Graph;
 use GD::Graph::colour qw(:colours :convert :lists);
@@ -16,7 +16,7 @@ use Data::Dumper;
 
 =head1 NAME
 
-Apache::Wyrd::Chart
+Apache::Wyrd::Chart - Embed Dynamically-redrawn PNG charts in HTML
 
 =head1 SYNOPSIS
 
@@ -517,7 +517,6 @@ sub _process_data {
 				}
 			}
 			if ($limit_reached) {
-				warn $other;
 				$truncate = 1;
 				push @labels, "Other";
 				push @values, $other;

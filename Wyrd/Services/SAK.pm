@@ -28,7 +28,7 @@ I<(format: (returns) C<$wyrd-E<gt>name> (arguments))> for methods
 
 =cut
 
-our $VERSION = '0.83';
+our $VERSION = '0.84';
 our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(
 	array_4_get

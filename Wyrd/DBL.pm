@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::DBL;
-our $VERSION = '0.83';
+our $VERSION = '0.84';
 use DBI;
 use Apache;
 use Apache::Wyrd::Request;

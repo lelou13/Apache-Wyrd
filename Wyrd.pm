@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd;
-our $VERSION = '0.83';
+our $VERSION = '0.84';
 use Apache::Wyrd::Services::SAK qw (token_parse);
 use Apache::Wyrd::Services::Tree;
 use Apache::Util;
@@ -772,7 +772,7 @@ sub _spawn {
 		eval('$child = Apache::Wyrd::' . $class . '->new($self->dbl, $init)');
 		if ($@) {
 			if ($@ =~ /^Can't locate object method "new"/) {
-				$self->_error("No indirect implementation of $class either...");
+				$self->_error("No direct or indirect implementation of $class...");
 			} else {
 				$self->_raise_exception("Compilation Error while spawning a new Wyrd: " . $@);
 			}
@@ -803,9 +803,17 @@ sub _return_object {
 	#encode the escaped-out " and '
 	$params =~ s/\\'/<!apostrophe!>/g;
 	$params =~ s/\\"/<!quote!>/g;
+	#escape-out special characters when they are the only attribute
+	$params =~ s/\$/<!dollar!>/g;
+	$params =~ s/\@/<!at!>/g;
+	$params =~ s/\%/<!percent!>/g;
+	$params =~ s/\&/<!ampersand!>/g;
 	#nullify the blank attributes
 	$params =~ s/""/"<!null!>"/g;
 	$params =~ s/''/'<!null!>'/g;
+	#zerofy the numerical zero attributes
+	$params =~ s/"0"/"<!zero!>"/g;
+	$params =~ s/'0'/'<!zero!>'/g;
 	#Process Params:
 	do {
 		$match = 0;
@@ -826,7 +834,7 @@ sub _return_object {
 			\W*					#and any amount of non-word space
 			/xmsg);
 		if ($match) {
-			#warn "1: $1 2: $2 3: $3 4: $4";
+			warn "1: $1 2: $2 3: $3 4: $4";
 			if ($1) {
 				$init{lc($1)} = ($2 || $3);
 				$self->_debug(lc($1) . " is '" . $init{$1} . "'\n");
@@ -840,6 +848,11 @@ sub _return_object {
 		$init{$i} =~ s/<!apostrophe!>/'/g;
 		$init{$i} =~ s/<!quote!>/"/g;
 		$init{$i} =~ s/<!null!>//g;
+		$init{$i} =~ s/<!zero!>/0/g;
+		$init{$i} =~ s/<!dollar!>/\$/g;
+		$init{$i} =~ s/<!at!>/\@/g;
+		$init{$i} =~ s/<!percent!>/\%/g;
+		$init{$i} =~ s/<!ampersand!>/\&/g;
 	}
 	$init{'_parent'} = $self;
 	$init{'_as_html'} = $original;

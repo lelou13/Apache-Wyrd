@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Number;
-our $VERSION = '0.83';
+our $VERSION = '0.84';
 use base qw (Apache::Wyrd);
 use Apache::Wyrd::Services::SAK qw(commify);
 
@@ -16,7 +16,7 @@ my %number = ();
 
 =head1 NAME
 
-Apache::Wyrd::Number
+Apache::Wyrd::Number - Format Numerals or Translate to Written (English)
 
 =head1 SYNOPSIS
 
@@ -38,8 +38,6 @@ NONE
 
 Translate the number into another symbol-system.  Currently only B<english>
 is supported as an option.
-
-=back
 
 =item decimals
 
@@ -135,7 +133,7 @@ Reserves the _format_output method.
 sub _format_output {
 	my ($self) = @_;
 	my $data = $self->_data;
-	$data =~ s/[^\d]//g;
+	$data =~ s/[^\d.]//g;
 	my $leader = $self->{'leader'};
 	my $tail = $self->{'tail'};
 	my $currency = $self->{'currency'};
@@ -147,6 +145,7 @@ sub _format_output {
 	} else {
 		if (defined($self->{'decimals'})) {
 			my $decimals = $self->{'decimals'};
+			$decimals += 0;#force mathmatical value
 			$data = int($data * (10 ** $decimals) + .5);
 			$data =~ s/(.{$decimals})$/.$1/ if ($decimals);
 		}
@@ -181,34 +180,5 @@ Copyright 2002-2004 Wyrdwright, Inc. and licensed under the GNU GPL.
 See LICENSE under the documentation for C<Apache::Wyrd>.
 
 =cut
-
-sub _translate {
-	my ($self, $data, $mode) = @_;
-	if ($mode eq 'english') {
-		unless ($number{'0'} eq 'zero') {
-			my @base = qw(one two three four five six seven eight nine);
-			my @teens = qw(ten eleven twelve thirteen forteen fifteen sixteen seventeen eighteen nineteen);
-			my @decades = qw(twenty thirty forty fifty sixty seventy eighty ninety);
-			my $count = 0;
-			foreach my $century ('', @base) {
-				$number{$count++} = "$century hundred";
-				$century = "$century hundred " if ($century);
-				map {$number{$count++} = $century . $_} (@base, @teens);
-				foreach my $decade (@decades) {
-					$number{$count++} = $century . $decade;
-					map {$number{$count++} = "$century$decade-$_"} (@base);
-				}
-			}
-			$number{'0'} = 'zero';
-		}
-		if ($number{$data}) {
-			return $number{$data};
-		} else {
-			$self->_warn("Number $data is too complex to translate");
-			return $data;
-		}
-	}
-}
-
 
 1;
