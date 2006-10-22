@@ -4,12 +4,12 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Handler;
-our $VERSION = '0.93';
+our $VERSION = '0.94';
 use Apache::Wyrd::DBL;
 use Apache::Wyrd;
 use Apache::Wyrd::Services::SAK qw(slurp_file);
 use Apache;
-use Apache::Constants qw(:common);
+use Apache::Constants qw(:common :response);
 use Apache::Wyrd::Services::Auth;
 
 =pod
@@ -105,7 +105,8 @@ sub handler : method {
 	my $self = new($class, {
 		'req' => $req,
 		'client' => $client,
-		'output' => ''
+		'output' => '',
+		'internal_redirect_counter' => 0,
 	});
 	$self->{'init'} = $self->init;
 	$self->{'init'}->{'globals'} = $self->globals;
@@ -126,26 +127,63 @@ sub handler : method {
 	return $response;
 }
 
+#Note: subhandler is experimental.  Don't use it yet.
+sub subhandler {
+	my ($self, $file) = @_;
+	my $req = $self->req;
+	die "Too many internal redirects (20)" if ($self->{'internal_redirect_counter'}++ > 20);
+	$self->{'file'} = $file;
+	my $response = $self->respond;
+	if ($response eq OK) {
+		warn 'response is OK';
+		$self->post_process;
+		$self->add_headers;
+		$req->send_http_header($self->req->headers_out->get('Content-Type') || 'text/html');
+		$req->print($self->{'output'});
+	} else{
+		warn 'response is an exception';
+		my $new_response = $self->_exception_handler($response, $req);
+		$response = $new_response if ($new_response);
+	}
+	return $response;
+}
+
 =pod
 
 =item _exception_handler
 
 Before returning a non-OK response, the handler will send two scalars to
-this method and if the method returns a response, that response will be
-sent instead.  Subclasses of Apache::Wyrd::Handler can use this method
-to invoke and return responses from other handlers.  What arguments for
-the first method subclasses of this method accept and how they invoke
-the responding entity are entirely up to the programmer.  Usually,
-however, the dir_config table is populated with authorization
-requirements for this request, as required by
-C<Apache::Wyrd::Services::Auth> in order to masquerade this handler as a
-stacked Auth handler.
+this method and if the method returns a response, that response will be sent
+instead.  Subclasses of Apache::Wyrd::Handler can use this method to invoke
+and return responses from other handlers or generate custom responders.
+
+What arguments for the first
+method subclasses of this method accept and how they invoke the responding
+entity are entirely up to the programmer.
+
+The default behavior is to redirect full URLs, pass internal redirections
+back to the handler, and handle 'request authorization' messages to
+Apache::Wyrd::Services::Auth.
 
 =cut
 
 sub _exception_handler {
-	my ($self) = @_;
-	return undef;
+	my ($self, $response, $req) = @_;
+	if ($response eq 'request authorization') {
+		return Apache::Wyrd::Services::Auth::handler($req);
+	}
+	if ($response =~ m#(https?://.+|^/.+)#) {
+		my $url = $1;
+		$req->custom_response(REDIRECT, $url);
+		return REDIRECT;
+	}
+	#Experimental subhandler method
+	if ($response =~ m#^internal_redirect:(.+)#) {
+		my $file = $1;
+		warn "internal redirect to $file";
+		return $self->subhandler($file);
+	}
+	return;
 }
 
 =pod
@@ -162,7 +200,7 @@ C<$self->{'output'}> directly.
 
 sub post_process {
 	my ($self) = @_;
-	return undef;
+	return;
 }
 =pod
 
@@ -180,7 +218,7 @@ sub add_headers {
 	my $req = $self->{'req'};
 	$req->no_cache(1);
 	$req->headers_out->set('Vary', '*');
-	return undef;
+	return;
 }
 
 =pod
@@ -195,20 +233,37 @@ init hashref for use by the Apache::Wyrd object.
 =cut
 
 sub get_file {
-	my ($self) = @_;
-	my $file = $self->{'req'}->filename;
+	my ($self, $file) = @_;
+	$file ||= $self->{'req'}->filename;
 	return DECLINED if (-d $file and $self->{'req'}->next);
 	return DECLINED unless (-r _);
 	return DECLINED unless ($self->{'req'}->content_type eq 'text/html');
 	$self->{'file'} = $file;
 	my @stats = stat _;
-	$self->{'init'}->{'mtime'} = $stats[9];
-	$self->{'init'}->{'size'} = $stats[7];
+	foreach my $datum (
+		qw(
+			dev
+			ino
+			mode
+			nlink
+			uid
+			gid
+			rdev
+			size
+			atime
+			mtime
+			ctime
+			blksize
+			blocks
+		)
+					) {
+		$self->{'init'}->{$datum} = shift @stats;
+	}
 	my $root = $self->{'req'}->document_root;
 	$self->{'init'}->{'file_path'} = $file;
 	$file =~ s#$root/*#/#;
 	$self->{'init'}->{'self_path'} = $file;
-	return undef;
+	return;
 }
 
 
@@ -259,8 +314,7 @@ it's own headers.
 
 sub process {
 	my ($self) = @_;
-	warn "in process, damn you";
-	return undef;
+	return;
 };
 
 =pod
@@ -294,20 +348,23 @@ sub respond {
 	my $response = OK;
 	if ($self->{'init'}->{'error_page'}) {
 		my $output = undef;
-		eval{$output = $object->output()};
+		eval{
+			$output = $object->output();
+			$object->_shutdown;
+		};
 		if ($@) {
-#		9.7.04 - Decided to allow null pages
-#		if ($@ or not($output)) {
 			my $log = undef;
-			$log = ${$dbl->dump_log} if ($dbl->debug);
+			$log = ${$dbl->dump_log} if ($dbl->loglevel);
 			$self->{'req'}->custom_response(SERVER_ERROR, $self->errorpage($@, $log));
 			$response = SERVER_ERROR;
 		}
 		$dbl->get_response && return $dbl->get_response;
 		$self->{'output'} = $output;
 	} else {
-		$dbl->get_response && return $dbl->get_response;
+		#must call output before checking response, or redirects will not occur.
 		$self->{'output'} = $object->output();
+		$object->_shutdown;
+		$dbl->get_response && return $dbl->get_response;
 	}
 	$dbl->{'logfile'} && $dbl->close_logfile;
 	$dbl->{'dbh'} && $dbl->close_db;
@@ -318,7 +375,7 @@ sub respond {
 
 =item req
 
-return the Apache request object.  This object has been initialized in
+return the Apache request object.  This handle has been initialized in
 C<handler>
 
 =cut

@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Interfaces::GetUser;
-our $VERSION = '0.93';
+our $VERSION = '0.94';
 use Apache::Wyrd::Cookie;
 
 =pod
@@ -24,7 +24,7 @@ Apache::Wyrd::Interfaces::GetUser - Get User data from Auth service/Auth Cookies
       $self->{init}->{user} = $self->user('BASENAME::User');
       return FORBIDDEN
         unless ($self->check_auth($self->{init}->{user}));
-      return undef;
+      return;
     }
 
 =head1 DESCRIPTION
@@ -77,13 +77,29 @@ sub user {
 		}
 		return $user;
 	}
+	#if an Auth handler has not received the request earlier, it may be necessary to build the user out of
+	#the browser's cookie.
 	my %cookie = Apache::Wyrd::Cookie->fetch;
 	my $auth_cookie = $cookie{'auth_cookie'};
+	my $ip = undef;
 	if ($auth_cookie) {
-		$auth_cookie = $auth_cookie->value;
+		$auth_cookie = eval{$auth_cookie->value};
 		return undef unless ($auth_cookie);
 		use Apache::Wyrd::Services::CodeRing;
 		my $cr = Apache::Wyrd::Services::CodeRing->new;
+		($ip, $auth_cookie) = split(':', $auth_cookie);
+		$ip = ${$cr->decrypt(\$ip)};
+		my $ip_ok = 1;
+		if ($self->req->dir_config('TieAddr')) {
+			my $remote_ip = $self->dbl->req->connection->remote_ip;
+			if ($remote_ip ne $ip) {
+				$self->_debug("Remote ip $remote_ip does not match cookie IP $ip, discarding cookie");
+				$ip_ok = 0;
+			} else {
+				$self->_debug("Remote ip $remote_ip matches cookie IP $ip, accepting cookie");
+			}
+		}
+		return undef unless ($ip_ok);
 		$user_info = ${$cr->decrypt(\$auth_cookie)};
 		eval('$user=' . $user_object . '->revive($user_info)');
 		if ($@) {
@@ -95,8 +111,27 @@ sub user {
 		}
 		return $user;
 	}
-	eval('$user=' . $user_object . '->new');
+	$user_info = $self->null_user_spec($user_object);
+	eval('$user=' . $user_object . '->new($user_info)');
 	return $user;
+}
+
+=pod
+
+=item (hashref) C<null_user_spec> (scalar)
+
+Because the Apache::Wyrd:Services::Auth framework requires that there must
+be a user object defined even when no user has logged in, this is a "hook"
+method for providing minimum initialization of the non-user user object.  It
+is passed the class name of the type of user object being created.  Return
+value is a hashref, defaulting to the empty hash. When there is no login,
+this method's return value will be passed directly to the C<new> method of
+the user object as if it were a new login.
+
+=cut
+
+sub null_user_spec {
+	return {};
 }
 
 =pod

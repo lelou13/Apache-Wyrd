@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Lattice::Footer;
-our $VERSION = '0.93';
+our $VERSION = '0.94';
 use base qw(Apache::Wyrd);
 
 sub _format_output {
@@ -13,7 +13,7 @@ sub _format_output {
 		unless ($self->_parent->can('register_footer'));
 	$self->_parent->register_footer($self->_data);
 	$self->_data('');
-	return undef;
+	return;
 }
 
 1;

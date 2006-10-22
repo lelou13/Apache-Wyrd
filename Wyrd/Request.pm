@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized redefine);
 
 package Apache::Wyrd::Request;
-our $VERSION = '0.93';
+our $VERSION = '0.94';
 my $have_apr = 1;
 eval ('use Apache::Request');
 if ($@) {
@@ -55,7 +55,15 @@ configuration via PerlSetVar/PerlAddVar directives.
 
 sub instance {
 	my ($class, $req) = @_;
-	return $req->pnotes($class . '_req_object') if ($req->pnotes($class . '_req_object'));
+	my $previous_req = undef;
+	do {
+		#attempt to recover the instance from the initial request if this
+		#is not the initial request.
+		my $instance = $req->pnotes($class . '_req_object');
+		return $instance if ($instance);
+		$previous_req = $req->prev;
+		$req = $previous_req if ($previous_req);
+	} while ($previous_req);
 	my @parms = $req->dir_config->get('RequestParms');
 	@parms = () unless ($parms[0]);
 	die "Uneven number of RequestParms in configuration.  See Apache::Wyrd::Request documentation."

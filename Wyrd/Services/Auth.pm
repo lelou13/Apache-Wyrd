@@ -4,8 +4,10 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::Auth;
-our $VERSION = '0.93';
+our $VERSION = '0.94';
 use Apache::Wyrd::Services::CodeRing;
+use Apache::Wyrd::Services::TicketPad;
+use Digest::SHA qw(sha256_hex);
 use Apache::Wyrd::Request;
 use Apache::Constants qw(AUTH_REQUIRED HTTP_SERVICE_UNAVAILABLE REDIRECT DECLINED);
 use Apache::Wyrd::Cookie;
@@ -35,6 +37,7 @@ Apache::Wyrd::Services::Auth - Cookie-based authorization handler
       PerlSetVar  ReturnError    error_message
       PerlSetVar  AuthLevel      restricted
       PerlSetVar  Debug          0
+      PerlSetVar  TieAddr        1
     </Directory>
 
 =head1 DESCRIPTION
@@ -97,7 +100,7 @@ originally-requested URL via the challenge CGI variable.  As the Auth
 object will again be in the stack, it will receive the challenge per the
 first paragraph of this description.
 
-=head2 PERL METHODS
+=head2 METHODS
 
 I<(format: (returns) name (arguments after self))>
 
@@ -109,33 +112,56 @@ All the processes above are handled by the C<handler> subroutine.
 
 =cut
 
-sub handler {
-	my $req = shift;
+sub handler : method {
+	my ($class, $req) = @_;
+	if (scalar(@_) == 1) {
+		$req = $class;
+		$class = 'Apache::Wyrd::Services::Auth';
+	}
+	my $self = {};
+	bless ($self, $class);
 	my $apr = Apache::Wyrd::Request->instance($req);
 	my $scheme = 'http';
 	$scheme = 'https' if ($req->server->port == 443);
 	my $port = '';
 	$port = ':' . $req->server->port unless ($req->server->port == 80);
 	my $challenge_failed = ($apr->param('ls_error') || '');
-	my $debug = $req->dir_config('Debug');
-	my $user_object = $req->dir_config('UserObject');
-	my $auth_path = $req->dir_config('AuthPath');
+	my $debug = $self->{'debug'} = $req->dir_config('Debug');
+	my $user_object = $self->{'user_object'} = $req->dir_config('UserObject');
+	my $auth_path = $self->{'ticketfile'} = $req->dir_config('AuthPath');
+	my $ticketfile = $self->{'ticketfile'} = $req->dir_config('KeyDBFile') || '/tmp/keyfile';
+	my $challenge_param = $self->{'challenge_param'} = $req->dir_config('ChallengeParam') || 'challenge';
+	my $key_url = $self->{'key_url'} = $req->dir_config('LSKeyURL')
+		|| die "Must define LSKeyURL in Apache Config to use Apache::Wyrd::Services::Auth on an insecure port.";
+
 	die "Must define UserObject in Apache Config to use Apache::Wyrd::Services::Auth." unless ($user_object);
 	my $cr = Apache::Wyrd::Services::CodeRing->new;
 	my %cookie = Apache::Wyrd::Cookie->fetch;
 	my $user_info = undef;
 	my $auth_cookie = $cookie{'auth_cookie'};
 	my $user = undef;
+	my $ip = undef;
 
 	#if the auth_cookie exists, decrypt it and see if it makes sense
 	if ($auth_cookie) {
-		$auth_cookie = $cookie{'auth_cookie'}->value;
+		($ip, $auth_cookie) = split(':', eval{$cookie{'auth_cookie'}->value});
+		$debug && warn("IP before decrypt: " . $ip);
+		$ip = ${$cr->decrypt(\$ip)};
+		my $ip_ok = 1;
+		if ($req->dir_config('TieAddr')) {
+			my $remote_ip = $req->connection->remote_ip;
+			if ($remote_ip ne $ip) {
+				$debug && warn ("Remote ip $remote_ip does not match cookie IP $ip, failing authentication");
+				$ip_ok = 0;
+			} else {
+				$debug && warn ("Remote ip $remote_ip matches cookie IP $ip");
+			}
+		}
 		$debug && warn("Cookie value before decrypt: " . $auth_cookie);
 		$user_info = ${$cr->decrypt(\$auth_cookie)};
 		$debug && warn("Cookie value: " . $user_info);
-		eval "use $user_object;";
-		eval('$user = ' . $user_object . '->revive($user_info)');
-		if (($user_info and not($user->check_credentials)) or ($auth_cookie and not($user_info))) {
+		$user=$self->revive($user_info);
+		if (($user_info and not($user->check_credentials)) or ($auth_cookie and not($user_info)) or ($auth_cookie and not($ip_ok))) {
 			my $cookie = Apache::Wyrd::Cookie->new(
 				$req,
 				-name=>'auth_cookie',
@@ -144,50 +170,45 @@ sub handler {
 				-path=> ($auth_path || '/')
 			);
 			$cookie->bake;
+			#TO DO: Make this error message configurable
 			$challenge_failed = "Your session has expired due to system maintenance.  Please log in again.";
 			$user_info = undef;
 		}
 	}
 
+	#if the user info is found, pass it to the next handler via the Notes interface to Apache
 	if ($user_info) {
 		$req->notes->add('User' => $user_info);
 		return DECLINED;
 	} else {
+
 		#is there a challenge variable from the Login Server?
-		my $challenge = $apr->param('challenge');
+		my $challenge = $apr->param($challenge_param);
+		$apr->param($challenge_param, '');
 		if ($challenge) {
-			$debug && warn('challenge ' . "'$challenge'" . ' decrypts to ' . ${$cr->decrypt(\$challenge)});
-			my ($username, $password) = split(':', ${$cr->decrypt(\$challenge)});
-			my $user = undef;
-			eval "use $user_object;";
-			eval('$user = ' . $user_object . '->new({username => $username, password => $password})');
-			die $@ if ($@);
-			if ($user->login_ok) {
-				$debug && warn ("User has been authenticated.");
-				my $user_info = $user->store;
-				$debug && warn ("User info is:\n$user_info");
-				$req->notes->add('User' => $user_info);
-				$user_info = $cr->encrypt(\$user_info);
-				my $cookie = Apache::Wyrd::Cookie->new(
-					$req,
-					-name=>'auth_cookie',
-					-value=>$$user_info,
-					-domain=>$req->hostname,
-					-path=> ($auth_path || '/')
-				);
-				$cookie->bake;
-				my $uri = $req->uri;
-				$uri = Apache::URI->parse($uri);
-				my $query_string = $uri->query;
-				$query_string =~ s/challenge=[0123456789abcdefABCDEF]+\&?//g;
-				$query_string =~ s/\&$//;
-				$query_string = '?' . $query_string if ($query_string);
-				my $self = $scheme . '://' . $req->hostname . $port . $req->uri . $query_string;
-				$req->custom_response(REDIRECT, $self);
-				return REDIRECT;
+			$debug && warn('challenge ' . "'$challenge'" . ' decrypts to ' . join(':', $self->decrypt_challenge($challenge)));
+			my ($username, $password) = $self->decrypt_challenge($challenge);
+			if ($username) {
+				my $user = $self->initialize({username => $username, password => $password});
+				if ($user->login_ok) {
+					$self->authorize_user($req, $user);
+					my $uri = $req->uri;
+					$uri = Apache::URI->parse($uri);
+					#remove the challenge portion of the query string
+					my $query_string = $uri->query;
+					$query_string =~ s/challenge=[0123456789abcdefABCDEF:]+\&?//g;
+					$query_string =~ s/\&$//;
+					$query_string = '?' . $query_string if ($query_string);
+					my $self = $scheme . '://' . $req->hostname . $port . $req->uri . $query_string;
+					$req->custom_response(REDIRECT, $self);
+					return REDIRECT;
+				} else {
+					$debug && warn('challenge was bad, trying regular login again.');
+					$challenge_failed = ($user->auth_error || 'Incorrect Username/Password.  Please log in again.');
+				}
 			} else {
-				$debug && warn('challenge was bad, trying regular login again.');
-				$challenge_failed = ($user->auth_error || 'Incorrect Username/Password.  Please log in again.');
+				$debug && warn('challenge could not be decrypted, trying regular login again.');
+				$challenge_failed = ($user->auth_error || 'Could not process the login because of system maintenance.  Please try again.');
 			}
 		}
 	}
@@ -237,23 +258,11 @@ sub handler {
 	#require an SSL login server if this is an insecure port (currently always).
 	#in future, 1 will be replaced with a test for SSL encryption.
 	if (1 or $req->dir_config('LSForce')) {
-		# 1) Generate a random key.  NB: stored in A DBM, so null byte terminates string in C.  Avoid it.
-		my $key = '';
-		for (my $i=0; $i<56; $i++) {
-			$key .= chr(int(rand(255)) + 1);
-		}
-		my $rand_cr = Apache::Wyrd::Services::CodeRing->new({key => $key});
-		my $self_cr = Apache::Wyrd::Services::CodeRing->new;
-		my $self_cr_key = $self_cr->key;
 
-		# 2) Use that key to encrypt the server's secret key
-		my $ticket = $rand_cr->encrypt(\$self_cr_key);
-		$key = Apache::Util::escape_uri($key);
-		$debug && warn (Apache::Util::escape_uri($self_cr_key) . " should equal " . Apache::Util::escape_uri(${$rand_cr->decrypt($ticket)}));
-		$debug && warn ("Using $key");
-		# 3) Send that encrypted key and the key to decrypt it to the Login Server
-		my $key_url = $req->dir_config('LSKeyURL')
-			|| die "Must define LSKeyURL in Apache Config to use Apache::Wyrd::Services::Auth on an insecure port.";
+		#Get an encryption key and a ticket number
+		my ($key, $ticket) = $self->generate_ticket;
+
+		#Send that pair to the Login Server
 		$key_url = 'https://' . $req->hostname . $key_url unless ($key_url =~ /^https?:\/\//i);
 		if ($key_url =~ /^https:\/\//i) {
 			eval('use IO::Socket::SSL');
@@ -265,10 +274,12 @@ sub handler {
 		my $response = $ua->request(POST $key_url,
 			[
 				key		=>	$key,
-				ticket	=>	$$ticket
+				ticket	=>	$ticket
 			]
 		);
 		my $status = $response->status_line;
+
+		#If the key can't be saved on the login server, send regrets and close
 		if ($status !~ /200|OK/) {
 			$debug && warn ("Login Server status was $status");
 			my $failed_url = $req->dir_config('LSDownURL');
@@ -280,9 +291,9 @@ sub handler {
 				return HTTP_SERVICE_UNAVAILABLE;
 			}
 
-		# 4) Send the encrypted data as a lookup key to the login form to add
-		#    to its hidden fields.  If a challenge failed earlier in the script
-		#    and ReturnError is defined, use it.
+		#Send the encrypted data as a lookup key to the login form to add
+		#to its hidden fields.  If a challenge failed earlier in the script
+		#and ReturnError is defined, use it.
 		} else {
 			my $use_error = $req->dir_config('ReturnError');
 			my $login_url = $req->dir_config('LoginFormURL');
@@ -294,12 +305,12 @@ sub handler {
 				$uri = Apache::URI->parse($uri);
 				my $query_string = $uri->query;
 				$query_string =~ s/\&?check_cookie=yes\&?//;
-				$query_string =~ s/challenge=[0123456789abcdefABCDEF]+\&?//g;
+				$query_string =~ s/challenge=[0123456789abcdefABCDEF:]+\&?//g;
 				$query_string = '?' . $query_string if ($query_string);
 				my $on_success = Apache::Util::escape_uri(encode_base64($scheme . '://' . $req->hostname . $port . $req->uri . $query_string));
 				my $redirect = $login_url .
 					'?ls=' . $ls_url .
-					'&ticket=' . $$ticket .
+					'&ticket=' . $ticket .
 					'&on_success=' . $on_success .
 					'&use_error=' . $use_error .
 					($challenge_failed ? '&'. $use_error . '=' . $challenge_failed : '');
@@ -315,6 +326,101 @@ sub handler {
 	} else {
 		#never get here.
 	}
+}
+
+sub revive {
+	my ($self, $user_info) = @_;
+	my $user = undef;
+	my $user_object = $self->{'user_object'};
+	my $debug =  $self->{'debug'};
+	eval "use $user_object";
+	$debug && $@ && die("$user_object failed to be initialized: $@");
+	#TO DO: place this into a safe of some sort
+	eval('$user = ' . $user_object . '->revive($user_info)');
+	return $user;
+
+}
+
+sub initialize {
+	my ($self, $init) = @_;
+	my $user = undef;
+	my $username=$init->{'username'};
+	my $password=$init->{'password'};
+	my $user_object = $self->{'user_object'};
+	eval "use $user_object;";
+	eval('$user = ' . $user_object . '->new({username => $username, password => $password})');
+	die $@ if ($@);
+	return $user;
+}
+
+sub generate_ticket {
+	my ($self) = @_;
+
+	my $debug = $self->{'debug'};
+	my $ticketfile = $self->{'ticketfile'};
+
+	# 1) Generate a random 56-byte key.  NB: values are 1-255, not 0-255 as it will be stored in A DB file, so null byte terminates string in C.  Avoid it.
+	my $key = '';
+	for (my $i=0; $i<56; $i++) {
+		$key .= chr(int(rand(255)) + 1);
+	}
+	
+	# 2) Make a ticket serial number by using sha256
+	my $ticket = sha256_hex($key);
+	$key = Apache::Util::escape_uri($key);
+
+	$debug && warn ("Storing key under ID $ticket");
+	my $pad = Apache::Wyrd::Services::TicketPad->new($ticketfile);
+	$pad->add_ticket($ticket, $key);
+
+	return ($key, $ticket);
+}
+
+sub decrypt_challenge {
+	my ($self, $challenge) = @_;
+
+	my $debug = $self->{'debug'};
+	my $ticketfile = $self->{'ticketfile'};
+
+	#separate the ticket from the data
+	my ($ticket, $data) = split ':', $challenge;
+
+	#find the key for decrypting the data;
+	$debug && warn('finding ' . $ticket);
+	my $pad = Apache::Wyrd::Services::TicketPad->new($ticketfile);
+	my $key = $pad->find($ticket);
+
+	$debug && warn "found key $key";
+	$key = Apache::Util::unescape_uri($key);
+	my $cr = Apache::Wyrd::Services::CodeRing->new({key => $key});
+	my ($username, $password) = split ("\t", ${$cr->decrypt(\$data)});
+
+	return ($username, $password);
+}
+
+sub authorize_user {
+	my ($self, $req, $user) = @_;
+
+	my $debug = $self->{'debug'};
+	my $cr = Apache::Wyrd::Services::CodeRing->new;
+	my $auth_path = $req->dir_config('AuthPath');
+
+	$debug && warn ("User has been authenticated. Authorizing User and creating Cookie");
+
+	my $user_info = $user->store;
+	$debug && warn ("User info is:\n$user_info");
+	$req->notes->add('User' => $user_info);
+	$user_info = $cr->encrypt(\$user_info);
+	my $ip_addr = $req->connection->remote_ip;
+	$ip_addr = $cr->encrypt(\$ip_addr);
+	my $cookie = Apache::Wyrd::Cookie->new(
+		$req,
+		-name=>'auth_cookie',
+		-value=>$$ip_addr . ':' . $$user_info,
+		-domain=>$req->hostname,
+		-path=> ($auth_path || '/')
+	);
+	$cookie->bake;
 }
 
 =pod
@@ -367,6 +473,15 @@ CGI param for username if not 'username'
 =item PassVar
 
 CGI param for password if not 'password'
+
+=item Debug
+
+Dump debugging information to the Error Log (0 for default no, 1 for yes)
+
+=item TieAddr
+
+Require a fixed client address for the session (less compatible with some
+ISPs) (0 for default no, 1 for yes)
 
 =back
 

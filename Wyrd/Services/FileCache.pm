@@ -8,7 +8,7 @@ use strict;
 use Apache::Wyrd::Services::SAK qw(slurp_file token_parse);
 use Exporter;
 
-our $VERSION = '0.93';
+our $VERSION = '0.94';
 our @ISA = qw(Exporter);
 our @EXPORT = qw(get_cached);
 
@@ -70,7 +70,11 @@ sub get_cached {
 	my ($self, $file) = @_;
 	my $time = time;
 	my @stats = (undef,undef,undef,undef,undef,undef,undef,undef,undef,$_file_timestamp_register{$file});
-	if ($self->dbl->req->dir_config('NoFileCache') or ($_previous_checktime_register < ($time - $timeout))) {
+	my $force_load = 0;
+	if ($self->can('dbl')) {#we're in a Wyrd, so we can check the dir_config;
+		$force_load = 1 if ($self->dbl->req->dir_config('NoFileCache'));
+	}
+	if ($force_load or ($_previous_checktime_register < ($time - $timeout))) {
 		#$self->_info("checking $file against file cache");
 		@stats = stat($file);
 		delete($_file_cache_register{$file}) if ($stats[9] > $_file_timestamp_register{$file});
@@ -81,7 +85,7 @@ sub get_cached {
 		$self->_raise_exception("File $file cannot be read or is not a proper file.")
 			unless ($self->_flags->allow_nonexistent_files);
 	}
-	$self->_info("reading $file for file cache");
+	$self->_info("reading $file for file cache") if ($self->can('_info'));
 	$_file_cache_register{$file} =  ${slurp_file($file)};
 	$_file_timestamp_register{$file} = $stats[9];
 	return $_file_cache_register{$file};

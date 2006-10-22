@@ -3,6 +3,7 @@ use strict;
 use warnings;
 
 package Apache::Wyrd::Bot;
+our $VERSION = '0.94';
 use base qw(Apache::Wyrd::Interfaces::Setter Apache::Wyrd);
 use Apache::Wyrd::Services::SAK qw(slurp_file);
 use XML::Dumper;
@@ -11,7 +12,7 @@ use XML::Dumper;
 
 =head1 NAME
 
-Apache::Wyrd::Bot
+Apache::Wyrd::Bot - Spawn a process and monitor it
 
 =head1 SYNOPSIS
 
@@ -104,10 +105,15 @@ I<(format: (returns) name (arguments after self))>
 
 =item (hashref) C<params> (void)
 
-Provide a reference to a hash of attribute value pairs to
-give defaults to attributes.  Useful for creating a base
-class of 'Bots from which bots that perform different jobs
-can be derived.
+Provide a reference to a hash of attribute value pairs to give defaults to
+attributes.  The params method is called at runtime, so it has all Wyrd
+methods available to it and can be used to pass CGI data to the bot before
+launching it as a process.  The spawned bot can access this data by calling
+referring to C<$self-E<gt>>{I<E<lt>keynameE<gt>>} or calling a method with
+that keyname.
+
+The other use is for creating a base class of 'Bots from which bots that
+perform different jobs can be derived.
 
 =cut
 
@@ -136,6 +142,21 @@ sub _work {
 		print "$i<br>\n";
 		sleep 2;
 	}
+}
+
+=pod
+
+=item (void) C<_process_results> (scalar, scalar)
+
+
+=cut
+
+sub _process_results {
+	my ($self, $status, $view) = @_;
+	my $status_message = "Unknown";
+	$status_message = "Finished" if ($status == 0);
+	$status_message = "Working..." if ($status == 1);
+	return ($status_message, $view);
 }
 
 =pod
@@ -185,7 +206,7 @@ sub _format_output {
 	my $running = 0;
 	my $start = 1;
 	my $view = '';
-	my $status = "Finished";
+	my $status = 0;
 	my $meta = '';
 	if (-f $self->pidfile) {
 		my $pid = ${slurp_file($self->pidfile)};
@@ -232,9 +253,10 @@ sub _format_output {
 		$running = 1;
 	}
 	if ($running) {
-		$status = "Working...";
+		$status = 1;
 		$meta = '<meta http-equiv="refresh" content="' . $self->refresh . ';url=' . $self->dbl->req->parsed_uri->unparse . '">'
 	}
+	($status, $view) = $self->_process_results($status, $view);
 	$self->_data($self->_set({status => $status, view => $view, meta => $meta}));
 	unlink ($self->outfile) unless($running);
 
@@ -409,7 +431,7 @@ sub _cleanup {
 	unlink $self->pidfile || die "Can't remove my own pidfile " . $self->pidfile;
 	my $log = slurp_file($self->errfile);
 	unlink $self->errfile unless ($$log);
-	return undef;
+	return;
 }
 
 =pod

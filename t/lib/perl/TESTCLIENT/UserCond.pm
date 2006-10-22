@@ -20,7 +20,7 @@ sub _format_output {
 		$failed = 1;
 	}
 	$self->_data(undef) if $failed;
-	return undef;
+	return;
 }
 
 1;

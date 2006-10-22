@@ -6,8 +6,8 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Interfaces::Indexable;
-our $VERSION = '0.93';
-use Digest::SHA1 qw(sha1_hex);
+our $VERSION = '0.94';
+use Digest::SHA qw(sha1_hex);
 
 =pod
 
@@ -89,6 +89,17 @@ by C<index_data> as the basis for the index' C<word_search>.
 
 =cut
 
+sub index_digest {
+	my ($self, $extra) = @_;
+	#note that index_data also returns title and description.  Name is the index key,
+	#so unneeded. Timestamp is only used as another indicator of file change by
+	#Apache::Wyrd::Services::Index objects.
+	return sha1_hex(
+			  $self->index_data
+			. $extra
+	);
+}
+
 sub index_name {
 	my ($self) = @_;
 	return $self->dbl->self_path;
@@ -97,13 +108,6 @@ sub index_name {
 sub index_timestamp {
 	my ($self) = @_;
 	return $self->dbl->mtime;
-}
-
-sub index_digest {
-	my ($self) = @_;
-	my $weight = ($self->{keyword_weight} || 5);
-	my $keywords = $self->{'keywords'} . ' ';
-	return sha1_hex($self->index_data . $self->index_title . $self->index_description . $keywords x $weight);
 }
 
 sub index_data {

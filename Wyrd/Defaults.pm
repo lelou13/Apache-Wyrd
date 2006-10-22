@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Defaults;
-our $VERSION = '0.93';
+our $VERSION = '0.94';
 use base qw(Apache::Wyrd::Query);
 
 =pod
@@ -15,27 +15,27 @@ Apache::Wyrd::Defaults - Default data for a Form Wyrd
 
 =head1 SYNOPSIS
 
-	<BASENAME::SQLForm index="user_id" table="users">
-	  <BASENAME::Form::Template name="password">
-	    <BASENAME::Form::Preload>
-	      <BASENAME::Defaults>
-	        select 'root' as user_id;
-	      </BASENAME::Defaults>
-	      <BASENAME::Query>
-	        select user_id from users where name='Groucho'
-	      </BASENAME::Query>
-	    </BASENAME::Form::Preload>
-	    <b>Enter Password:</b><br>
-	    <BASENAME::Input name="password" type="password" />
-	    <BASENAME::Input name="user_id" type="hidden" />
-	  </BASENAME::Form::Template>
-	  <BASENAME::Form::Template name="result">
-	    <H1>Status: $:_status</H1>
-	    <HR>
-	    <P>$:_message</P>
-	  </BASENAME::Form::Template>
-	</BASENAME::SQLForm>
-
+  <BASENAME::SQLForm index="user_id" table="users">
+    <BASENAME::Form::Template name="password">
+    <BASENAME::Form::Preload>
+      <BASENAME::Defaults>
+        select 'root' as user_id;
+      </BASENAME::Defaults>
+      <BASENAME::Query>
+        select user_id from users where name='Groucho'
+      </BASENAME::Query>
+    </BASENAME::Form::Preload>
+    <b>Enter Password:</b><br>
+    <BASENAME::Input name="password" type="password" />
+    <BASENAME::Input name="user_id" type="hidden" />
+    </BASENAME::Form::Template>
+    <BASENAME::Form::Template name="result">
+    <H1>Status: $:_status</H1>
+    <HR>
+    <P>$:_message</P>
+    </BASENAME::Form::Template>
+  </BASENAME::SQLForm>
+  
 =head1 DESCRIPTION
 
 Provide default values to a parent object.  The parent must have a
@@ -68,7 +68,7 @@ sub _generate_output {
 	} else {
 		$self->_warn("Defaults '" . $self->{'query'} . "' called, but not used.  Parent should register_defaults.");
 	}
-	return undef;
+	return;
 };
 
 

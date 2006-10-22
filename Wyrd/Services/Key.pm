@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::Key;
-our $VERSION = '0.93';
+our $VERSION = '0.94';
 use base qw(Class::Singleton);
 
 my $pure_perl = 0;

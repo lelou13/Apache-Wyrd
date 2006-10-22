@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::DBL;
-our $VERSION = '0.93';
+our $VERSION = '0.94';
 use DBI;
 use Apache;
 use Apache::Wyrd::Request;
@@ -68,9 +68,9 @@ database password
 
 database user name
 
-=item debug
+=item loglevel
 
-debugging level
+Logging level, per Apache::Wyrd object
 
 =item globals
 
@@ -79,10 +79,6 @@ pointer to globals hashref
 =item req (B<required>)
 
 the request itself (Apache request object)
-
-=item self_url
-
-full URL of current request (depreciated)
 
 =item strict
 
@@ -108,19 +104,30 @@ sub new {
 		$$init{'globals'} = {};
 	}
 	my @standard_params = qw(
-		dba
+		atime
+		blksize
+		blocks
+		ctime
 		database
 		db_password
 		db_username
-		debug
+		dba
+		dev
 		file_path
+		gid
 		globals
+		ino
 		logfile
+		loglevel
+		mode
 		mtime
+		nlink
+		rdev
 		req
 		self_path
 		size
 		strict
+		uid
 		user
 	);
 	my $data = {
@@ -137,7 +144,7 @@ sub new {
 		$data->{'req'} = $$init{'req'};
 		$data->{'mod_perl'} = 1;
 		my $server = $$init{'req'}->server;
-		$data->{'debug'} = 1 if ($server->port == 81);
+		$data->{'loglevel'} = 4 if ($server->port == 81);
 		$data->{'self_path'} ||= $$init{'req'}->parsed_uri->rpath;
 		my $apr = Apache::Wyrd::Request->instance($$init{'req'});
 		$data->{'apr'} = $apr;
@@ -179,15 +186,15 @@ sub strict {
 
 =pod
 
-=item (scalar) C<debug> (void)
+=item (scalar) C<loglevel> (void)
 
-Optional read-only method for "debug" conditions.  Not used by the default install.
+Optional read-only method for "loglevel" conditions.  Not used by the default install.
 
 =cut
 
-sub debug {
+sub loglevel {
 	my ($self) = @_;
-	return $self->{'debug'};
+	return $self->{'loglevel'};
 }
 
 =pod
@@ -300,6 +307,182 @@ sub size {
 
 =pod
 
+=item (scalar) C<dev> (void)
+
+the device number of filesystem of the file currently being served.  Derived
+from Apache::Wyrd::Handler, by default compatible with the C<stat()> builtin
+function.
+
+=cut
+
+sub dev {
+	my ($self) = @_;
+	return $self->{'dev'};
+}
+
+
+=pod
+
+=item (scalar) C<ino> (void)
+
+the inode number of the file currently being served.  Derived from
+Apache::Wyrd::Handler, by default compatible with the C<stat()> builtin
+function.
+
+=cut
+
+sub ino {
+	my ($self) = @_;
+	return $self->{'ino'};
+}
+
+
+=pod
+
+=item (scalar) C<mode> (void)
+
+the file mode  (type and permissions) of the file currently being served. 
+Derived from Apache::Wyrd::Handler, by default compatible with the C<stat()>
+builtin function.
+
+=cut
+
+sub mode {
+	my ($self) = @_;
+	return $self->{'mode'};
+}
+
+
+=pod
+
+=item (scalar) C<nlink> (void)
+
+the number of (hard) links to the file of the file currently being served. 
+Derived from Apache::Wyrd::Handler, by default compatible with the C<stat()>
+builtin function.
+
+=cut
+
+sub nlink {
+	my ($self) = @_;
+	return $self->{'nlink'};
+}
+
+
+=pod
+
+=item (scalar) C<uid> (void)
+
+the numeric user ID of file's owner of the file currently being served. 
+Derived from Apache::Wyrd::Handler, by default compatible with the C<stat()>
+builtin function.
+
+=cut
+
+sub uid {
+	my ($self) = @_;
+	return $self->{'uid'};
+}
+
+
+=pod
+
+=item (scalar) C<gid> (void)
+
+the numeric group ID of file's owner of the file currently being served. 
+Derived from Apache::Wyrd::Handler, by default compatible with the C<stat()>
+builtin function.
+
+=cut
+
+sub gid {
+	my ($self) = @_;
+	return $self->{'gid'};
+}
+
+
+=pod
+
+=item (scalar) C<rdev> (void)
+
+the the device identifier (special files only) of the file currently being
+served.  Derived from Apache::Wyrd::Handler, by default compatible with the
+C<stat()> builtin function.
+
+=cut
+
+sub rdev {
+	my ($self) = @_;
+	return $self->{'rdev'};
+}
+
+
+=pod
+
+=item (scalar) C<atime> (void)
+
+the last access time in seconds since the epoch of the file currently being
+served.  Derived from Apache::Wyrd::Handler, by default compatible with the
+C<stat()> builtin function.
+
+=cut
+
+sub atime {
+	my ($self) = @_;
+	return $self->{'atime'};
+}
+
+
+=pod
+
+=item (scalar) C<ctime> (void)
+
+the inode change time in seconds since the epoch of the file currently being
+served.  Derived from Apache::Wyrd::Handler, by default compatible with the
+C<stat()> builtin function.  See the perl documentation for details.
+
+=cut
+
+sub ctime {
+	my ($self) = @_;
+	return $self->{'ctime'};
+}
+
+
+=pod
+
+=item (scalar) C<blksize> (void)
+
+the preferred block size for file system I/O of the file currently being
+served.  Derived from Apache::Wyrd::Handler, by default compatible with the
+C<stat()> builtin function.
+
+=cut
+
+sub blksize {
+	my ($self) = @_;
+	return $self->{'blksize'};
+}
+
+
+=pod
+
+=item (scalar) C<blocks> (void)
+
+the actual number of blocks allocated of the file currently being served. 
+Derived from Apache::Wyrd::Handler, by default compatible with the C<stat()>
+builtin function.
+
+=cut
+
+sub blocks {
+	my ($self) = @_;
+	return $self->{'blocks'};
+}
+
+
+=pod
+
 =item (variable) C<get_global> (scalar)
 
 retrieve a global by name.
@@ -310,7 +493,7 @@ sub get_global {
 	my ($self, $name) = @_;
 	unless (exists($self->{'globals'}->{$name})) {
 		$self->log_bug("Asked to get global value $name which doesn't exist. Returning undef.");
-		return undef;
+		return;
 	}
 	return $self->{'globals'}->{$name};
 }
@@ -330,7 +513,7 @@ sub set_global {
 		$self->log_bug("Asked to set global value $name which doesn't exist.  Creating it and setting it.");
 	}
 	$self->{'globals'}->{$name} = $value;
-	return undef;
+	return;
 }
 
 =pod
@@ -357,7 +540,7 @@ Set the response.  Should be an Apache::Constants response code.
 sub set_response {
 	my ($self, $response) = @_;
 	$self->{'response'} = $response;
-	return undef;
+	return;
 }
 
 =pod
@@ -372,7 +555,12 @@ being serviced don't require one.
 
 sub dbh {
 	my ($self) = shift;
-	return $self->{'dbh'} if ($self->{'dbh_ok'});
+	return $self->{'dbh'} if ($self->{'dbh_ok'} && $self->{'dbh'}->ping);
+	if (UNIVERSAL::isa($self->{'dbh'}, 'DBI::db')) {
+		$self->{'dbh'}->disconnect;
+		$self->{'dbh'} = undef;
+		$self->{'dbh_ok'} = 0;
+	}
 	my $dba = $self->{'dba'};
 	my $db = $self->{'database'};
 	my $uname = $self->{'db_username'};
@@ -380,6 +568,7 @@ sub dbh {
 	$self->_init_db($dba, $db, $uname, $pw);
 	return $self->{'dbh'} if ($self->{'dbh_ok'});
 	$self->log_bug('dbh was requested from DBL but no database could be initialized');
+	return;
 }
 
 =pod
@@ -407,8 +596,28 @@ default install.
 
 sub user {
 	my ($self) = shift;
-	$self->log_bug("User not Defined") unless ($self->{'user'});
-	return $self->{'user'};
+	if ($self->{'user'}) {
+		return $self->{'user'};
+	} else {
+		#attempt to create a null user if none is defined.
+		my $req = $self->req;
+		my $object_class = $req->dir_config('UserObject');
+		if ($object_class) {
+			eval "use $object_class";
+			unless ($@) {
+				my $user = undef;
+				eval '$user = ' . $object_class . '->new()';
+				unless ($@) {
+					return $user;
+				} else {
+					$self->log_bug("User Object defined as $object_class, but could not be instantiated.  Reason: $@");
+				}
+			} else {
+				$self->log_bug("You must define a user class with the UserObject directory configuration.  See `perldoc Apache::Wyrd::Services::Auth`.");
+			}
+		}
+	}
+	return undef;
 }
 
 =pod
@@ -483,6 +692,20 @@ sub self_path {
 
 =pod
 
+=item (scalar) C<self_url> (void)
+
+return an interpolated version of the current url.
+
+=cut
+
+sub self_url {
+	my ($self) = @_;
+	my $scheme = 'http:';
+	$scheme = 'https:' if ($self->req->server->port == 443);
+	return $scheme . '//' . $self->req->hostname . $self->req->parsed_uri->unparse;
+}
+=pod
+
 =item (internal) C<_init_db> (scalar, scalar, scalar, scalar);
 
 open the DB connection.  Accepts a database type, a database name, a username,
@@ -500,9 +723,9 @@ sub _init_db {
 	$self->log_bug("Database init failed: $@") if ($@);
 	if (UNIVERSAL::isa($dbh, 'DBI::db') && $dbh->ping) {
 		$self->{'dbh_ok'} = 1;
-		$self->{'dbh'} = $dbh if ($self->{'dbh_ok'});
+		$self->{'dbh'} = $dbh;
 	}
-	return undef;
+	return;
 }
 
 =pod
@@ -518,7 +741,7 @@ sub close_db {
 	return undef unless ($self->{'dbh_ok'});
 	$self->{'dbh'}->finish if (UNIVERSAL::can($self->{'dbh'}, 'finish'));
 	$self->{'dbh'}->disconnect if (UNIVERSAL::can($self->{'dbh'}, 'disconnect'));
-	return undef;
+	return;
 }
 
 =item (scalarref) C<dump_log> (void)

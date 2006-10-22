@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::SearchParser;
-our $VERSION = '0.93';
+our $VERSION = '0.94';
 
 =pod
 

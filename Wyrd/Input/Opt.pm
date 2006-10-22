@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Input::Opt;
-our $VERSION = '0.93';
+our $VERSION = '0.94';
 use Apache::Wyrd::Datum;
 use base qw(Apache::Wyrd::Interfaces::Setter Apache::Wyrd);
 =pod
@@ -117,9 +117,9 @@ interface.
 
 sub radiobutton {
 	my ($self) = @_;
-	my $template = q(<nobr><input type="radio" name="$:name" value="$:option"$:option_on?:class{ class="$:class"}?:onchange{ onchange="$:onchange"}?:onselect{ onselect="$:onselect"}?:onblur{ onblur="$:onblur"}?:onfocus{ onfocus="$:onfocus"}?:disabled{ disabled}>$:option_text</input></nobr>);
+	my $template = q(<nobr><input type="radio" name="$:name" value="$:option"$:option_on?:class{ class="$:class"}?:style{ style="$:style"}?:onchange{ onchange="$:onchange"}?:onselect{ onselect="$:onselect"}?:onblur{ onblur="$:onblur"}?:onfocus{ onfocus="$:onfocus"}?:disabled{ disabled}>$:option_text</input></nobr>);
 	$self->{'disabled'} = 1 if ($self->_flags->disabled);
-	my %hash = map {$_ => $self->{$_}} qw(class onchange onselect onblur onfocus disabled);
+	my %hash = map {$_ => $self->{$_}} qw(class style onchange onselect onblur onfocus disabled);
 	return $self->_set(\%hash, $template);
 }
 
@@ -135,9 +135,10 @@ interface.
 
 sub checkbox {
 	my ($self) = @_;
-	my $template = q(<nobr><input type="checkbox" name="$:name" value="$:option"$:option_on?:class{ class="$:class"}?:onchange{ onchange="$:onchange"}?:onselect{ onselect="$:onselect"}?:onblur{ onblur="$:onblur"}?:onfocus{ onfocus="$:onfocus"}?:disabled{ disabled}>$:option_text</input></nobr>);
+	my $template = q(!:break{<nobr>}<input type="checkbox" name="$:name" value="$:option"$:option_on?:class{ class="$:class"}?:style{ style="$:style"}?:onchange{ onchange="$:onchange"}?:onselect{ onselect="$:onselect"}?:onblur{ onblur="$:onblur"}?:onfocus{ onfocus="$:onfocus"}?:disabled{ disabled}>$:option_text</input>!:break{</nobr>});
 	$self->{'disabled'} = 1 if ($self->_flags->disabled);
-	my %hash = map {$_ => $self->{$_}} qw(class onchange onselect onblur onfocus disabled);
+	$self->{'break'} = 1 if ($self->_flags->break);
+	my %hash = map {$_ => $self->{$_}} qw(class style onchange onselect onblur onfocus disabled break);
 	return $self->_set(\%hash, $template);
 }
 
@@ -178,7 +179,7 @@ sub _format_output {
 	$self->_raise_exception("Opt needs to be inside an Input::Set") unless ($self->{'_parent'}->can('register_child'));
 	$self->{'_id'} = $self->{'_parent'}->register_child($self);
 	$self->{'_template'} = $self->_data;
-	return undef;
+	return;
 }
 
 sub _generate_output {

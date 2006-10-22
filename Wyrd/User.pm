@@ -4,10 +4,11 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::User;
-our $VERSION = '0.93';
+our $VERSION = '0.94';
 use XML::Dumper;
 use Apache::Wyrd::Services::SAK qw(data_clean);
-use Digest::SHA1 qw(sha1_hex);
+use Digest::SHA qw(sha1_hex);
+use Carp;
 
 =pod
 
@@ -51,13 +52,14 @@ sub AUTOLOAD {
 	my ($self, $newval) = @_;
 	return undef if $AUTOLOAD =~ /DESTROY$/;
 	$AUTOLOAD =~ s/.*:://;
+	confess "$AUTOLOAD was called as a method, not a sub " unless (ref($self));
 	if(defined($self->{$AUTOLOAD})){
 		return $self->{$AUTOLOAD} unless (scalar(@_) == 2);
 		$self->{$AUTOLOAD} = $newval;
 		return $newval;
 	} else {
 		$self->{$AUTOLOAD} = $newval;
-		return undef;
+		return;
 	}
 }
 
@@ -155,7 +157,7 @@ creation/revival.  Must be implemented by a subclass.
 
 sub get_authorization {
 	warn("No authorization scheme has been implemented.  You must subclass Apache::Wyrd::User.  Method should initialize authorization in whatever manner you may choose, and should set up whatever is needed for the auth(authlevel) method.");
-	return undef;
+	return;
 }
 
 =pod
@@ -170,7 +172,7 @@ a subclass.
 
 sub auth {
 	warn("No authorization scheme has been implemented.  You must subclass Apache::Wyrd::User.  Method should accept an argument against which it either offers an undef (fail) or defined (success) value on any single argument, i.e. auth(authlevel).");
-	return undef;
+	return;
 }
 
 =pod
@@ -209,7 +211,7 @@ Return true if the username is equal to the given argument.
 sub is {
 	my ($self, $username) = @_;
 	return 1 if ($self->{'username'} eq $username);
-	return undef;
+	return;
 }
 
 #Credentials methods are for doing checksums on the user data to ensure the user is

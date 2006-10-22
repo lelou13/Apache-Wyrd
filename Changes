@@ -1,6 +1,97 @@
 Changes
 =======
 
+    0.94   October 22, 2006
+
+           Indexer now requires perl 5.8 for Unicode support
+
+           New interoperatable objects for building complex sites now
+           available under Apache::Wyrd::Site::XXX
+
+           New _cleanup method to complement the _setup method
+
+           Lookup has new "nojoin" flag for formatted repeating queries
+
+           New self_url method for DBL
+
+           GIF support for Chart
+
+           New Loop Wyrd for convenient iteration through SQL query results
+
+           New View Wyrd as a data placemarker
+
+           New PreAuth Handler Object for immediate (pre-denial) logons
+           using Apache:::Wyrd::Site::Login Wyrds
+
+           New MySQLIndex object to give Index a MySQL back-end
+
+           Fixed bug where DBL was not passing its loglevel to newly created
+           Wyrds
+
+           Closed an open-database bug when the Wyrd::Apache::Services::Index
+           was using the "bigfile" option. More explicit untie-ing of databases
+
+           Index more efficient in the re-indexing of data attribute under
+           the "bigfile" option
+
+           Index no longer considers "_" punctuation
+
+           Index now supports concurrency and transactions options to
+           support Sleepycat Berkeley DB CDS and TXN modes when version 4+
+           of the library is used
+
+           Fixed a bug where Apache::Wyrd::Form objects would not properly
+           carry on a chain of forms spanning multiple pages
+
+           Index bug removed: non-reverse-indexed indexes update properly
+
+           Index lookups have optimization options, allowing more granular
+           data retreival
+
+           Form Inputs now handle enctype attributes
+
+           Form Inputs now handle the triggers attribute correctly.
+
+           Checkbox and radio button opts now handle style attributes
+
+           Checkbox sets now properly handle removing all checks if there is
+           no "null" option.
+
+           Input Set objects now properly handle literal '0' values
+
+           Using a different param from the input name now works properly on
+           Input wyrds.
+
+           Escaped Form Inputs now also escape '<' and '>'
+
+           Setter interface now supports a _template_hash method
+
+           Limited support for internal redirects method via the
+           abort_redirect method.  Apache::Wyrd::Request attempts to recover
+           the CGI environment after explicit calls to Apache's
+           internal_redirect method.
+
+           The mother interface can now act on any attribute of a Wyrd, not
+           just _data
+
+           Mother interface allows arbitrary child storage and loads the
+           Apache::Wyrd::Interfaces::Setter module itself
+
+           IP addresses can now be checked in Apache::Wyrd::Services::Auth
+           and Apache::Wyrd::Interfaces::GetUser to prevent cookie-theft
+
+           Changed conditional expression interpretation order to behave more
+           intuitively in Apache::Wyrd::Interfaces::Setter. _set now preserves
+           conditionals which may not be addressed by the current _set
+           operation, while clear_set interprets these conditionals as false. 
+           This allows better layering of _set-tings on the same argument
+
+           SAK: file_attribute() now untaints the file path it generates.
+           sort_by_[i]key will reverse order on a key if the key is
+           preceeded by a minus sign.
+
+           Documentation changes
+
     0.93   March 25, 2005
 
            New Wyrd: Apache::Wyrd::Services::Bot for defining a process
@@ -38,7 +129,7 @@ Changes
            Fixed error reporting problem where unblessed references
            could be unintentionally treated as objects
 
-           documentation changes, additional debugging info
+           Documentation changes, additional debugging info
 
     0.92   January 13, 2005
 

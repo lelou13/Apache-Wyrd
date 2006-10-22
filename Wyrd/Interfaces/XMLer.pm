@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Interfaces::XMLer;
-our $VERSION = '0.93';
+our $VERSION = '0.94';
 use XML::Simple qw(:strict);
 
 =pod
@@ -89,7 +89,7 @@ sub _put_data {
 	$self->_info("outputting to $file");
 	eval ('XMLout($data, %$xml_init)');
 	$self->_raise_exception($@) if ($@);
-	return undef;
+	return;
 }
 
 =pod

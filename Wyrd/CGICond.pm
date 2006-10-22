@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::CGICond;
-our $VERSION = '0.93';
+our $VERSION = '0.94';
 use base qw(Apache::Wyrd::Interfaces::Stealth Apache::Wyrd);
 use Apache::Wyrd::Services::SAK qw(:hash);
 
@@ -106,7 +106,7 @@ sub _format_output {
 		}
 		$self->{'_data'} = undef unless ($set);
 	}
-	return undef;
+	return;
 }
 
 =pod

@@ -1,3 +1,8 @@
 - Minimize the number of required modules
 
-- Apache::Wyrd::Services::Index needs database corruption checks
+- convert to semicolon argument separations in URLs, not ampersands.
+
+- Apache2 compatibility:
+	HTTP_XXX Constants
+	Logging facility
+	etc.

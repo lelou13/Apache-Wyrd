@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Interfaces::SmartInput;
-our $VERSION = '0.93';
+our $VERSION = '0.94';
 
 =pod
 
@@ -58,7 +58,7 @@ sub _smart_type {
 	return $self->{'_smart_type'} if ($self->{'_smart_type'});
 	return 'text' if ($self->{'type'} eq 'text');
 	return 'textarea' if ($self->{'type'} eq 'textarea');
-	return undef;
+	return;
 }
 
 sub _input_size {
@@ -127,7 +127,7 @@ sub _input_size {
 		}
 		$self->_debug("rows: $rows, cols: $cols");
 	}
-	return undef;
+	return;
 }
 
 sub _browser_class {

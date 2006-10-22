@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Form::Preload;
-our $VERSION = '0.93';
+our $VERSION = '0.94';
 use base qw (Apache::Wyrd);
 
 =pod
@@ -75,7 +75,7 @@ sub _generate_output {
 	}
 	$self->{'_parent'}->_flags->preload(1);
 	$self->{'_parent'}->_flags->preloaded(1);
-	return undef;
+	return;
 }
 
 =pod

@@ -4,8 +4,8 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd;
-our $VERSION = '0.93';
-use Apache::Wyrd::Services::SAK qw (token_parse);
+our $VERSION = '0.94';
+use Apache::Wyrd::Services::SAK qw (token_parse slurp_file);
 use Apache::Wyrd::Services::Tree;
 use Apache::Util;
 use Apache::Constants qw(:common);
@@ -22,7 +22,7 @@ my %_loglevel = (
 	'warn'		=>	2,
 	'info'		=>	3,
 	'debug'		=>	4,
-	'verbose'	=>	5
+	'verbose'	=>	5,
 );
 
 ###############################################################################
@@ -216,7 +216,7 @@ accomplished.
 Just as nested HTML elements produce different outcomes on a web page depending
 on the order which they are nested in, Wyrds are processed relative to their
 nesting.  The outermost Wyrd is created (with the C<new> method) first from a
-requested page and processes it's enclosed text, spawning the next enclosing tag
+requested page and processes its enclosed text, spawning the next enclosing tag
 within it, and so on.  When the final nested Wyrd is reached, that Wyrd's
 C<output> method is called and the resulting text replaces it on the page.  The
 C<output> method of each superclosing tag is called in turn, repeating the
@@ -357,7 +357,7 @@ sub AUTOLOAD {
 	no strict 'vars';
 	my ($self, $newval) = @_;
 	#Catch destruction events gracefully
-	return undef if $AUTOLOAD =~ /DESTROY$/;
+	return undef if ($AUTOLOAD =~ /DESTROY$/);
 	$AUTOLOAD =~ s/.*:://;
 	#warn ("Auto-Loading $AUTOLOAD");
 	if ($AUTOLOAD =~ /_format_(.+)/){
@@ -455,7 +455,7 @@ sub class_name {
 
 =item (scalar) C<base_class> (void)
 
-The BASENAME of the currently executing installation of Apache::Wyrd
+The BASENAME of the currently executing installation of Apache::Wyrd.
 
 =cut
 
@@ -475,10 +475,19 @@ produce the text this Wyrd is meant to produce.
 
 sub output {
 	my $self = shift;
-	return '' if ($self->_flags->disable);
-	$self->_process_self;
-	$self->_format_output;
-	return $self->_generate_output;
+	$self->_process_self unless ($self->_flags->disable);
+	$self->_format_output unless ($self->_flags->disable);
+	return $self->_generate_output unless ($self->_flags->disable);
+	my $redirect = $self->{'_redirect_to_file'};
+	if ($redirect) {
+		warn "redirecting to $redirect";
+		$self->_flags->disable(0);
+		$self->{'_redirect_to_file'} = undef;
+		my $data = slurp_file($redirect);
+		$self->{'_data'} = $$data;
+		$self->_setup;
+		return $self->output;
+	}
 }
 
 =pod
@@ -492,11 +501,41 @@ Apache::Constants::SERVER_ERROR.
 
 sub abort {
 	my ($self, $response) = @_;
+	$self->_flags->disable(1);
 	return $self->{'_parent'}->abort($response) if (UNIVERSAL::can($self->{'_parent'}, 'abort'));
 	$response ||= SERVER_ERROR;
 	$self->dbl->set_response($response);
+	return;
+}
+
+=pod
+
+=item (void) C<abort_redirect> (scalar location)
+
+End the processing of the page this wyrd is on and redirect to another.  The
+redirection is an internal one, so the location argument must be another
+page on the same site, with an absolute pathname.
+
+=cut
+
+sub abort_redirect {
+#	my ($self, $redirection) = @_;
+#	$self->_flags->disable(1);
+#	return $self->{'_parent'}->abort_redirect($redirection) if (UNIVERSAL::can($self->{'_parent'}, 'abort_redirect'));
+#	my $response = 'internal_redirect:' . $self->dbl->req->document_root . $redirection;
+#	$self->dbl->set_response($response);
+#	$self->dbl->req->internal_redirect_handler($redirection);
+#	return;
+	my ($self, $redirection) = @_;
 	$self->_flags->disable(1);
-	return undef;
+	return $self->{'_parent'}->abort_redirect($redirection) if (UNIVERSAL::can($self->{'_parent'}, 'abort_redirect'));
+	$self->dbl->{'self_path'} = $redirection;
+	$self->dbl->{'file_path'} = $self->dbl->req->document_root . $redirection;
+	$self->{'_redirect_to_file'} = $self->dbl->{'file_path'};
+	my @stats = stat $self->dbl->{'file_path'};
+	$self->dbl->{'mtime'} = $stats[9];
+	$self->dbl->{'size'} = $stats[7];
+	return;
 }
 
 =pod
@@ -515,7 +554,7 @@ for setting up data structures the child Wyrds will refer to.
 ###############################################################################
 
 sub _setup {
-	return undef;
+	return;
 }
 
 
@@ -531,7 +570,7 @@ _data attribute.
 
 #Dummy - does no formatting
 sub _format_output {
-	return undef;
+	return;
 }
 
 
@@ -548,6 +587,18 @@ used when the output should return something other than the _data attribute.
 sub _generate_output {
 	my ($self) = @_;
 	return $self->{'_data'};
+}
+
+=item (scalar) C<_shutdown> (void)
+
+Do any last-minute housekeeping, such as closing database connections,
+filehandles.
+
+=cut
+
+#Dummy - does no cleanup
+sub _shutdown {
+	return;
 }
 
 =pod =item (scalar, hashref) C<_pre_spawn> (scalar classname, hashref
@@ -576,7 +627,7 @@ tags of the type xxx:
 
 	<xxx>given value</xxx>
 
-I<This behavior has proven of limited value and will probably be depreciated.>
+I<This behavior has proven of limited value and will is depreciated.>
 
 =cut
 
@@ -698,7 +749,7 @@ sub _init{
 		$_error_handler{$level} = $_disabled_error_handler;
 	}
 	#must test for existence, since a loglevel can be 0 and, therefore, false
-	$init->{'loglevel'} = 1 unless (exists($init->{'loglevel'}));
+	$init->{'loglevel'} = ($dbl->loglevel || 1) unless (exists($init->{'loglevel'}));
 	$init->{'loglevel'} = ($_loglevel{$init->{'loglevel'}} || $init->{'loglevel'} || 0);
 	for (my $level=0; $init->{'loglevel'} >= $level; $level++) {
 		$_error_handler{$level} = $_enabled_error_handler;
@@ -759,18 +810,38 @@ sub _process_self {
 					)
 				]
 				[
-					$self->_return_object($2, ($5 || $4), $6, $1)#(real) object id, parameters, enclosed data, complete expr.
+					$self->_invoke_html_wyrd($2, ($5 || $4), $6, $1)#(real) object id, parameters, enclosed data, complete expr.
 				]gexis);
+		$test = 0 if ($self->_flags->disable);
 		$self->{'_depth_counter'}++;
 		$self->{'_data'} = $temp;
 		#warn "after iteration " . $self->_depth_counter . " test is " . $test . " values are ID='$2' params='$3' data='$4'...";
 	} while ($test and ($self->{'_depth_counter'} < $depth));
-	return undef;
+	return;
 }
 
 #_spawn produces the child object, returns an error message if it can't be generated.
 sub _spawn {
 	my ($self, $class, $init) = @_;
+
+	$init->{'_parent'} = $self;
+
+	#Convert the flags attribute to a flags Tree object
+	$init->{'_flags'} = $self->_process_flags($init->{'flags'});
+	#Why delete it?  It may be useful.
+	#delete $init->{'flags'};
+
+	#allow user-defined filters on all Wyrds
+	($class, $init) = $self->_pre_spawn($class, $init);
+
+	#loglevel/dielevel will be inherited if it exists, but not if the object explicitly has it defined
+	$init->{'loglevel'} = $self->{'loglevel'} unless(exists($init->{'loglevel'}));
+	$init->{'dielevel'} = $self->{'dielevel'} unless(exists($init->{'dielevel'}));
+
+	#Temporarily "hide" the global so that loglevel changes in children do not
+	#propagate back up into their parents.
+	my %_error_handler_temp = %_error_handler;
+
 	my ($child) = ();
 	#first attempt to find a perl class which is in the base_class hierarchy
 	eval('require ' . $self->base_class . '::' . $class);
@@ -801,11 +872,16 @@ sub _spawn {
 			$child->{'_attempted'} = $self->base_class . '::' . $class;
 		}
 	}
+
+	#Restore the loglevel of this parent so that it's child's changes to the
+	#global variable do not affect it.
+	%_error_handler = %_error_handler_temp;
+
 	return (undef, $self->base_class . "$class could not be generated.") unless ref($child);
 	return $child, undef;
 }
 
-sub _return_object {
+sub _invoke_html_wyrd {
 	my ($self, $class, $params, $data, $original) = @_;
 	my $base_class = $self->base_class;
 	$self->_debug("$original is the original\n");
@@ -872,33 +948,42 @@ sub _return_object {
 		$init{$i} =~ s/<!percent!>/\%/g;
 		$init{$i} =~ s/<!ampersand!>/\&/g;
 	}
-	$init{'_parent'} = $self;
+
+	#store the HTML of the wyrd
 	$init{'_as_html'} = $original;
 	$init{'_data'} = $data || '';
-	#loglevel/dielevel will be inherited if it exists, but not if the object explicitly has it defined
-	$init{'_flags'} = $self->_process_flags($init{'flags'});
-	delete $init{'flags'};
-	($class, $init_ref) = $self->_pre_spawn($class, \%init);
-	$init{'loglevel'} = $self->{'loglevel'} unless(exists($init{'loglevel'}));
-	$init{'dielevel'} = $self->{'dielevel'} unless(exists($init{'dielevel'}));
-	#Temporarily "hide" the global so that loglevel changes in children do not
-	#propagate back up into their parents.
-	my %_error_handler_temp = %_error_handler;
-	my ($object, $err) = $self->_spawn($class, $init_ref);
+
+	#spawn the new object
+	my ($wyrd, $err) = $self->_spawn($class, \%init);
+
+	#Either call output on the object or give up
 	if ($err) {
 		$self->_error($err);
 		return $original;
 	} else {
-		$self->_debug("newly spawned object reference is " . ref($object) . "\n");
-		my $output = $object->output;
-		#Restore the loglevel of this parent so that it's child's changes to the
-		#global variable do not affect it.
-		%_error_handler = %_error_handler_temp;
+		$self->_debug("newly spawned object reference is " . ref($wyrd) . "\n");
+		my $output = $wyrd->output;
+		$wyrd->_shutdown;
 		return $output;
 	}
 }
 
-#process_flags makes a lightweight object which can be accessed
+sub _invoke_wyrd {
+	my ($self, $class, $init) = @_;
+
+	my ($wyrd, $err) = $self->_spawn($class, $init);
+
+	if ($err) {
+		$self->_error($err);
+		return join(':', 'Error when invoked from Wyrd at', caller);
+	} else {
+		$self->_debug("newly spawned object reference is " . ref($wyrd) . "\n");
+		my $output = $wyrd->output;
+		return $output;
+	}
+}
+
+#process_flags makes a lightweight Tree object which can be accessed
 #using $wo_ref->_flags->n where n is the flag
 sub _process_flags {
 	my ($self, $flags) = @_;

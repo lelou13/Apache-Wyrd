@@ -1,10 +1,11 @@
 Wishes, pipe-dreams, etc.
 
--	Modify installation Makefile.PL to use PM_FILTER to allow #ifdefine - style
-commenting out of all debugging code.
+-	Modify installation Makefile.PL to use PM_FILTER to allow #ifdefine -
+style commenting out of all debugging code.
 
 -	Security-enhanced version that prevents read-access to CodeRing
-cryptography key values or "cookie-stealing"
+cryptography key values or "cookie-stealing": partially addressed by
+IP-tying in v. 94.
 
 -	Apache::Wyrd::Interfaces::SmartInput needs to be integrated with a
 style-sheet generator of some kind
@@ -13,3 +14,5 @@ style-sheet generator of some kind
 $dbh->handle_<foo>
 
 -	Automatic useage message via override on errors
+
+-	"Best Practices" Changes (for Apache2 release)

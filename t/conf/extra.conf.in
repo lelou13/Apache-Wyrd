@@ -19,7 +19,7 @@ PerlModule Apache::Wyrd::Request
 	PerlSetVar	LSDownURL		/lsdown.html
 	PerlSetVar	NoCookieURL		/cookies.html
 	PerlSetVar	AuthPath		/
-	PerlSetVar	Debug			0
+	PerlSetVar	Debug			1
 	PerlSetVar	UserObject		TESTCLIENT::User
 	PerlSetVar	ReturnError		err_message
 	PerlSetVar	AuthLevel		test
@@ -28,5 +28,5 @@ PerlModule Apache::Wyrd::Request
 	SetHandler	perl-script
 	PerlHandler	Apache::Wyrd::Services::LoginServer
 	PerlSetVar	TicketDBFile @ServerRoot@/data/ticketbook.db
-	PerlSetVar	Debug	0
+	PerlSetVar	Debug	1
 </Location>

@@ -45,4 +45,4 @@ ok ($text1 =~ /value="option3"[^>]+selected[^>]*>Option Three<\/option>/s);
 #14 Default checkboxes
 ok ($text1 =~ /value="option4"[^>]+checked[^>]*>Option Four/s);
 #15 Array variables are handled properly
-ok ($text7 =~ /checkbox test value: \n/);
+ok ($text7 =~ /pulldown test value: \n/);

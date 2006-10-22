@@ -1,12 +1,14 @@
-use 5.006;
+use 5.008;
 use strict;
 use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::SAK;
+use Carp;
 use Exporter;
 use Apache::Util;
 use HTML::Entities;
+use Encode qw(from_to _utf8_off);
 
 =pod
 
@@ -29,7 +31,7 @@ I<(format: (returns) C<$wyrd-E<gt>name> (arguments))> for methods
 
 =cut
 
-our $VERSION = '0.93';
+our $VERSION = '0.94';
 our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(
 	array_4_get
@@ -54,6 +56,8 @@ our @EXPORT_OK = qw(
 	uri_escape
 	uniquify_by_key
 	uniquify_by_ikey
+	utf8_force
+	utf8_to_entities
 );
 
 our %EXPORT_TAGS = (
@@ -62,7 +66,7 @@ our %EXPORT_TAGS = (
 	file		=>	[qw(file_attribute slurp_file spit_file)],
 	hash		=>	[qw(array_4_get data_clean env_4_get lc_hash sort_by_ikey sort_by_key token_hash token_parse uniquify_by_ikey uniquify_by_key uri_escape)],
 	mail		=>	[qw(send_mail)],
-	string		=>	[qw(commify strip_html)],
+	string		=>	[qw(commify strip_html utf8_force utf8_to_entities)],
 	tag			=>	[qw(attopts_template)]
 );
 
@@ -163,7 +167,7 @@ sub _exists_in_table {
 		return $count;
 	}
 	$self->_error("_exists_in_table requires a hashref with keys table, column, and value");
-	return undef;
+	return;
 }
 
 =pod
@@ -231,6 +235,7 @@ sub file_attribute {
 			$result = 0 if ($test eq 'd' and not (-d _));
 			$result = 0 if ($test eq 'f' and not (-f _));
 		}
+		($path) = $path =~ /(.+)/;#untaint
 		return $path if ($result);
 	}
 	#at this point, the tests have failed for all paths.
@@ -238,6 +243,7 @@ sub file_attribute {
 	#not yet exist
 	if (($tests =~ /w/) and ($tests !~ /d|f/)) {
 		foreach my $path (@paths) {
+			($path) = $path =~ /(.+)/;#untaint
 			my ($testdir, @null) = ($path =~ m#(.+)/([^/]+)#);
 			if ($tests =~ /r/) {
 				return $path if (-d $testdir and -w _ and -r _)
@@ -246,7 +252,7 @@ sub file_attribute {
 			}
 		}
 	}
-	return undef;
+	return;
 }
 
 =over
@@ -262,11 +268,10 @@ sub slurp_file {
 	my $file = shift;
 	$file = open (FILE, $file);
 	if ($file) {
-		my $temp = $/;
+		local $/;
 		undef $/;
 		$file = <FILE>;
 		close (FILE);
-		$/ = $temp;
 	}
 	return \$file;
 }
@@ -283,8 +288,10 @@ A positive response means the file was successfully written.
 sub spit_file {
 	my ($file, $contents) = @_;
 	my $success = open (FILE, "> $file");
-	print FILE $contents;
-	close (FILE);
+	if ($success) {
+		print FILE $contents;
+		close (FILE);
+	}
 	return $success;
 }
 
@@ -399,6 +406,9 @@ sub sort_by_ikey {
 	my $last = shift;
 	my $key = shift;
 	return 0 unless ($key);
+	if ($key =~ s/^-//) {#reverse for this key if it is preceeded by a minus sign
+		($first, $last) = ($last, $first);
+	}
 	no warnings q/numeric/;
 	return ((lc($first->{$key}) cmp lc($last->{$key})) || ($first->{$key} <=> $last->{$key}) || (sort_by_ikey($first, $last, @_)));
 }
@@ -418,6 +428,9 @@ sub sort_by_key {
 	my $last = shift;
 	my $key = shift;
 	return 0 unless ($key);
+	if ($key =~ s/^-//) {#reverse for this key if it is preceeded by a minus sign
+		($first, $last) = ($last, $first);
+	}
 	no warnings q/numeric/;
 	return (($first->{$key} cmp $last->{$key}) || ($first->{$key} <=> $last->{$key}) || (sort_by_ikey($first, $last, @_)));
 }
@@ -551,7 +564,7 @@ sub send_mail {
 	my $mail = shift;
 	$mail = lc_hash($mail);
 	my $path = ($$mail{'path'} || '/usr/sbin');
-	open (OUT, "| $path/sendmail -t ") || die("Mail Failed: sendmail could not be used to send mail");
+	open (OUT, "| $path/sendmail -t ") || croak("Mail Failed: sendmail could not be used to send mail");
 	print OUT <<__mail_end__;
 From: $$mail{from}
 To: $$mail{to}
@@ -600,6 +613,92 @@ sub strip_html {
 	$data =~ s/<--.*?-->/ /g; # Strip out all comments
 	$data =~ s/<[^>]*?>/ /g; # Strip out all HTML tags
 	return $data;
+}
+
+=pod
+
+=item (scalar) C<utf8_force>(scalar)
+
+Attempt to decode the text into UTF-8 by trying different common encodings
+until one returns valid UTF-8.
+
+=cut
+
+sub utf8_force {
+	my ($text) = @_;
+	my $success = 0;
+	if (utf8::valid($text)) {
+		utf8::upgrade($text);
+		return $text;
+	}
+	for my $encoding (qw(windows-1252 MacRoman Latin-1 Latin-9)) {
+		my $trial_data = $text;
+		eval {
+			from_to($encoding, 'utf8', $trial_data, Encode::FB_HTMLCREF);
+		};
+		if (not($@) && utf8::valid($trial_data)) {
+			$text = $trial_data;
+			$success = 1;
+			last;
+		}
+	}
+	unless ($success) {
+		carp "Unable to encode as UTF8";
+	}
+	return $text;
+}
+
+=pod
+
+=item (scalar) C<utf8_to_entities>(scalar)
+
+Seek through the given text for Unicode byte sequences and replace them with
+numbered entities for that unicode character.  Assumes the text is properly-
+formatted UTF8.
+
+=cut
+
+
+sub utf8_to_entities {
+	my ($text) = @_;
+	use Encode qw(_utf8_off);
+	_utf8_off($text);
+	while ($text =~ /(([\xC0-\xFF])([\x80-\xFF]{1,5}))/) {
+
+		#store the sequence for later;
+		my $unicode_sequence = $1;
+
+		#separate the first byte from the others
+		my ($first, $second) = ($2, $3);
+
+		#split remaining bytes and count them
+		my @parts = split '', $second;
+		my $count = @parts;
+
+		#remove the appropriate number of bits from the high end of the first
+		#byte (3 for 2 bytes, 4 for 3, etc) and use that for the first part of
+		#the 32-bit binary number
+		$first = substr(sprintf("%b", ord($first)), $count + 2, 6 - $count);
+		my $full = $first;
+
+		#Remove the two highest bits from the remaining bytes and concatenate
+		#the result with the first part
+		foreach my $part (@parts) {
+			$part = substr(sprintf("%b", ord($part)),2,6);
+			$full .= $part;
+		}
+
+		#Left-fill with zeroes to make a full 32 bit binary number
+		$full =  substr(0 x 32 . $full, -32);
+
+		#Turn the binary number into a 32-bit unsigned integer value
+		my $hex_number = sprintf('%04X', unpack("N", pack("B32", $full)));
+
+		#Replace all instances of that byte sequence found in the text with a
+		#numbered entity sequence
+		$text =~ s/$unicode_sequence/&#x$hex_number;/g;
+	}
+	return $text;
 }
 
 =pod

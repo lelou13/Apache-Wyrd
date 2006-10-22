@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Query;
-our $VERSION = '0.93';
+our $VERSION = '0.94';
 use base qw(Apache::Wyrd::Interfaces::Setter Apache::Wyrd);
 use Apache::Wyrd::Services::SAK qw(token_parse);
 
@@ -83,7 +83,7 @@ sub activate {
 	}
 	$self->_set_cols unless ($self->{'cols'});
 	$self->{'_activated'} = 1;
-	return undef;
+	return;
 }
 
 =pod
@@ -164,7 +164,7 @@ sub _generate_output {
 	} else {
 		$self->_warn("Query '" . $self->{'query'} . "' called, but not used.  Parent should register_query.");
 	}
-	return undef;
+	return;
 };
 
 

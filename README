@@ -55,7 +55,9 @@ reuse.
 
 It has been made available by Wyrdwright, Inc. under the GPL, and
 consequently comes with the GPL's rights and caveats.  Please see the
-file "LICENSE".
+file "LICENSE". It was developed with NGO partners and is meant to be
+always be available to the public free of charge and with no vendor
+lock-in.
 
 We hope you find it useful.
 
@@ -120,6 +122,7 @@ The search engine components:
 
 Apache::Wyrd::Services::Index
 Apache::Wyrd::Interfaces::Indexable
+Apache::Wyrd::Services::MySQLIndex
 Apache::Wyrd::Services::SearchParser
 
 Database-driven objects:
@@ -149,6 +152,25 @@ And the formatting/convenience classes:
 Apache::Wyrd::FileSize
 Apache::Wyrd::Number
 Apache::Wyrd::Redirect
+
+Lastly, A set for constructing whole WWW Sites:
+
+Apache::Wyrd::Site::EditablePage
+Apache::Wyrd::Site::GDButton
+Apache::Wyrd::Site::Index
+Apache::Wyrd::Site::IndexBot
+Apache::Wyrd::Site::IndexBrowser
+Apache::Wyrd::Site::Login
+Apache::Wyrd::Site::MySQLIndex
+Apache::Wyrd::Site::MySQLIndexBot
+Apache::Wyrd::Site::NavPull
+Apache::Wyrd::Site::Page
+Apache::Wyrd::Site::Pull
+Apache::Wyrd::Site::SearchResults
+Apache::Wyrd::Site::TagPull
+Apache::Wyrd::Site::Widget
+Apache::Wyrd::Site::WidgetControl
+Apache::Wyrd::Site::WidgetIndex
 
 --------
 NB: "Wyrd" is pronounced "word" or "weird"--use whichever one you like.

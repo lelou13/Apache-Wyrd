@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Interfaces::Setter;
-our $VERSION = '0.93';
+our $VERSION = '0.94';
 use Apache::Util;
 
 =pod
@@ -72,27 +72,17 @@ I<(format: (returns) name (arguments after self))>
 
 =item (scalar) C<_set> ([hashref], [scalar])
 
-Simplest flavor.  If a place-marked variable doesn't exist as a key in
-the first argument (or in the CGI environment if missing), then the
-placemarker is not interpreted, and remains untouched.
+Simplest flavor.  If a place-marked variable doesn't exist as a key in the
+hashref which is the first argument (or in the CGI environment if the hashref is
+not provided), then the placemarker is not interpreted, and remains untouched.
 
 =cut
 
 sub _set {
 	my ($self, $hash, $temp) = @_;
-	#if a target ($temp) is provided, use it instead of the data
-	$temp ||= $self->{'_data'};
-	$hash = $self->_cgi_hash($temp) unless (ref($hash) eq 'HASH');
-	#first do conditionals
+	($hash, $temp) = $self->_setter_defaults($hash, $temp);
 	$temp = $self->_regexp_conditionals($hash, $temp);
-	#then do replacements
-	foreach my $i (sort {length($b) <=> length($a)} keys(%$hash)) {
-		#sorted so that the longest go first, avoiding problems where one variable (key) name is a
-		#substring of another
-		next unless ($i);#this is to prevent strange tied hashes from creating iloops
-		$self->_verbose("temp is '$temp', i is '$i' and value is '$$hash{$i}'");
-		$temp =~ s/\$:$i/$$hash{$i}/gi;
-	}
+	$temp = $self->_setter_replacements($hash, $temp);
 	return $temp;
 }
 
@@ -106,9 +96,11 @@ Same as _set, but wipes anything remaining that looks like a placemarker.
 
 sub _clear_set {#clear out any unset values.
 	my ($self, $hash, $temp) = @_;
-	my $result = $self->_set($hash, $temp);
-	$result =~ s/\$:[a-zA-Z_0-9]+//g;
-	return $result;
+	($hash, $temp) = $self->_setter_defaults($hash, $temp);
+	$temp = $self->_clear_regexp_conditionals($hash, $temp);
+	$temp = $self->_setter_replacements($hash, $temp);
+	$temp =~ s/\$:[a-zA-Z_0-9]+//g;
+	return $temp;
 }
 
 =pod
@@ -123,14 +115,13 @@ interpreted.
 sub _clean_set {
 	#For making "set" more perl-ish and handling conditionals as if ''/null/undef value == undefined
 	my ($self, $hash, $temp) = @_;
-	if (ref($hash) eq 'HASH') {
-		my %newhash = %$hash;
-		foreach my $key (keys(%newhash)) {
-			delete $newhash{$key} unless ($newhash{$key});#undefine missing bits for setter
-		}
-		return $self->_set(\%newhash, $temp);
+	($hash, $temp) = $self->_setter_defaults($hash, $temp);
+	my %newhash = %$hash;
+	foreach my $key (keys(%newhash)) {
+		delete $newhash{$key} unless ($newhash{$key});#undefine missing bits for setter
 	}
-	return $self->_set($hash, $temp);
+	$temp = $self->_regexp_conditionals($hash, $temp);
+	return $self->_setter_replacements(\%newhash, $temp);
 }
 
 =pod
@@ -139,7 +130,8 @@ sub _clean_set {
 
 More text-ish and perl-ish.  If the placemarker is undefined OR false,
 it is not interpreted.  Anything else that looks like a placemarker
-after interpretation is finished is wiped out.
+after interpretation is finished is wiped out.  Generally safe for output
+directly to web pages.
 
 =cut
 
@@ -147,13 +139,12 @@ sub _text_set {
 	#Like "_clean_set", but also interprets arrays and uses the _clear_set.
 	#used for outputting directly to web pages
 	my ($self, $hash, $temp) = @_;
-	if (ref($hash) eq 'HASH') {
-		my %newhash = %$hash;
-		foreach my $key (keys(%newhash)) {
-			$newhash{$key} = join ', ' , @{$newhash{$key}} if (ref($newhash{$key})) eq 'ARRAY';
-			$newhash{$key} = '' unless ($newhash{$key} or ($newhash{$key} eq '0'));
-		}
-		return $self->_clear_set(\%newhash, $temp);
+	($hash, $temp) = $self->_setter_defaults($hash, $temp);
+	$temp = $self->_regexp_conditionals($hash, $temp);
+	my %newhash = %$hash;
+	foreach my $key (keys(%newhash)) {
+		$newhash{$key} = join ', ' , @{$newhash{$key}} if (ref($newhash{$key}) eq 'ARRAY');
+		$newhash{$key} = '' unless ($newhash{$key} or ($newhash{$key} eq '0'));
 	}
 	return $self->_clear_set($hash, $temp);
 }
@@ -268,13 +259,11 @@ sub _cgi_escape_set {
 	#then do quotations
 	$hash = $self->_cgi_hash($temp, 'escaped');
 	#then do replacements
-	foreach my $i (keys(%$hash)) {
-		next unless ($i);#this is to prevent strange tied hashes from creating iloops
-		$self->_verbose("temp is $temp, i is $i and hash is $$hash{$i}");
-		$temp =~ s/\$:$i/$$hash{$i}/gi;
-	}
+	$temp = $self->_setter_replacements($hash, $temp);
 	return $temp;
 }
+
+=pod
 
 =item (scalar) C<_regexp_conditionals> (hashref, scalar)
 
@@ -283,6 +272,89 @@ internal method for performing conditional interpretation.
 =cut
 
 sub _regexp_conditionals {
+	my ($self, $hash, $string) = @_;
+	my $changed = 0; #toggle: if there is nothing left to change, it's time to return
+	my $mode = 's'; #(s)eek a conditional (c)onfirm that it is a conditional, com(p)lete the expression
+	my $state = '?'; #keep the argument or discard it
+	my $buf = ''; #buffer for temp storage of the conditional
+	my $out = ''; #buffer for the completed expression
+	my $depth = 0; #how many layers of conditionals are we at?
+	do {
+		$changed = 0;
+		foreach my $char (unpack('U*', $string)) {
+			$char = chr($char);#returns unicode
+			if ($mode eq 's') {#always begin by seeking
+				if ($char eq '?' or $char eq '!') {
+					$buf = '';
+					$buf .= $char;
+					$mode = 'c';
+					$state = $char;
+				} else {
+					$out .= $char;
+				}
+			}
+			elsif ($mode eq 'c') {
+				if ((length($buf) > 3) and ($buf !~ /^[?!]:[_a-zA-Z][_a-zA-Z0-9]+$/)) {
+					#not a valid identifier, move on...
+					$out .= $buf . $char;
+					$mode = 's';
+				}
+				if ($char eq '{') {
+					my $identifier = substr($buf, 2);
+					if (exists($$hash{$identifier})) {
+						if (not($$hash{$identifier})) {
+							$state =~ tr/?!/!?/;
+						}
+						$buf = '';
+						$mode = 'p';
+						$depth = 1;
+						$changed = 1;
+					} else {
+						$out .= $buf . $char;
+						$mode = 's';
+					}
+				} else {
+					$buf .= $char;
+				}
+			}
+			elsif ($mode eq 'p') {
+				if($char eq '}') {
+					$depth--
+				}
+				if($char eq '{') {
+					$depth++
+				}
+				if ($depth == 0) {
+					if ($state eq '?') {
+						$out .= $self->_regexp_conditionals($hash, $buf);
+					}
+					$mode = 's';
+				} else {
+					$buf .= $char;
+				}
+			}
+		}
+		if ($mode eq 'p') {
+			$self->_error('Malformed conditional in Setter:_[xxx_]set(). Aborting conditional expression evaluation.');
+			return $string;
+		}
+		$string = $out;
+		$out = '';
+	} while ($changed);
+	return $string;
+}
+
+=pod
+
+=item (scalar) C<_clear_regexp_conditionals> (hashref, scalar)
+
+internal method for performing conditional interpretation.  Unlike
+_interpret_conditionals, this method considers the non-existence of a condition
+to mean a negative value for the condition.
+
+=cut
+
+sub _clear_regexp_conditionals {
 	my ($self, $hash, $string) = @_;
 	my $result = undef;
 	do {
@@ -293,6 +365,45 @@ sub _regexp_conditionals {
 	} while ($result);
 	return $string;
 }
+
+=pod
+
+=item (scalar) C<_setter_replacements> (hashref, scalar)
+
+internal method for performing value replacements.
+
+=cut
+
+sub _setter_replacements {
+	my ($self, $hash, $temp) = @_;
+	foreach my $i (sort {length($b) <=> length($a)} keys(%$hash)) {
+		#sorted so that the longest go first, avoiding problems where one variable (key) name is a
+		#substring of another
+		next unless ($i);#this is to prevent strange tied hashes from creating iloops
+		$self->_verbose("temp is '$temp', i is '$i' and value is '$$hash{$i}'");
+		$temp =~ s/\$:$i/$$hash{$i}/gi;
+	}
+	return $temp;
+}
+
+=pod
+
+=item (scalar) C<_setter_defaults> (hashref, scalar)
+
+internal method for setting default template to BASECLASS::_data and default
+parameters to null hash.
+
+=cut
+
+sub _setter_defaults {
+	my ($self, $hash, $temp) = @_;
+	#if a target ($temp) is provided, use it instead of the data
+	$temp ||= $self->{'_data'};
+	$hash = $self->_cgi_hash($temp) unless (ref($hash) eq 'HASH');
+	return $hash, $temp;
+}
+
+=pod
 
 =item (scalar) C<_cgi_hash> (hashref, scalar)
 
@@ -327,6 +438,8 @@ sub _cgi_hash {
 	return $hash
 }
 
+=pod
+
 =item (scalar) C<_attribute_template> (array)
 
 Shortcut method for quickly creating templates of all attributes in a
@@ -338,6 +451,33 @@ sub _attribute_template {
 	my ($self, @attributes) = @_;
 	my $string = join ('', map {qq(\?\:$_\{ $_="\$\:$_\"})} @attributes);
 	return $string;
+}
+
+=pod
+
+=item (scalar) C<_template_hash> (string, [hashref])
+
+Shortcut method for quickly creating a hash from a template.  If the
+template is not provided, the object's _data attribute is used.  If a
+hashref is supplied as the second value, values for the returned hashref are
+based on that. Otherwise, the calling object itself provides the values.  By
+default, template items that are not defined by the attributes of the object
+or provided hashref are ignored.
+
+=cut
+
+sub _template_hash {
+	my ($self, $template, $hash) = @_;
+	$template ||= $self->{'_data'};
+	$hash ||= $self;
+	my @keys = $template =~ /[\$\!\?]:([_a-zA-Z][_a-zA-Z0-9]+)/g;
+	my %out_hash = ();
+	foreach my $key (@keys) {
+		if (eval{exists($hash->{$key})}) {
+			$out_hash{$key} = $hash->{$key};
+		}
+	}
+	return \%out_hash;
 }
 
 =pod

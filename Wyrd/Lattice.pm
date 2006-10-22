@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Lattice;
-our $VERSION = '0.93';
+our $VERSION = '0.94';
 use base qw(Apache::Wyrd::Interfaces::Setter Apache::Wyrd);
 use Apache::Wyrd::Services::SAK qw(token_parse);
 use Apache::Wyrd::Services::Tree;
@@ -86,26 +86,26 @@ rows, headers, and cells.
 sub register_header {
 	my ($self, $value) = @_;
 	$self->header($value);
-	return undef;
+	return;
 }
 
 sub register_footer {
 	my ($self, $value) = @_;
 	$self->footer($value);
-	return undef;
+	return;
 }
 
 sub register_grid {
 	my ($self, $value) = @_;
 	$self->grid($value);
-	return undef;
+	return;
 }
 
 sub register_query {
 	my ($self, $value) = @_;
 	$self->_raise_exception("argument to register_query must define the sh method.") unless ($value->can('sh'));
 	$self->query($value);
-	return undef;
+	return;
 }
 
 sub _auto_encapsulate {

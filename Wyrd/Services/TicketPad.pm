@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::TicketPad;
-our $VERSION = '0.93';
+our $VERSION = '0.94';
 use BerkeleyDB;
 use BerkeleyDB::Btree;
 

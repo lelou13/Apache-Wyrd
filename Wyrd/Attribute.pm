@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Attribute;
-our $VERSION = '0.93';
+our $VERSION = '0.94';
 use base qw (Apache::Wyrd);
 
 =pod
@@ -64,7 +64,7 @@ sub _format_output {
 	$self->_parent->{$self->{'name'}} = $value;
 	$self->_debug("Set parent's '$self->{name}' to '$value'");
 	$self->{'_data'} = '';
-	return undef;
+	return;
 }
 
 =pod

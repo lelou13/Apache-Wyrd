@@ -17,7 +17,7 @@ sub process {
 	my ($self) =@_;
 	#get user with the Apache::Wyrd::Interfaces::GetUser method 'user'
 	$self->{init}->{user} = $self->user('TESTCLIENT::User');
-	return undef;
+	return;
 }
 
 1;

@@ -4,13 +4,15 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::LoginServer;
-our $VERSION = '0.93';
+our $VERSION = '0.94';
 use Apache::Wyrd::Services::CodeRing;
 use Apache::Wyrd::Services::TicketPad;
 use Apache::Wyrd::Request;
-use Apache::Constants qw(AUTH_REQUIRED HTTP_SERVICE_UNAVAILABLE REDIRECT NOT_FOUND OK);
+use Apache::Constants qw(AUTH_REQUIRED HTTP_SERVICE_UNAVAILABLE HTTP_MOVED_TEMPORARILY NOT_FOUND OK);
 use Apache::Util;
 use MIME::Base64;
+use LWP::UserAgent;
+use HTTP::Request::Common;
 
 =pod
 
@@ -66,59 +68,89 @@ sub handler {
 	my $debug = $req->dir_config('Debug');
 	my $ticket = $apr->param('ticket');
 	my $key = $apr->param('key');
+	my $self_url = 'https://' . $req->hostname . $req->uri;
+	my $use_error = $req->dir_config('ReturnError') || 'err_message';
 	$debug && warn("Ticket:Key -> ", $ticket, ':' , $key);
 	my $ticketfile = $req->dir_config('TicketDBFile') || '/tmp/ticketfile';
-	my $pad = Apache::Wyrd::Services::TicketPad->new($ticketfile);
 	if ($key) {
 		#if param 'key' is set, store the ticket for later retrieval
 		#by the login process.
 		return AUTH_REQUIRED unless ($ticket);
+		my $pad = Apache::Wyrd::Services::TicketPad->new($ticketfile);
 		$pad->add_ticket($ticket, $key);
 		$req->headers_out;
 		$req->print('Key accepted...');
 		return OK;
 	} elsif ($ticket) {
+
 		#get info on what to do if this fails to be handed back to the
 		#Auth handler.
 		my $success_url = decode_base64($apr->param('on_success')) || return AUTH_REQUIRED;
+
 		#url was escaped by the Auth module
 		$success_url = Apache::Util::unescape_uri($success_url);
+
 		#if the url had a query string, the challenge should be appended to it.
 		my $fail_url = $apr->param('on_fail') || $success_url;
+
 		#get necessaries
-		my $ticket = $apr->param('ticket') || return AUTH_REQUIRED;
+		my $ticket = $apr->param('ticket');
+		#a URL for a ticket means the ticket must be picked up elsewhere at a Pre-Auth server.
+		if ($ticket =~ /^http/) {
+			my $ua = LWP::UserAgent->new;
+			$ua->timeout(60);
+			my $response = $ua->request(POST $ticket,
+				[
+					url		=>	$self_url
+				]
+			);
+			my $status = $response->status_line;
+			unless ($status =~ /200|OK/) {
+				my $joiner = '?';
+				$joiner = '&' if ($fail_url =~ /\?/);
+				$debug && warn("key could not be generated.  The pre-auth URL returned the status: $status");
+				$req->custom_response(HTTP_MOVED_TEMPORARILY, "$fail_url$joiner$use_error" . '=Authorization%20Server%20is%20down.');
+				return HTTP_MOVED_TEMPORARILY;
+			}
+			my $content = $response->content;
+			$content =~ s/\s*//gsm;
+			if ($content =~ /http/) {
+				$req->custom_response(HTTP_MOVED_TEMPORARILY, $content);
+				return HTTP_MOVED_TEMPORARILY;
+			}
+			$ticket = $content;
+		}
 		my $user = $apr->param('username') || 'anonymous';
 		my $password = $apr->param('password');
-		my $use_error = $apr->param('use_error');
+
 		#find key
 		$debug && warn('finding ' . $ticket);
+		my $pad = Apache::Wyrd::Services::TicketPad->new($ticketfile);
 		$key = $pad->find($ticket);
 		unless ($key) {
 			my $joiner = '?';
 			$joiner = '&' if ($fail_url =~ /\?/);
 			$debug && warn("key could not be found.  Server key has probably been lost due to a re-initializtion of Apache::Wyrd::Services::CodeRing.  Nothing for it but to send the browser back.");
-			$req->custom_response(REDIRECT, "$fail_url$joiner" . 'ls_error=Login%20Server%20has%20been%20re-started%20please%20try%20again.');
-			return REDIRECT;
+			$req->custom_response(HTTP_MOVED_TEMPORARILY, "$fail_url$joiner$use_error" . '=Login%20Server%20has%20been%20re-started%20please%20try%20again.');
+			return HTTP_MOVED_TEMPORARILY;
 		}
 		my $joiner = '?';
 		$joiner = '&' if ($success_url =~ /\?/);
 		$debug && warn("found the key $key");
 		$key = Apache::Util::unescape_uri($key);
-		my $ex_cr1 = Apache::Wyrd::Services::CodeRing->new({key => $key});
+		my $ex_cr = Apache::Wyrd::Services::CodeRing->new({key => $key});
 		$debug && warn("Generated a new decryption ring with the found key");
-		$key = ${$ex_cr1->decrypt(\$ticket)};
-		$debug && warn("Key decrypted");
-		my $ex_cr2 = Apache::Wyrd::Services::CodeRing->new({key => $key});
-		my $data = $user . ':' . $password;
-		$data = $ex_cr2->encrypt(\$data);
-		$debug && warn("Data encrypted with decrypted key");
-		$req->custom_response(REDIRECT, "$success_url" . $joiner . "challenge=$$data");
+		my $data = "$user\t$password";
+		$data = $ex_cr->encrypt(\$data);
+		$debug && warn("Data encrypted with the key");
+		$req->custom_response(HTTP_MOVED_TEMPORARILY, "$success_url" . $joiner . 'challenge=' . $ticket . ':' . $$data);
 		$debug && warn("loginserver has set the challenge to $$data");
-		return REDIRECT;
+		return HTTP_MOVED_TEMPORARILY;
 	} else {
 		return AUTH_REQUIRED
 	}
 }
+
 =pod
 
 =back

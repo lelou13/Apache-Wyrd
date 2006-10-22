@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Input;
-our $VERSION = '0.93';
+our $VERSION = '0.94';
 use Apache::Wyrd::Datum;
 use base qw(Apache::Wyrd::Interfaces::Setter Apache::Wyrd::Interfaces::SmartInput Apache::Wyrd);
 use Apache::Wyrd::Services::SAK qw(token_parse);
@@ -121,6 +121,11 @@ Required.  The name of the Input.
 
 The CGI parameter to use for this Input, if not the B<name>.
 
+=item triggers
+
+The triggers fired (comma separated list) by this input if invalid, if
+not B<param> or B<name> (in that order of precedence).
+
 =item width
 
 Width of the item, in pixels.  This is an estimated value based on the
@@ -188,11 +193,10 @@ I<(format: (returns) name (arguments after self))>
 =item (scalar) C<name>, C<type>, C<value>, C<description>, C<param> (void)
 
 Input has read-only methods for C<name>, C<type>, C<value>,
-C<description>, and C<param>.  The C<param> attribute is optional for
+C<description>, C<triggers>, and C<param>.  The C<param> attribute is optional for
 Inputs which might need to use another name than the CGI variable of
-their associated HTML input.  [No, I can't think of a reason why they
-should, but any absurdity is possible given a sufficient quantity of
-spaghetti]
+their associated HTML input, such as to use 'username' and 'password' when
+the browser may attempt to auto-fill these values.
 
 Note that the C<value> call gets the current value of the input from the
 underlying C<_datum> object, and not from it's temporary storage under
@@ -217,6 +221,14 @@ sub param {
 	return $self->{'name'};
 }
 
+sub triggers {
+	my ($self) = @_;
+	if ($self->{'triggers'}) {
+		return [token_parse($self->{'triggers'})];
+	}
+	return [$self->param];
+}
+
 sub value {
 	my ($self) = @_;
 	$self->{'_datum'}->get;
@@ -228,12 +240,25 @@ sub description {
 	return $self->{'description'};
 }
 
+=item (scalar) null_ok (void)
+
+In rare cases (a number of checkboxes, for example), the Form Wyrd being
+unable to find the params associated with this input.  Normally, the
+Form Wyrd will consider this an error, and refuse to alter the value of
+the associated variable.  Setting a positive value for null_ok will
+allow the unfound parameter to indicate a null value (such as when all
+checkboxes are unchecked) You should not normally have to use this
+feature.
+
+=cut
+
+sub null_ok {
+	my ($self) = @_;
+	return undef;
+}
+
 =pod
 
-=item (void) set (scalar)
-
-The B<value> attribute is changed by the parent object
-(C<Apache::Wyrd::Form>, typically) through the B<set> method.
 
 set accepts a value, which is converted to the appropriate type
 (arrayref, scalar, etc.) to safely pass the next test, which is the
@@ -305,7 +330,8 @@ sub _parse_options {
 		$self->_raise_exception("Don't understand why options are a " 
 			. ref($self_options));
 	} elsif ($self->{'hash_options'}) {
-		$self->{'options'} = {token_parse($self->{'hash_options'}, $delimiter)}
+		my %hash = token_parse($self->{'hash_options'}, $delimiter);
+		$self->{'options'} = \%hash;
 	} else {
 		my @options = token_parse($self->{options}, $delimiter);
 		$self->{'options'} = \@options;
@@ -342,8 +368,8 @@ sub _check_param {
 	$errstr ||= ($self->{'error_message'} || 'Invalid data.');
 	$errstr = $self->description . ": $errstr" if ($self->description);
 	$self->{'_error_messages'} = [@{$self->{'_error_messages'}}, $errstr];
-	$self->{'_errors'} ||= [$self->param];
-	return undef;
+	$self->{'_errors'} ||= $self->triggers;
+	return;
 }
 
 =pod
@@ -389,6 +415,11 @@ sub _escape {
 	$value =~ s/\&/\&amp;/g;
 	$value =~ s/'/\&apos;/g;
 	$value =~ s/"/\&quot;/g;
+	$value =~ s/</\&lt;/g;
+	$value =~ s/>/\&gt;/g;
+	$value =~ s/\?:/\?\x00:/g;
+	$value =~ s/\!:/\!\x00:/g;
+	$value =~ s/\$:/\$\x00:/g;
 	return $value;
 }
 
@@ -405,6 +436,11 @@ sub _unescape {
 	$value =~ s/\&amp;/\&/g;
 	$value =~ s/\&apos;/'/g;
 	$value =~ s/\&quot;/"/g;
+	$value =~ s/\&lt;/</g;
+	$value =~ s/\&gt;/>/g;
+	$value =~ s/\?\x00:/\?:/g;
+	$value =~ s/\!\x00:/\!:/g;
+	$value =~ s/\$\x00:/\$:/g;
 	return $value;
 }
 
@@ -419,19 +455,19 @@ Built-in templates are text, textarea, password
 =cut
 
 sub _template_text {
-	return '<input type="text" name="$:name" value="$:value"?:size{ size="$:size"}?:class{ class="$:class"}?:id{ id="$:id"}?:maxlength{ maxlength="$:maxlength"}?:tabindex{ tabindex="$:tabindex"}?:accesskey{ accesskey="$:tabindex"}?:onchange{ onchange="$:onchange"}?:onselect{ onselect="$:onselect"}?:onblur{ onblur="$:onblur"}?:onfocus{ onfocus="$:onfocus"}?:disabled{ disabled}?:readonly{ readonly}>';
+	return '<input type="text" name="$:param" value="$:value"?:size{ size="$:size"}?:class{ class="$:class"}?:id{ id="$:id"}?:maxlength{ maxlength="$:maxlength"}?:tabindex{ tabindex="$:tabindex"}?:accesskey{ accesskey="$:tabindex"}?:onchange{ onchange="$:onchange"}?:onselect{ onselect="$:onselect"}?:onblur{ onblur="$:onblur"}?:onfocus{ onfocus="$:onfocus"}?:autocomplete{ autocomplete="$:autocomplete"}?:disabled{ disabled}?:readonly{ readonly}>';
 }
 
 sub _template_textarea {
-	return '<textarea name="$:name"?:cols{ cols="$:cols"}?:rows{ rows="$:rows"}?:wrap{ wrap="$:wrap"}?:id{ id="$:id"}?:class{ class="$:class"}?:tabindex{ tabindex="$:tabindex"}?:accesskey{ accesskey="$:accesskey"}?:onblur{ onblur="$:onblur"}?:onchange{ onchange="$:onchange"}?:onfocus{ onfocus="$:onfocus"}?:onselect{ onselect="$:onselect"}?:disabled{ disabled}?:readonly{ readonly}>$:value</textarea>';
+	return '<textarea name="$:param"?:cols{ cols="$:cols"}?:rows{ rows="$:rows"}?:wrap{ wrap="$:wrap"}?:id{ id="$:id"}?:class{ class="$:class"}?:tabindex{ tabindex="$:tabindex"}?:accesskey{ accesskey="$:accesskey"}?:onblur{ onblur="$:onblur"}?:onchange{ onchange="$:onchange"}?:onfocus{ onfocus="$:onfocus"}?:onselect{ onselect="$:onselect"}?:disabled{ disabled}?:readonly{ readonly}>$:value</textarea>';
 }
 
 sub _template_password {
-	return '<input type="password" name="$:name" value="$:value"?:size{ size="$:size"}?:id{ id="$:id"}?:maxlength{ maxlength="$:maxlength"}?:class{ class="$:class"}?:tabindex{ tabindex="$:tabindex"}?:accesskey{ accesskey="$:tabindex"}?:onchange{ onchange="$:onchange"}?:onselect{ onselect="$:onselect"}?:onblur{ onblur="$:onblur"}?:onfocus{ onfocus="$:onfocus"}?:disabled{ disabled}?:readonly{ readonly}>';
+	return '<input type="password" name="$:param" value="$:value"?:size{ size="$:size"}?:id{ id="$:id"}?:maxlength{ maxlength="$:maxlength"}?:class{ class="$:class"}?:tabindex{ tabindex="$:tabindex"}?:accesskey{ accesskey="$:tabindex"}?:onchange{ onchange="$:onchange"}?:onselect{ onselect="$:onselect"}?:onblur{ onblur="$:onblur"}?:onfocus{ onfocus="$:onfocus"}?:autocomplete{ autocomplete="$:autocomplete"}?:disabled{ disabled}?:readonly{ readonly}>';
 }
 
 sub _template_hidden {
-	return '<input type="hidden" name="$:name" value="$:value">';
+	return '<input type="hidden" name="$:param" value="$:value">';
 }
 
 =pod
@@ -450,8 +486,8 @@ sub _format_output {
 	$self->{'value'} ||= undef;#value will be set by the end if not earlier
 	$self->{'_error_messages'} ||= [];
 	my $name = $self->{'name'};
+	$self->{'param'} ||= $name;
 	my $type = $self->{'type'};
-	$self->{'triggers'} = token_parse($self->{'triggers'});
 	$self->_parse_options;
 	#primitives are overriden by instances of Apache::Wyrd::Input
 	my %params = (
@@ -460,6 +496,9 @@ sub _format_output {
 		not_null => ($self->_flags->not_null || $self->_flags->required || undef),
 		options => $self->{'options'}
 	);
+	if ($self->_flags->readonly) {
+		$self->{'readonly'} = 'true';
+	}
 	$self->{'_template'} = $self->{'_data'};
 	if ($name eq '') {
 		$self->_raise_exception('All Inputs must have a name')
@@ -482,9 +521,12 @@ sub _format_output {
 		};
 		$self->{'_template'} ||= $self->_template_text;
 	} elsif ($type eq 'textarea') {
+		$self->_flags->escape(1);
 		$self->{'value'} ||= $self->_data;#value may be enclosed in a textarea input
 		$self->{'_datum'} ||= Apache::Wyrd::Datum::Text->new($self->{'value'}, \%params);
-		$self->{'_template'} ||= $self->_template_textarea;
+		if ($self->{'_template'} !~ /<textarea/) {
+			$self->{'_template'} = $self->_template_textarea;
+		}
 	} elsif ($type eq 'hidden') {
 		$self->_flags->escape(1);
 		$self->{'_datum'} ||= Apache::Wyrd::Datum::Text->new($self->{'value'}, \%params);
@@ -504,7 +546,7 @@ sub _format_output {
 		}
 	}
 	$self->_input_size;
-	$self->_raise_exception('Input must be a top-level item in a Form-family Wyrd.  This parent is:' . $self->_parent->class_name)
+	$self->_raise_exception('Input must be a top-level item in a Form-family Wyrd.  This parent is: ' . $self->_parent->class_name)
 		unless ($self->{'_parent'}->can('register_input'));
 	$self->{'_id'} = $self->{'_parent'}->register_input($self);
 }
@@ -529,7 +571,7 @@ sub final_output {
 		$values{'value'} = ($value || $self->{'_parent'}->{'_variables'}->{$self->{'name'}} || $self->{'default'} || '');
 	}
 	$values{'value'} = $self->_escape($values{'value'}) if ($self->_flags->escape);
-	return ($self->_set(\%values, $self->{'_template'}));
+	return ($self->_clear_set(\%values, $self->{'_template'}));
 }
 
 =pod

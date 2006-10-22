@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::Tree;
-our $VERSION = '0.93';
+our $VERSION = '0.94';
 
 =head1 NAME
 
@@ -78,7 +78,7 @@ sub AUTOLOAD {
 		return $newval;
 	} else {
 		$self->{$AUTOLOAD} = $newval;
-		return undef;
+		return;
 	}
 }
 

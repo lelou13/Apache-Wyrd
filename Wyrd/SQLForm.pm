@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::SQLForm;
-our $VERSION = '0.93';
+our $VERSION = '0.94';
 use base qw(Apache::Wyrd::Form);
 use Apache::Wyrd::Services::SAK qw(:db);
 use warnings qw(all);
@@ -87,7 +87,7 @@ sub cancelled {
 		$self->_set_feedback('Cancelled', '<BR>No changes were made to the Record');
 		return 1;
 	}
-	return undef;
+	return;
 }
 
 =item (scalar) C<index> (void)
@@ -147,7 +147,7 @@ Defaults to undef.
 
 sub default_log {
 	my ($self) = @_;
-	return undef;
+	return;
 }
 
 =item (scalar) C<default_insert_error> (scalar)
@@ -212,7 +212,10 @@ sub primary_delete_error {
 
 =item (scalar) C<deleted> (void)
 
-Checks to see if the B<action> CGI parameter is set to "really_delete", and if so, deletes the record from the primary table and calls the C<_perform_secondary_deletes> method to remove associated records in secondary tables.  Returns a 1 if the deletion occurred, undef otherwise.
+Checks to see if the B<action> CGI parameter is set to "really_delete", and
+if so, deletes the record from the primary table and calls the
+C<_perform_secondary_deletes> method to remove associated records in
+secondary tables.  Returns a 1 if the deletion occurred, undef otherwise.
 
 =cut
 
@@ -240,7 +243,7 @@ sub deleted {
 		$self->_set_feedback($log_title, $log);
 		return 1;
 	}
-	return undef;
+	return;
 }
 
 =item (void) C<_prep_submission> (void)
@@ -253,29 +256,31 @@ submitting, but after a check for deletions.  Does nothing by default.
 sub _prep_submission {
 	my ($self) = @_;
 	$self->_join_sets;
-	return undef;
+	return;
 }
 
 =item (void) C<_prep_secondary> (void)
 
-Hook method for preparing the secondary data.  Called prior to C<_submit_secondary>.  Does nothing by default.
+Hook method for preparing the secondary data.  Called prior to
+C<_submit_secondary>.  Does nothing by default.
 
 =cut
 
 sub _prep_secondary {
 	my ($self) = @_;
-	return undef;
+	return;
 }
 
 =item (void) C<_submit_secondary> (void)
 
-Hook method for performing alterations on tables other than the primary one.  Does nothing by default.
+Hook method for performing alterations on tables other than the primary one.
+ Does nothing by default.
 
 =cut
 
 sub _submit_secondary {
 	my ($self) = @_;
-	return undef;
+	return;
 }
 
 =item (void) C<_perform_secondary_deletes> (void)
@@ -287,7 +292,7 @@ Does nothing by default.
 
 sub _perform_secondary_deletes {
 	my ($self) = @_;
-	return undef;
+	return;
 }
 
 =item (scalar) C<_logger_hook> (hashref, scalar)
@@ -360,7 +365,7 @@ between SQL and CGI.
 =cut
 
 sub _sets {
-	return undef;
+	return;
 }
 
 =item (void) C<_split_sets> (void)
@@ -376,7 +381,11 @@ sub _split_sets {
 	my @fields = $self->_sets;
 	#set types are usually comma-delineated text from a database.  If this is a preload, they need to be split.
 	foreach my $field (@fields) {
-		$self->{_variables}->{$field} = [split (',', $self->{_variables}->{$field})] if (ref($self->{_variables}->{$field}) ne 'ARRAY');
+		if (ref($self->{_variables}->{$field}) ne 'ARRAY') {
+			$self->{_variables}->{$field} = [split (',', $self->{_variables}->{$field})];
+		} else {
+			$self->_error(qq(Field $field is defined as a set but was supplied as an ARRAY.));
+		}
 	}
 }
 
@@ -392,7 +401,14 @@ sub _join_sets {
 	my ($self) = @_;
 	my @fields = $self->_sets;
 	foreach my $field (@fields) {
-		$self->{_variables}->{$field} = join(',', @{$self->{_variables}->{$field}}) if (ref($self->{_variables}->{$field}) eq 'ARRAY');
+		if (ref($self->{_variables}->{$field}) eq 'ARRAY') {
+			$self->{_variables}->{$field} = join(',', @{$self->{_variables}->{$field}});
+		} else {
+			my $value = $self->{_variables}->{$field};
+			if ($value) {
+				$self->_error(qq(Field $field is non-null (value: $value), defined as a set, and did not resolve as an array.  This is probably an error.));
+			}
+		}
 	}
 }
 
@@ -436,7 +452,7 @@ sub _submit_data {
 	($status, $s_log) = $self->_submit_secondary if ($status eq $self->default_ok);
 	$log .= $s_log;
 	$self->_set_feedback($status, $log);
-	return undef;
+	return;
 }
 
 sub _prep_preloads {
@@ -458,7 +474,7 @@ sub _prep_preloads {
 		}
 	}
 	$self->_split_sets;
-	return undef;
+	return;
 }
 
 sub _check_form {
@@ -466,7 +482,8 @@ sub _check_form {
 	$self->insert_error('preview') if ($self->dbl->param('action') eq 'preview');
 	$self->insert_error('preview') if ($self->dbl->param('action') eq 'delete');
 	$self->_flags->ignore_errors(1) if ($self->dbl->param('action') eq 'really_delete');
-	return undef;
+	$self->_flags->ignore_errors(1) if ($self->dbl->param('action') eq 'cancel');
+	return;
 }
 
 =pod

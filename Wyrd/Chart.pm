@@ -4,12 +4,12 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Chart;
-our $VERSION = '0.93';
+our $VERSION = '0.94';
 use base qw(Apache::Wyrd::Services::FileCache Apache::Wyrd::Interfaces::Setter Apache::Wyrd);
 use GD::Graph;
 use GD::Graph::colour qw(:colours :convert :lists);
 use Apache::Wyrd::Services::SAK qw(:tag :file token_parse token_hash);
-use Digest::SHA1 qw(sha1_hex);
+use Digest::SHA qw(sha1_hex);
 use Data::Dumper;
 
 =pod
@@ -244,16 +244,16 @@ sub _ok_font {
 		#font is a file
 		unless ($self->{'_ttf_support'}) {
 			$self->_error("Font requested: $font, but no TTF support");
-			return undef;
+			return;
 		}
 		#warn $font;
 		my $root = $self->dbl->req->document_root;
 		return "$root$font" if (-f "$root$font" and -r _);
 		$self->_error("Font requested: $font, but the file doesn't exist or can't be read");
-		return undef;
+		return;
 	}
 	return $font if (grep {$font eq $_} @{$self->{'_valid_attributes'}->{'builtin_fonts'}});
-	return undef;
+	return;
 }
 
 sub _image_template {
@@ -371,11 +371,23 @@ sub _plot {
 	my $gd = $graph->plot($self->{'_graph_data'});
 	$self->_error($graph->error) if ($graph->error);
 	$self->_alter_graphic($gd);
-	my $file = $self->{'_png_file'};
+	#256 Color limit due to bugs in GD library
+	$gd->trueColor(0);
+	my $file = $self->{'_graphic_file'};
+	my $format = $self->{'_file_format'};
 	open OUT, "> $file" || $self->_raise_exception("Could not write file $file: $!");
 	binmode(OUT);
-	print OUT $gd->png();
+	eval {
+		if ($format eq 'gif') {
+			print OUT $gd->gif();
+		} else {
+			print OUT $gd->png();
+		}
+	};
 	close OUT;
+	if ($@) {
+		$self->_error($@);
+	}
 }
 
 sub _add_chart_attributes {
@@ -397,7 +409,7 @@ the graphic as a GD object.  Does nothing by default.
 
 sub _alter_graphic {
 	my ($self, $dg) = @_;
-	return undef;
+	return;
 }
 
 =pod
@@ -411,7 +423,7 @@ the chart as a GD::Graph object.  Does nothing by default.
 
 sub _process_chart {
 	my ($self, $graph) = @_;
-	return undef;
+	return;
 }
 
 =pod
@@ -423,7 +435,7 @@ sub _process_chart {
 =cut
 
 sub _set_default_attributes {
-	return undef;
+	return;
 }
 
 sub _get_data {
@@ -689,13 +701,16 @@ sub _format_output {
 		$self->_raise_exception("Chart Wyrds require a src attribute");
 	}
 	$self->_file_problems($file);
-	$self->_raise_exception('Only PNG file format is supported')
-		unless ($file =~ /\.png$/i);
-	$self->{'_png_file'} = $file;
+	my ($format) = $file =~ /\.(png|gif)$/i;
+	unless ($format) {
+		$self->_raise_exception('Only PNG or GIF file format is supported');
+	}
+	$self->{'_graphic_file'} = $file;
+	$self->{'_file_format'} = lc($format);
 	my $datafile = $file;
-	$datafile =~ s/\.png/\.tdf/;
+	$datafile =~ s/\.$format/\.tdf/;
 	$self->_file_problems($datafile);
-	$self->{'_tdf_file'} = $datafile;
+	$self->{'_data_file'} = $datafile;
 	my $data = $self->_get_data;
 	my $cache = '';
 	$cache = $self->get_cached($datafile) if (-f _ and not($self->_flags->nocache));
@@ -709,7 +724,7 @@ sub _format_output {
 	my %image_attributes = map {$_, $self->{$_}} @{$self->{'_valid_attributes'}->{'img'}};
 	#warn $self->_image_template;
 	$self->_data($self->_set(\%image_attributes, $self->_image_template));
-	return undef;
+	return;
 }
 
 sub register_query {

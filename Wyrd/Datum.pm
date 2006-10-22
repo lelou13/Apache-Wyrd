@@ -8,7 +8,7 @@ no warnings qw(uninitialized);
 no warnings qw(redefine);
 
 package Apache::Wyrd::Datum;
-our $VERSION = '0.93';
+our $VERSION = '0.94';
 
 use constant TYPE => 0;
 use constant VALUE => 1;
@@ -50,7 +50,7 @@ sub _type {
 }
 
 sub _default_value {
-	return undef;
+	return;
 }
 
 sub _default_params {
@@ -180,8 +180,9 @@ sub _default_params {
 
 sub _check_params {
 	my ($self, $params) = @_;
-	_raise_exception("enum without arrayref opts") unless (ref($params->{'options'}) eq 'ARRAY');
-	_raise_exception("No more than 255 options are available in this datatype")
+	die("enum without arrayref opts") unless (ref($params->{'options'}) eq 'ARRAY');
+	#This is only the case in some SQL engines
+	die("No more than 255 options are available in this datatype")
 		if (scalar(@{$params->{'options'}}) > 255);
 	return $params;
 }
@@ -191,10 +192,10 @@ sub _check_value {
 	_raise_exception("Enum value must be scalar") if (ref($value));
 	unless ($params->{'not_null'}) {
 		#empty value is always OK unless not-null is set
-		return 1 unless ($value);
+		return 1 if (not($value) and ($value ne '0'));
 	}
 	#Compare value to options, ok if a match
-	return (0, "$value is not a permitted value")
+	return (0, qq("$value" is not a permitted value))
 		unless (grep {lc($_) eq lc($value)} @{$params->{'options'}});
 	return 1;
 }
@@ -206,12 +207,18 @@ sub _type {
 	return "set";
 }
 
+sub _check_params {
+	my ($self, $params) = @_;
+	die("enum without arrayref opts") unless (ref($params->{'options'}) eq 'ARRAY');
+	return $params;
+}
+
 sub _check_value {
 	my($self,$value,$params) = @_;
 	$self->_raise_exception("Set value must be arrayref") if (ref($value) ne 'ARRAY');
 	unless ($params->{'not_null'}) {
 		#empty value is always OK unless not-null is set
-		return 1 if (((scalar(@$value) == 1) and not($$value[0])) or not(scalar(@$value)));
+		return 1 if ((scalar(@$value) == 1) and (not($$value[0]) and ($$value[0] ne '0')) or not(scalar(@$value)));
 	}
 	#Go through all permutations, checking each against the total
 	my $ok = 1;
@@ -304,7 +311,7 @@ sub set {
 }
 
 sub force_set {
-	return undef;
+	return;
 }
 
 1;

@@ -6,7 +6,8 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Interfaces::Mother;
-our $VERSION = '0.93';
+use base qw(Apache::Wyrd::Interfaces::Setter);
+our $VERSION = '0.94';
 
 =pod
 
@@ -48,7 +49,7 @@ I<(format: (returns) name (accepts))>
 
 =over
 
-=item (void) C<_set_children> (void)
+=item (void) C<_set_children> ([string])
 
 Prior to producing output, the mother should, assuming C<_data> contains
 the enclosed data at the time, call C<_set_children> to perform the
@@ -56,13 +57,17 @@ delayed processing of its children.  Set children operates on the _data
 attribute, so be sure the children's placemarkers are in _data before
 calling this method.
 
+When used with the optional argument, that attribute is assumed to be the
+storage place for the children rather than _data.
+
 =cut
 
 sub _set_children {
-	my ($self) = @_;
-	my $out = $self->{'_data'};
+	my ($self, $attribute) = @_;
+	$attribute ||= '_data';
+	my $out = $self->{$attribute};
 	my $children = $self->_child_hash;
-	$self->_data($self->_set($children, $out));
+	$self->{$attribute} = $self->_set($children, $out);
 }
 
 =pod
@@ -100,7 +105,7 @@ Hook method for performing some action on or using each child.
 
 sub _process_child {
 	#hook for child processing
-	return undef;
+	return;
 }
 
 =pod

@@ -6,19 +6,17 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Form;
-our $VERSION = '0.93';
+our $VERSION = '0.94';
 use base qw(Apache::Wyrd::Interfaces::Mother Apache::Wyrd::Interfaces::Setter Apache::Wyrd);
-#use XML::Simple;
 use XML::Dumper;
 use Apache::Wyrd::Services::CodeRing;
-#use MIME::Base64;
 use Apache::Wyrd::Services::SAK qw(send_mail);
 
 =pod
 
 =head1 NAME
 
-Apache::Wyrd::Form - Interactive HTML form Wyrd
+Apache::Wyrd::Form - Build complex HTML forms from Wyrds
 
 =head1 SYNOPSIS
 
@@ -119,10 +117,16 @@ there will be no error_block shown on the form.
 
 =item action
 
-Same as the B<action> attribute of the HTML E<lt>formE<gt> tag.  If this
-is the location another Form object, the form sequence will continue to
-that location.  The default, and generally preferred value is the
-location of the current page.
+Same as the B<action> attribute of the HTML E<lt>formE<gt> tag.  If this is
+the location of a page with a different Form object on it, the form sequence
+will continue with all accumulated data to that location.  Note, however,
+that any new data (that is, data entered on the template from which the
+action is triggered) will need to be received and vetted by the B<next>
+form, not this form.  This can be done by putting appropriate Input objects
+in the receiving form.
+
+If not provided, the default, and generally much simpler, action value is a
+reference to the current page.
 
 =item method
 
@@ -143,9 +147,17 @@ Check for the submission of a "reset" button by checking that the
 parameter action is set to "reset".  Resets the whole form to it's
 default state.
 
+=item continue
+
+Keep accumulated data past the _submit() method and insert it in the final
+form page.  This allows that page to be used as a continuation point to
+another form.  Note that the C<action> attribute must be set to the location
+of the continuation page.
+
 =item ignore_errors
 
-Proceed through the Templates from one to the next even if there are input errors.
+Proceed through the Templates from one to the next even if there are input
+errors.
 
 =item no_collapse
 
@@ -260,7 +272,7 @@ sub drop_var {
 	delete($self->{'_variables'}->{$var->name});
 }
 
-=item (void) C<insert_error> (array)
+=item (void) C<insert_error> (scalar)
 
 Add a "trigger" to the error register.  In the most usual case where the
 error indicates illegal input, this is the parameter name, but may
@@ -301,7 +313,7 @@ sub register_form {
 	$self->{'_form'}->{$form->name} = $form->_form_body;
 	$self->{'_form_index'} = [@{$self->{'_form_index'}}, $form->name];
 	$self->{'_action_index'}->{$form->name} = $form->action;
-	return undef;
+	return;
 }
 
 =item (void) C<register_errors> (Apache::Wyrd::Input)
@@ -317,7 +329,7 @@ sub register_errors {
 	foreach my $error (@$errors) {
 		$self->insert_error($error);
 	}
-	return undef;
+	return;
 }
 
 =item (void) C<register_error_messages> (Apache::Wyrd::Input)
@@ -333,7 +345,7 @@ sub register_error_messages {
 	foreach my $error (@$errors) {
 		$self->{'_error_messages'} = [@{$self->{'_error_messages'}}, $error];
 	}
-	return undef;
+	return;
 }
 
 =item (void) C<register_input> (Apache::Wyrd::Input)
@@ -429,7 +441,7 @@ sub _interpret_action {
 		$self->dbl->param('action', $action) if ($action);
 		$self->_info("Interpreting $action as the action") if ($action);
 	}
-	return undef;
+	return;
 }
 
 =item (scalar) C<_format_error> (scalar)
@@ -463,6 +475,21 @@ sub _format_error_block {
 	return "<P>The following problems were found:<UL>$block</UL>Please correct the items <span class=\"error\">marked</span> before continuing.<P>";
 }
 
+=item (void) C<_dispatch_errors> (void)
+
+This method handles how the errors will be sent to the page.  The default is
+to set the global placemaker "error_block" to the value of the error block,
+so this placemarker must be somewhere in the current Form Template in order
+to show on the page.
+
+=cut
+
+sub _dispatch_errors {
+	my $self = shift;
+	$self->{'_globals'}->{'error_block'} = $self->_dump_errors;
+	return;
+}
+
 =item (void) C<_prep_submission> (void)
 
 If the default C<_submit_data> method is used, this provides a hook for
@@ -471,7 +498,7 @@ altering the data prior to submitting it.
 =cut
 
 sub _prep_submission {
-	return undef;
+	return;
 }
 
 =item (void) C<_submit_data> (void)
@@ -519,7 +546,7 @@ _format_output phase.
 =cut
 
 sub _prep_preloads {
-	return undef;
+	return;
 }
 
 
@@ -530,7 +557,7 @@ Hook for additional preloads.  Called during the _format_output phase.
 =cut
 
 sub _extra_preloads {
-	return undef;
+	return;
 }
 
 =item (void) C<_activate_widgets> (void)
@@ -541,7 +568,7 @@ Hook for activating special controls. Called during the _format_output phase.
 
 sub _activate_widgets {
 	#blank placemaker
-	return undef;
+	return;
 }
 
 =item (void) C<_check_form> (void)
@@ -554,7 +581,7 @@ _format_output phase.
 
 sub _check_form {
 	#blank placemaker
-	return undef;
+	return;
 }
 
 =item (void) C<_check_reset> (void)
@@ -569,7 +596,7 @@ sub _check_reset {
 	my $self = shift;
 	return undef unless ($self->_flags->check_resets);
 	return 1 if ($self->dbl->param('action') =~ /reset/i);
-	return undef;
+	return;
 }
 
 =item (void) C<_check_form> (void)
@@ -577,12 +604,37 @@ sub _check_reset {
 Hook for inserting special error conditions for global events, or for
 altering global values before continuing with processing the form.
 
+This is also a good place to do flow control when pages in a template
+sequence may conditionally need to be skipped, or where flow is to be
+directed to a form on a new page.
+
+Example:
+
+    sub _check_form {
+        my ($self) = @_;
+        if ( ($self->{_current_form} eq 'fourthpage') ) {
+            if ($self->{_variables}->{skip_page_5}) {
+                #
+                #if the skip_page_5 variable is set, move on to page 6.
+                $self->{_next_form} = 'sixthpage';
+                #
+            } elsif ($self->{_variables}->{validity} eq 'invalid') {
+                #
+                #if the value of "validity" is "invalid", move on to the
+                #validity restoration form.
+                return $self->dbl->req->internal_redirect_handler('/restore_validity.html');
+                #
+            }
+        }
+    }
+
+
 =cut
 
 sub _check_globals {
 	my $self = shift;
 	$self->insert_error('no_submit') if ($self->_flags->no_submit);
-	return undef;
+	return;
 }
 
 =item (scalar) C<_storage_template> (void)
@@ -728,10 +780,13 @@ sub _check_inputs {
 			($value, $success) = $self->_get_value($input->param);
 		}
 		$input->set($value);
-		#warn "Value of input: " . $input->name . " is " . $input->value;
+		#use Data::Dumper;
+		#warn "Value of input: " . $input->name . " is " . Dumper($input->value);
 		$self->_debug("Value of input: " . $input->name . " is " . $input->value);
 		#set the running variable amount
-		$self->{'_variables'}->{$input->name} = $input->value if ($success);
+		if ($success or $input->null_ok) {
+			$self->{'_variables'}->{$input->name} = $input->value;
+		}
 	}
 }
 
@@ -777,10 +832,14 @@ sub _wrap_form {
 	$default .= "/" . $self->{'_current_form'} unless ($self->_flags->no_grow);
 	my $action = ($self->{'_action_index'}->{$self->{'_current_form'}} || $self->{'action'} || $default);
 	my $method = ($self->{'method'} || 'post');
+	my $enctype = $self->{'enctype'};
+	if ($enctype) {
+		$enctype = ' enctype="'. $self->{'enctype'} . '"';
+	}
 	my $name = ($self->{'_current_form'} || 'form');
 	my $header = $self->_proof_of_submit . $self->_current_marker;
 	$header .= $self->{'_stored_data'} if ($self->{'_stored_data'});
-	return "<form name=\"$name\" action=\"$action\" method=\"$method\">\n" . $header . $form . "\n</form>";
+	return "<form name=\"$name\" action=\"$action\" method=\"$method\"$enctype>\n" . $header . $form . "\n</form>";
 }
 
 sub _current_marker {
@@ -834,7 +893,7 @@ sub _setup {
 	$self->{'_current_form'} =  $self->dbl->param('_current_form');
 	$self->{'_last_form'} = undef;
 	$self->_interpret_action;
-	return undef;
+	return;
 }
 
 sub _format_output {
@@ -842,6 +901,10 @@ sub _format_output {
 	#Decide on current and next forms or die trying.
 	$self->_raise_exception("One or more FormTemplate objects are required for each form.")
 		unless ($self->{'_current_form'});#forms changed this value registering
+	if (not(grep {$self->{'_current_form'} eq $_} @{$self->{'_form_index'}})) {#if we've come here from another form
+		$self->{'_next_form'} = $self->{'_form_index'}->[0];
+		$self->{'_current_form'} = $self->{'_form_index'}->[0];
+	}
 	unless ($self->{'_next_form'}) {#give cgi a chance to override
 		my $last_form = undef;
 		foreach my $form (@{$self->{'_form_index'}}) {#otherwise find next in sequence
@@ -891,17 +954,18 @@ sub _format_output {
 		#_process_self.
 		if ($self->{'_current_form'} eq $self->{'_last_form'}){
 			$self->_submit_data;
+			$self->_pack_data if ($self->_flags->continue);
 		} else {
 			$self->_pack_data;
 		}
 		$self->_reload_form;
 	} else {
-		$self->{'_globals'}->{'error_block'} = $self->_dump_errors;
+		$self->_dispatch_errors;
 		$self->_pack_data;
 		$self->_fire_triggers;
 	}
 
-	return undef;
+	return;
 }
 
 sub _generate_output {
@@ -930,6 +994,9 @@ sub _generate_output {
 	my $out = $self->{_data};
 	$out = $self->_text_set(\%item, $out);
 	$out = $self->_wrap_form($out);
+
+	#finally, filter out any Input character sequences
+	$out =~ s/\x00//g;
 	return $out;
 }
 

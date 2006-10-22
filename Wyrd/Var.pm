@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Var;
-our $VERSION = '0.93';
+our $VERSION = '0.94';
 use base qw (Apache::Wyrd);
 
 =pod
@@ -100,7 +100,7 @@ sub _generate_output {
 	} else {
 		$self->_error('Parent does not have a set_var() method.');
 	}
-	return undef;
+	return;
 }
 
 =pod

@@ -29,6 +29,7 @@ eval {$index = Apache::Wyrd::Services::Index->new({
 	bigfile => 0,
 	debug => 1
 })};
+$index->read_db;
 
 print "not " if ($@);
 print "ok 2 - Index tie\n";
@@ -124,6 +125,7 @@ eval {$index = Apache::Wyrd::Services::Index->new({
 	bigfile => 1,
 	debug => 1
 })};
+$index->read_db;
 
 print "not " if ($@);
 print "ok 20 - Index tie\n";
@@ -282,6 +284,7 @@ eval {$index = Apache::Wyrd::Services::Index->new({
 	reversemaps => 1,
 	debug => 1
 })};
+$index->read_db;
 
 print "not " if ($@);
 print "ok 52 - Index tie\n";

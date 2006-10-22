@@ -6,10 +6,10 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::CodeRing;
-our $VERSION = '0.93';
+our $VERSION = '0.94';
 use Apache::Wyrd::Services::SAK qw(lc_hash);
 use Apache::Wyrd::Services::Key;
-use Digest::SHA1 qw(sha1_hex);
+use Digest::SHA qw(sha1_hex);
 
 my $pure_perl = 0;
 eval ('use Crypt::Blowfish');
@@ -49,7 +49,7 @@ It uses the blowfish algorithm via either a Crypt::Blowfish or
 Crypt::Blowfish_PP module, depending on which one compiles on this
 system, preferring the C-based one.
 
-The CodeRing uses an internal hashing algorithm (SHA1) to check the
+The CodeRing uses an internal hashing algorithm (SHA) to check the
 validity of the decrypt.  If the decrypt shows alteration, it returns an
 empty string.
 

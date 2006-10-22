@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Lookup;
-our $VERSION = '0.93';
+our $VERSION = '0.94';
 use base qw (Apache::Wyrd Apache::Wyrd::Interfaces::Setter);
 use Apache::Wyrd::Services::SAK qw(:db);
 
@@ -90,20 +90,23 @@ sub _format_output {
 	my ($self) = @_;
 	$self->{'field_joiner'} ||= ($self->{'joiner'} || $self->_default_joiner);
 	$self->{'record_joiner'} ||= $self->_default_record_joiner;
+	if ($self->_flags->nojoin) {
+		$self->{'field_joiner'} = $self->{'record_joiner'} = '';
+	}
 	if (($self->{'field_joiner'} =~ /CSV/i) or ($self->{'record_joiner'} =~ /CSV/i)) {
 		#to use CSV, the EOL must be one of the standard EOLs (which are interpolated below, in _interpolate_special)
 		$self->{'record_joiner'} = "\n" unless ($self->{'record_joiner'} =~ /^\\r\\n|\\r|\r\n|\r/);
 	}
-	return undef;
+	return;
 }
 
 sub _generate_output {
 	my ($self) = @_;
 	$self->{'query'} ||= $self->_data;
 	my $sh = undef;
-	my @queries = grep {$_} split (';', $self->{'query'});
+	my @queries = split (';', $self->{'query'});
 	foreach my $subquery (@queries) {
-		$self->_info("executing $subquery");
+		next unless ($subquery);
 		$sh = $self->cgi_query($subquery);
 	}
 	if ($self->_data and ($self->query ne $self->_data)) {

@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Input::Set;
-our $VERSION = '0.93';
+our $VERSION = '0.94';
 use Apache::Wyrd::Datum;
 use base qw(
 	Apache::Wyrd::Interfaces::Mother
@@ -130,12 +130,21 @@ sub final_output {
 	}
 	my $value = $values{'value'};
 	delete($values{'value'});
-	unless ($value or $self->_flags->reset) {
+	my $effective_value = $value;
+	if (ref($effective_value) eq 'ARRAY') {
+		my @values = @$effective_value;
+		$effective_value = grep{defined($_)} @values;
+	}
+	unless ($effective_value or ($value eq '0') or $self->_flags->reset) {
 		my ($attempt, $success) = $self->{'_parent'}->_get_value($self->{'name'});
 		if ($self->{'_check_null_submit'}) {
-			$self->{'_parent'}->{'_variables'}->{$self->{'name'}} = undef if ($self->dbl->param('_being_submitted_' . $self->name));
+			if ($self->dbl->param('_being_submitted_' . $self->{'name'})) {
+				$self->{'_parent'}->{'_variables'}->{$self->{'name'}} = undef;
+			}
 		}
-		$value = ($attempt || $self->{'_parent'}->{'_variables'}->{$self->{'name'}} || ($self->{'_multiple'} ? [token_parse($self->{'default'})] : $self->{'default'}) || ($self->{'_multiple'} ? [] : ''));
+		$value = $attempt;
+		$value ||= $self->{'_parent'}->{'_variables'}->{$self->{'name'}};
+		$value ||= ($self->{'_multiple'} ? [token_parse($self->{'default'})] : $self->{'default'}) || ($self->{'_multiple'} ? [] : '');
 	}
 	if ($self->{'_multiple'}) {
 		$value = [$value] if (ref($value) ne 'ARRAY');
@@ -228,12 +237,12 @@ sub _startup_radiobuttons {
 				$self->_process_child($object);
 				unshift @objects, $object;
 			} else {
-				$self->_error(ref($object) . ' object cannot make a checkbox for the requested emptyname');
+				$self->_error(ref($object) . ' object cannot make a radiobutton for the requested emptyname');
 			}
 		}
 	}
 	foreach my $object (@objects) {
-		my $option = ($object->name || $self->{'_options'}->{$object->value});
+		my $option = ($object->name || ($object->name eq '0'? '0' : $self->{'_options'}->{$object->value}));
 		my $option_on = '$:_' . $option . '_on_';
 		$self->{'_' . $option . '_on_'} = undef;
 		if ($self->_flags->noauto) {
@@ -261,6 +270,7 @@ sub _startup_checkboxes {
 	my $name = $self->name;
 	my $template = qq(<input type="hidden" name="_being_submitted_$name" value="1">);
 	my $emptyname = $self->{'emptyname'};
+	$self->_raise_exception("You must define some options") unless (@{$self->{'_children'} || []});
 	my @objects = sort {sort_by_ikey($a, $b, @sort)} @{$self->{'_children'}};
 	if ($emptyname and not($self->_flags->noauto)) {
 		#pre-layed-out checkbox options should include their own empty option.
@@ -277,7 +287,7 @@ sub _startup_checkboxes {
 		}
 	}
 	foreach my $object (@objects) {
-		my $option = ($object->name || $self->{'_options'}->{$object->value});
+		my $option = ($object->name || ($object->name eq '0' ? '0' : $self->{'_options'}->{$object->value}));
 		my $option_on = '$:_' . $option . '_on_';
 		$self->{'_' . $option . '_on_'} = undef;
 		if ($self->_flags->noauto) {
@@ -318,7 +328,7 @@ sub _startup_selection {
 		}
 	}
 	foreach my $object (@objects) {
-		my $option = ($object->name || $self->{'_options'}->{$object->value});
+		my $option = ($object->name || ($object->name eq '0' ? '0' : $self->{'_options'}->{$object->value}));
 		my $option_on = '$:_' . $option . '_on_';
 		$self->{'_' . $option . '_on_'} = undef;
 		$template .= $self->_set({option => $option, option_on => $option_on, option_text => $self->{_options}->{$option}}, $object->option);
@@ -340,7 +350,7 @@ sub _startup_pulldown {
 	my $template = qq(<option value="">$emptyname</option>);
 	$template = '' if ($self->_flags->noempty);
 	foreach my $object (sort {sort_by_ikey($a, $b, @sort)} @{$self->{'_children'}}) {
-		my $option = ($object->name || $self->{'_options'}->{$object->value});
+		my $option = ($object->name || ($object->name eq '0' ? '0' : $self->{'_options'}->{$object->value}));
 		my $option_on = '$:_' . $option . '_on_';
 		$self->{'_' . $option . '_on_'} = undef;
 		$template .= $self->_set({option => $option, option_on => $option_on, option_text => $object->value}, $object->option);
@@ -349,6 +359,11 @@ sub _startup_pulldown {
 	my %hash = map {$_ => $self->{$_}} qw(size class onchange onselect onblur onfocus disabled _multiple);
 	$additional = $self->_set(\%hash, $additional);
 	$self->{'_template'} = qq(<select name="\$:name"$additional>\n$template\n</select>);
+}
+
+sub null_ok {
+	my ($self) = @_;
+	return $self->{'_check_null_submit'};
 }
 
 1;

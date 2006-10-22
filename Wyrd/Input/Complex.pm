@@ -1,12 +1,10 @@
-#Copyright barry king <barry@wyrdwright.com> and released under the GPL.
-#See http://www.gnu.org/licenses/gpl.html#TOC1 for details
 use 5.006;
 use strict;
 use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Input::Complex;
-our $VERSION = '0.93';
+our $VERSION = '0.94';
 use base qw(
 	Apache::Wyrd::Interfaces::Mother
 	Apache::Wyrd::Interfaces::Setter
@@ -151,7 +149,7 @@ value by default.
 =cut
 
 sub _get_value() {
-	return undef;
+	return;
 }
 
 =item 

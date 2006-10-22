@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Template;
-our $VERSION = '0.93';
+our $VERSION = '0.94';
 use base qw (Apache::Wyrd);
 
 =pod
@@ -54,7 +54,7 @@ sub _setup {
 	$self->_parent->{$self->{'name'}} = $self->{'_data'};
 	$self->_debug("Set parent's '" . $self->{'name'} . "' to '" . $self->{'_data'} . "'");
 	$self->{'_data'} = '';
-	return undef;
+	return;
 }
 
 =pod

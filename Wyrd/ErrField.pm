@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::ErrField;
-our $VERSION = '0.93';
+our $VERSION = '0.94';
 use strict;
 use base qw(Apache::Wyrd::ErrTag);
 
@@ -112,7 +112,7 @@ See LICENSE under the documentation for C<Apache::Wyrd>.
 =cut
 
 sub default_tag {
-	return undef;
+	return;
 }
 
 1;

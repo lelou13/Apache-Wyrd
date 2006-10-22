@@ -23,7 +23,7 @@ sub get_authorization {
 	my $self = shift;
 	unless ($passwords{$self->{username}} eq $self->{password}) {
 		$self->auth_error('Invalid Username or Password.');
-		return undef;
+		return;
 	}
 	$self->{auth} = $auth_level{$self->{username}};
 }
@@ -35,5 +35,5 @@ sub auth {
 	foreach my $level (@levels) {
 		return 1 if ($self->{'auth'}->{$level});
 	}
-	return undef;
+	return;
 }
