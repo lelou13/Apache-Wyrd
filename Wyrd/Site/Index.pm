@@ -1,12 +1,10 @@
-#Copyright barry king <barry@wyrdwright.com> and released under the GPL.
-#See http://www.gnu.org/licenses/gpl.html#TOC1 for details
-use strict;
 package Apache::Wyrd::Site::Index;
 use base qw(Apache::Wyrd::Services::Index);
 use Apache::Wyrd::Services::SAK qw(:file);
 use HTTP::Request::Common;
 use BerkeleyDB;
-our $VERSION = '0.94';
+our $VERSION = '0.95';
+use strict;
 
 =pod
 
@@ -43,13 +41,24 @@ Apache::Wyrd::Site::Index - Wrapper Index for the Apache::Wyrd::Site classes
 
 =head1 DESCRIPTION
 
-NONE
+C<Apache::Wyrd::Site::Index> provides an extended version of the
+C<Apache::Wyrd::Services::Index> object for use in the C<Apache::Wyrd::Site>
+hierarchy.
+
+Although it does not extend the parent class to include useful indexable
+attributes beyond the default ones (attributes: reverse, timestamp, digest,
+data, word, wordcount, title, keywords, description; maps: word), there are
+several that are used by Pull Wyrds in the hierarchy that need to be passed
+to the initialization hash (see SYNOPSIS for an example) to utilize them. 
+These are: attributes doctype, section, parent, shorttitle, published, auth,
+orderdate, eventdate, tags, children and maps tags, children.  See
+C<Apache::Wyrd::Site::Page>
 
 =head2 METHODS
 
 Note: This class extends the Apach::Wyrd::Services::Index class, so check
 the documentation of that module for most methods.  It provides an index of
-Apache::Wyrd::Site::Page objects (see that module for details).
+Apache::Wyrd::Site::Page objects.
 
 I<(format: (returns) name (arguments after self))>
 
@@ -255,10 +264,10 @@ sub ua {
 
 =head1 BUGS/CAVEATS
 
-Reserves the new method, which it passes unaltered to
-Apache::Wyrd::Services::Index.  index_site, skip_file, and purge_missing are
-obsolete and may be dropped in future versions.  See
-Apache::Wyrd::Services::Index for other bugs/warnings.
+An obsolete appendix to an obsolete mechanism.  Reserves the new method,
+which it passes unaltered to Apache::Wyrd::Services::Index.  index_site,
+skip_file, and purge_missing are obsolete and may be dropped in future
+versions.  See Apache::Wyrd::Services::Index for other bugs/warnings.
 
 =cut
 
@@ -288,7 +297,7 @@ General-purpose search engine index object
 
 =head1 LICENSE
 
-Copyright 2002-2004 Wyrdwright, Inc. and licensed under the GNU GPL.
+Copyright 2002-2007 Wyrdwright, Inc. and licensed under the GNU GPL.
 
 See LICENSE under the documentation for C<Apache::Wyrd>.
 

@@ -1,13 +1,16 @@
 List of known problems:
 
+-	Apache2 incompatible.
+
 -	Base Wyrd object should be either more seperable or totally inseperable
 	from an Apache::Wyrd::DBL object.
 
 -	General audit needed to enforce object-model integrity and
-	interface consistency
+	interface consistency.
 
 -	Concurrent access modes (CDB_<FOO>)of the BerkeleyDB module have
-	not been widely tested.
+	not been widely tested, and the BerkeleyDB Index is scheduled for
+	demolition.
 
 List of known problems which will not be fixed, and why:
 

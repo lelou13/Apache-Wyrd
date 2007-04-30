@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Lookup;
-our $VERSION = '0.94';
+our $VERSION = '0.95';
 use base qw (Apache::Wyrd Apache::Wyrd::Interfaces::Setter);
 use Apache::Wyrd::Services::SAK qw(:db);
 
@@ -102,30 +102,41 @@ sub _format_output {
 
 sub _generate_output {
 	my ($self) = @_;
-	$self->{'query'} ||= $self->_data;
 	my $sh = undef;
+	#set the query from the data if it is not set., then vice-versa
+	$self->{'query'} ||= $self->{'_data'};
+	my $debug_query = $self->{'query'};
+	my $success = 0;
+	my $final = '';
+	#if there are more than one query, execute them in order, leaving one active handle,
+	#and preserve the final query for debugging purposes.
 	my @queries = split (';', $self->{'query'});
 	foreach my $subquery (@queries) {
 		next unless ($subquery);
+		$self->_info("executing query: $subquery");
 		$sh = $self->cgi_query($subquery);
+		$debug_query = $subquery
 	}
-	if ($self->_data and ($self->query ne $self->_data)) {
+	#if we wind up with non-null data different than the query attribute, it's a template,
+	#so treat it as one.
+	if ($self->{'_data'} and ($self->{'query'} ne $self->{'_data'})) {
 		$self->_info("Interpreting data as a templated query.");
 		my @parts = ();
-		#query different from the enclosed?  assume enclosed is a template.
 		while (my $data = $sh->fetchrow_hashref) {
+			$success = 1;
 			push @parts, $self->_set($data);
 		}
 		if (scalar(@parts) > 1) {
 			#Make it a delinated list if it's multiple
 			return $self->_do_join(@parts);
 		}
-		return $parts[0];
+		$final = $parts[0];
+	#otherwise, execute the query, possibly joining the data
 	} else {
-		#the same?  Assume enclosed is a query.
 		my @parts = ();
 		$self->_info("Interpreting data as a raw query.");
 		while (my $data = $sh->fetchrow_arrayref) {
+			$success = 1;
 			if (scalar(@$data) > 1) {
 				push @parts, $self->_do_join(@$data);
 			} else {
@@ -136,8 +147,15 @@ sub _generate_output {
 			#Make it a delinated list if it's multiple
 			return $self->_do_record_join(@parts);
 		}
-		return $parts[0];
+		$final = $parts[0];
 	}
+	unless ($success) {
+		#The query failed to produce results.  Report if there's an error
+		if ($sh->err) {
+			$self->_error("Error in query ($debug_query): " . $sh->errstr);
+		}
+	}
+	return $final;
 }
 
 
@@ -159,7 +177,7 @@ General-purpose HTML-embeddable perl object
 
 =head1 LICENSE
 
-Copyright 2002-2005 Wyrdwright, Inc. and licensed under the GPL.
+Copyright 2002-2007 Wyrdwright, Inc. and licensed under the GPL.
 
 See LICENSE under the documentation for C<Apache::Wyrd>.
 

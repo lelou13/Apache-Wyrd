@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Loop;
-our $VERSION = '0.94';
+our $VERSION = '0.95';
 use base qw (Apache::Wyrd::Interfaces::Setter Apache::Wyrd::Interfaces::Stealth Apache::Wyrd);
 use Apache::Wyrd::Services::SAK qw(:db);
 
@@ -91,7 +91,7 @@ General-purpose HTML-embeddable perl object
 
 =head1 LICENSE
 
-Copyright 2002-2005 Wyrdwright, Inc. and licensed under the GPL.
+Copyright 2002-2007 Wyrdwright, Inc. and licensed under the GPL.
 
 See LICENSE under the documentation for C<Apache::Wyrd>.
 

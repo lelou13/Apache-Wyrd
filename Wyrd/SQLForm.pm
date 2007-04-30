@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::SQLForm;
-our $VERSION = '0.94';
+our $VERSION = '0.95';
 use base qw(Apache::Wyrd::Form);
 use Apache::Wyrd::Services::SAK qw(:db);
 use warnings qw(all);
@@ -14,7 +14,7 @@ no warnings qw(uninitialized);
 
 =head1 NAME
 
-Apache::Wyrd::SQLForm - Abstract Form Wyrd for editing data via SQL
+Apache::Wyrd::SQLForm - General Form Wyrd for editing data in SQL
 
 =head1 SYNOPSIS
 
@@ -41,19 +41,19 @@ Apache::Wyrd::SQLForm - Abstract Form Wyrd for editing data via SQL
 
 =head1 DESCRIPTION
 
-The SQLForm is a Wyrd subclassed from Apache::Wyrd::Form.  It is meant
-to simplify the creation of forms that are used to edit data within a
-database connected to via the C<Apache::Wyrd::DBL>.
+The SQLForm is a subclass of Apache::Wyrd::Form.  It is meant to simplify
+the creation of forms that are used to edit data within a database connected
+to via the C<Apache::Wyrd::DBL>.
 
-The SQLForm makes the assumption that there is a primary table on which
-the edit is operating and that other tables will, if necessary, have
-elements inserted, changed or deleted from them as they relate to the primary table.
+The SQLForm makes the assumption that there is a primary table on which the
+edit is operating and that other tables will, if necessary, have elements
+inserted, changed or deleted from them as they relate to the primary table.
 
-This module is meant to be subclassed, so a large number of it's methods
-are only defined in order to be overridden.  Any changes to secondary
-tables, for example, need to be handled by subclassing
-C<_prep_secondary>, C<_submit_secondary>, and
-C<_perform_secondary_deletes>, all of which do nothing by default.
+This module is meant to be subclassed, so a large number of its methods are
+only defined in order to be overridden.  Any changes to secondary tables,
+for example, need to be handled by subclassing C<_prep_secondary>,
+C<_submit_secondary>, and C<_perform_secondary_deletes>, all of which do
+nothing by default.
 
 =head2 HTML ATTRIBUTES
 
@@ -504,7 +504,7 @@ General-purpose HTML-embeddable perl object
 
 =head1 LICENSE
 
-Copyright 2002-2005 Wyrdwright, Inc. and licensed under the GNU GPL.
+Copyright 2002-2007 Wyrdwright, Inc. and licensed under the GNU GPL.
 
 See LICENSE under the documentation for C<Apache::Wyrd>.
 

@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd;
-our $VERSION = '0.94';
+our $VERSION = '0.95';
 use Apache::Wyrd::Services::SAK qw (token_parse slurp_file);
 use Apache::Wyrd::Services::Tree;
 use Apache::Util;
@@ -726,7 +726,7 @@ See the MANIFEST.
 
 =head1 LICENSE
 
-Copyright 2002-2005 Wyrdwright, Inc. and licensed under the GNU GPL.
+Copyright 2002-2007 Wyrdwright, Inc. and licensed under the GNU GPL.
 
 You should have received a copy of the GNU General Public License along
 with Apache::Wyrd (see LICENSE); if not, write to the Free Software
@@ -913,7 +913,7 @@ sub _invoke_html_wyrd {
 		$match = 0;
 		$match = ($params =~ m/
 			\G					#last search match
-			\W*					#any amount of non-word space
+			[^\w-]*				#any amount of non-word space
 			(?:					#non-capturing cluster 1
 				([^=]+)			#non-equals
 				\s*=\s*			#an equals with or without whitespace around it
@@ -923,7 +923,7 @@ sub _invoke_html_wyrd {
 					'([^']+)'	#non-single-quotes surrounded by single quotes
 					)			#end of non-capturing cluster 2
 				|				#or
-					(\w+)		#plain word
+					([\w-]+)	#plain word
 			)					#end of non-matching cluster 1
 			\W*					#and any amount of non-word space
 			/xmsg);

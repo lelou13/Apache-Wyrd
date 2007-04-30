@@ -31,7 +31,7 @@ I<(format: (returns) C<$wyrd-E<gt>name> (arguments))> for methods
 
 =cut
 
-our $VERSION = '0.94';
+our $VERSION = '0.95';
 our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(
 	array_4_get
@@ -44,6 +44,7 @@ our @EXPORT_OK = qw(
 	env_4_get
 	file_attribute
 	lc_hash
+	normalize_href
 	send_mail
 	set_clause
 	slurp_file
@@ -64,10 +65,11 @@ our %EXPORT_TAGS = (
 	all			=>	\@EXPORT_OK,
 	db			=>	[qw(cgi_query do_query set_clause _exists_in_table)],
 	file		=>	[qw(file_attribute slurp_file spit_file)],
-	hash		=>	[qw(array_4_get data_clean env_4_get lc_hash sort_by_ikey sort_by_key token_hash token_parse uniquify_by_ikey uniquify_by_key uri_escape)],
+	hash		=>	[qw(array_4_get data_clean env_4_get lc_hash sort_by_ikey sort_by_key token_hash token_parse uniquify_by_ikey uniquify_by_key)],
 	mail		=>	[qw(send_mail)],
 	string		=>	[qw(commify strip_html utf8_force utf8_to_entities)],
-	tag			=>	[qw(attopts_template)]
+	tag			=>	[qw(attopts_template)],
+	uri			=>	[qw(normalize_href uri_escape)],
 );
 
 =pod
@@ -269,7 +271,6 @@ sub slurp_file {
 	$file = open (FILE, $file);
 	if ($file) {
 		local $/;
-		undef $/;
 		$file = <FILE>;
 		close (FILE);
 	}
@@ -543,6 +544,40 @@ sub uri_escape {
 
 =pod
 
+=item (scalar) C<normalize_href>(objectref DBL, scalar href)
+
+Given a href-style URL, returns the full URL that is implied from the fragment.
+
+=cut
+
+sub normalize_href {
+	my ($dbl, $fragment) = @_;
+	my $req = $dbl->req;
+
+	my $default_scheme = $req->get_server_port==443 ? 'https' : 'http';
+	my $default_hostinfo = $req->hostname;
+	my $default_path = $dbl->self_path;
+
+	my $uri =$req->parsed_uri;
+	my $scheme = $uri->scheme || $default_scheme;
+	my $hostinfo = $uri->hostinfo || $default_hostinfo;
+	my $path = $uri->rpath || $default_path;
+	$path =~ s{[^/]+$}{};
+
+	if ($fragment =~ /^https?:/) {
+		return $fragment;
+	}
+	elsif ($fragment =~ m#^/#) {
+		return "$scheme://$hostinfo$fragment";
+	} else {
+		use Apache::URI;
+		my $uri =$req->parsed_uri;
+		return "$scheme://$hostinfo$path$fragment";
+	}
+}
+
+=pod
+
 =back
 
 =head2 MAIL (:mail)
@@ -745,7 +780,7 @@ General-purpose HTML-embeddable perl object
 
 =head1 LICENSE
 
-Copyright 2002-2005 Wyrdwright, Inc. and licensed under the GNU GPL.
+Copyright 2002-2007 Wyrdwright, Inc. and licensed under the GNU GPL.
 
 See LICENSE under the documentation for C<Apache::Wyrd>.
 

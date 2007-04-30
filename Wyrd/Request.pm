@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized redefine);
 
 package Apache::Wyrd::Request;
-our $VERSION = '0.94';
+our $VERSION = '0.95';
 my $have_apr = 1;
 eval ('use Apache::Request');
 if ($@) {
@@ -105,7 +105,7 @@ General-purpose HTML-embeddable perl object
 
 =head1 LICENSE
 
-Copyright 2002-2005 Wyrdwright, Inc. and licensed under the GNU GPL.
+Copyright 2002-2007 Wyrdwright, Inc. and licensed under the GNU GPL.
 
 See LICENSE under the documentation for C<Apache::Wyrd>.
 

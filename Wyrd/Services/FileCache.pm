@@ -8,7 +8,7 @@ use strict;
 use Apache::Wyrd::Services::SAK qw(slurp_file token_parse);
 use Exporter;
 
-our $VERSION = '0.94';
+our $VERSION = '0.95';
 our @ISA = qw(Exporter);
 our @EXPORT = qw(get_cached);
 
@@ -41,6 +41,12 @@ setting C<NoFileCache> to a true value:
 
 	PerlSetVar NoFileCache 1
 
+The time between checks is also confiruable using a PerlSetVar directive:
+
+	PerlSetVar FileCacheTimeout x
+
+Where x is a number of seconds.
+
 =head1 FLAGS
 
 =over
@@ -70,11 +76,17 @@ sub get_cached {
 	my ($self, $file) = @_;
 	my $time = time;
 	my @stats = (undef,undef,undef,undef,undef,undef,undef,undef,undef,$_file_timestamp_register{$file});
+	my $new_timeout = 0;
 	my $force_load = 0;
 	if ($self->can('dbl')) {#we're in a Wyrd, so we can check the dir_config;
-		$force_load = 1 if ($self->dbl->req->dir_config('NoFileCache'));
+		if ($self->dbl->req->dir_config('NoFileCache')) {
+			$force_load = 1;
+		}
+		$new_timeout = $self->dbl->req->dir_config('FileCacheTimeout')
 	}
-	if ($force_load or ($_previous_checktime_register < ($time - $timeout))) {
+	#NB use or flip-flop for $new_timeout so that the dir-config value does not persist
+	#across different directory boundaries.
+	if ($force_load or ($_previous_checktime_register < ($time - ($new_timeout || $timeout)))) {
 		#$self->_info("checking $file against file cache");
 		@stats = stat($file);
 		delete($_file_cache_register{$file}) if ($stats[9] > $_file_timestamp_register{$file});
@@ -116,7 +128,7 @@ General-purpose HTML-embeddable perl object
 
 =head1 LICENSE
 
-Copyright 2002-2005 Wyrdwright, Inc. and licensed under the GNU GPL.
+Copyright 2002-2007 Wyrdwright, Inc. and licensed under the GNU GPL.
 
 See LICENSE under the documentation for C<Apache::Wyrd>.
 

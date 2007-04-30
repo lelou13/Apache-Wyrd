@@ -1,6 +1,33 @@
 Changes
 =======
 
+    0.95   TBA
+
+           Module cleanup: removed some example & undocumented Wyrds from
+           the core distribution: CSSGene, Site:EditablePage,
+           Site::SearchResults, Site::WidgetControl.  Added missing Version
+           Wyrd.  Consolidated Lattice Wyrds into single file
+
+           Added View Wyrd for displaying contents of enclosing Wyrds
+
+           Added a FileCacheTimeout to Apache::Wyrd::Services::FileCache
+
+           Apache::Wyrd::Redirect can now use "href" conventions.  New
+           normalize_href Apache::Wyrd::Services::SAK function for this.
+
+           Apache::Form & Apache::Wyrd::Input has more passthrough of valid
+           attributes for their base tags (enctype, onkeydown, etc.)
+
+           Wyrds now accept hyphen in the attribute-name as a valid
+           character, to allow for compatibility with valid HTML
+           attributes such as "accept-charset".
+
+           Apache::Wyrd::Services::Index now feature-frozen and depreciated
+           in favor of Apache::Wyrd::Services::MySQLIndex. This is due to
+           locking and DB File corruption issues which could not be resolved.
+
+           Documentation changes.
+
     0.94   October 22, 2006
 
            Indexer now requires perl 5.8 for Unicode support

@@ -1,6 +1,55 @@
+#Copyright barry king <barry@wyrdwright.com> and released under the GPL.
+#See http://www.gnu.org/licenses/gpl.html#TOC1 for details
 package Apache::Wyrd::Services::MetaTable;
 use strict;
 use DBI;
+our $VERSION = '0.95';
+
+=pod
+
+=head1 NAME
+
+Apache::Wyrd::Services::MetaTable - MySQL-backed Namespace-based data store
+
+=head1 SYNOPSIS
+
+	use base qw(Apache::Wyrd);
+	use Apache::Wyrd::Services::MetaTable;
+	my $mt = Apache::Wyrd::Services::MetaTable->new($self->dbl->dbh);
+	my $lastrun = $mt->lastrun;
+
+	... do something with $lastrun value ...
+
+	my $thisrun = `localtime`
+	$mt->lastrun($thisrun);
+
+=head1 DESCRIPTION
+
+MetaTable is an SQL-backed version of Apache::Wyrd::Services::Tree in
+terms of functionality, but is persistent across connections, as it
+stores its data in a MySQL server.
+
+It can store hashes, arrays, and scalars.  Pass the first two as references,
+the scalars as single values.  It uses the namespace of the caller to decide
+the lookup key, so only the base name of the key need be specified, by
+referring to $meta_table->valuename (where $metatable stores a reference to
+an instance of this class).  To retreive the value of 'valuename', call the
+method valuename().  To set it, call the method with a single argument.
+
+Be careful to dispose the MetaTable handler properly across connections,
+or you run the risk of "leaking" database handles into your Apache
+memory space.  The best way to avoid this is to invoke the MetaTable into
+a scoped lexical only.
+
+METHOD
+
+=item new(dbh handle, scalar name)
+
+invoke a new MetaTable.  The dbh handle connection must have create and
+insert rights on the database.  The name is optional, and defaults to
+_wyrd_meta.
+
+=cut
 
 sub new {
 	my ($class, $dbh, $name) = @_;
@@ -203,5 +252,29 @@ sub purge_entry {
 	my $error = $sh->errstr;
 	return $error;
 }
+
+=pod
+
+=head1 AUTHOR
+
+Barry King E<lt>wyrd@nospam.wyrdwright.comE<gt>
+
+=head1 SEE ALSO
+
+=over
+
+=item Apache::Wyrd
+
+General-purpose HTML-embeddable perl object
+
+=back
+
+=head1 LICENSE
+
+Copyright 2002-2007 Wyrdwright, Inc. and licensed under the GNU GPL.
+
+See LICENSE under the documentation for C<Apache::Wyrd>.
+
+=cut
 
 1;

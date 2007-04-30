@@ -5,7 +5,7 @@ package Apache::Wyrd::Site::MySQLIndex;
 use base qw(Apache::Wyrd::Services::MySQLIndex);
 use Apache::Wyrd::Services::SAK qw(:file);
 use HTTP::Request::Common;
-our $VERSION = '0.94';
+our $VERSION = '0.95';
 
 =pod
 
@@ -84,18 +84,28 @@ sub lookup {
 	my ($self, $name, $attribute) = @_;
 	$self->read_db;
 	my ($id, my $new) = $self->get_id($name);
-	#warn("found id '$id' new: $new");
-	return {} if ($new and not($attribute));
-	return undef if ($new);
-	if ($attribute) {
-		my $sh = $self->db->prepare("select $attribute from _wyrd_index where id=?");
-		$sh->execute($id);
-		return if ($sh->err);
-		my ($result) = @{$sh->fetchrow_arrayref || []};
-		return $result;
-	} else {
-		return $self->get_entry($id);
+	my $result = undef;
+	if ($new) {
+		if (not($attribute)) {
+			$result = {};
+		} else {
+			$result = undef;
+		}
+	}else {
+		if ($attribute) {
+			my $sh = $self->db->prepare("select $attribute from _wyrd_index where id=?");
+			$sh->execute($id);
+			if ($sh->err) {
+				$result = undef;
+			} else {
+				($result) = @{$sh->fetchrow_arrayref || []};
+			}
+		} else {
+			$result = $self->get_entry($id);
+		}
 	}
+	$self->close_db;
+	return $result;
 }
 
 =pod
@@ -137,7 +147,7 @@ General-purpose search engine index object
 
 =head1 LICENSE
 
-Copyright 2002-2004 Wyrdwright, Inc. and licensed under the GNU GPL.
+Copyright 2002-2007 Wyrdwright, Inc. and licensed under the GNU GPL.
 
 See LICENSE under the documentation for C<Apache::Wyrd>.
 

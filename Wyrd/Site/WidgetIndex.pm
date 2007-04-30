@@ -1,7 +1,8 @@
 package Apache::Wyrd::Site::WidgetIndex;
 use base qw(Apache::Wyrd::Services::Index);
 use strict;
-our $VERSION = '0.94';
+use Carp;
+our $VERSION = '0.95';
 
 =pod
 
@@ -11,27 +12,11 @@ Apache::Wyrd::Site::WidgetIndex - Wrapper class to support Widget Class
 
 =head1 SYNOPSIS
 
-  package BASENAME::WidgetIndex;
-  use strict;
-  use base qw(Apache::Wyrd::Site::WidgetIndex);
-  use Apache::Wyrd::Services::Index;
-  
-  sub new {
-      my ($class) = @_;
-      my $init = {
-          file => '/var/www/indexes/widgetindex.db'
-      };
-      return Apache::Wyrd::Services::Index::new($class, $init);
-  }
-  
-  1;
-
+TODO
 
 =head1 DESCRIPTION
 
-Provides a simple Apache::Wyrd::Services::Index object for storing metadata on
-Apache::Wyrd::Site::Widget objects.  Please see Apache::Wyrd::Site::Widget for
-why you might need one.
+Provides a simple interface to a MySQL table for storing data about widgets.
 
 =head1 BUGS/CAVEATS
 
@@ -57,7 +42,7 @@ Base object for Widgets - semi-independent objects which enrich the content of a
 
 =head1 LICENSE
 
-Copyright 2002-2005 Wyrdwright, Inc. and licensed under the GNU GPL.
+Copyright 2002-2007 Wyrdwright, Inc. and licensed under the GNU GPL.
 
 See LICENSE under the documentation for C<Apache::Wyrd>.
 
@@ -65,29 +50,75 @@ See LICENSE under the documentation for C<Apache::Wyrd>.
 
 sub new {
 	my ($class, $init) = @_;
-	warn ("You can avoid a performance penalty by subclassing Apache::Wyrd::Site::WidgetIndex and defining a new() method that returns a WidgetIndex for your site.");
 	$init = {} unless (ref($init) eq 'HASH');
-	die "Need a file attribute for Apache::Wyrd::Site::WidgetIndex" unless ($init->{file});
-	return Apache::Wyrd::Services::Index::new($class, $init);
+	my $self = {};
+	$self->{'table'} = $init->{'table'} || '_wyrd_widgets';
+	bless $self, $class;
+	return $self;
 }
 
 sub update_entry {
 	my ($self, $entry) = @_;
+	my $dbh = $entry->dbl->dbh;
+	my $table = $self->{'table'};
 	my $changed = 0;
-	my $index = $self->read_db;
-	my ($id, $id_is_new) = $self->get_id($entry->index_name);
-	$index->db_get("\x02\%$id", my $digest);
-	if ($digest ne $entry->index_digest) {
-		$index = $self->write_db;
-		$self->update_key($id, $entry->index_name);
-		$self->update_key("\x00%" . $entry->index_name, $id);
-		$self->update_key("\x02%" . $id, $entry->index_digest);
-		$changed = 1;
-		$index->db_get("\xff%greatest_id", my $greatest_id);
-		$index->db_put("\xff%greatest_id", $id) if ($id > $greatest_id);
+	my $sh = $dbh->prepare("select digest from $table where name=?");
+	my $stored_digest = undef;
+	$sh->execute($entry->index_name);
+	if ($sh->err) {
+		my $failed = $self->_init_table($dbh, $table);
+		#if the DB can't be used, assume the widget has changed
+		return 1 if ($failed);
+	} else {
+		my $datum = $sh->fetchrow_arrayref;
+		$stored_digest = $datum->[0];
 	}
-	$self->close_db;
+	if ($stored_digest ne $entry->index_digest) {
+		if (not defined($stored_digest)) {
+			#new entry, use insert;
+			my $sh = $dbh->prepare("insert into $table set name=?, digest=?");
+			$sh->execute( $entry->index_name, $entry->index_digest);
+		} else {
+			#new entry, use update;
+			my $sh = $dbh->prepare("update $table set digest=? where name=?");
+			$sh->execute($entry->index_digest, $entry->index_name);
+		}
+		$changed = 1;
+	}
 	return $changed;
+}
+
+sub _init_table {
+	my ($self, $dbh, $table) = @_;
+	my $sh = $dbh->prepare('show tables');
+	unless ($dbh->ping) {
+		carp "database handle stale.";
+		return 1;
+	}
+	$sh->execute;
+	my $exists = 0;
+	while (my $aref = $sh->fetchrow_arrayref) {
+		if ($aref->[0] eq $table) {
+			$exists = 1;
+		}
+	}
+	if ($exists) {
+		carp "table exists, but can't be read.  Manual intervention is necessary";
+		return 1;
+	}
+	my $error = 0;
+	my $table_def =<<"DEF";
+create table $table (
+	name varchar(255),
+	digest char(40)
+) ENGINE=InnoDB CHARSET=UTF8
+DEF
+	$dbh->do($table_def);
+	if ($dbh->err) {
+		carp "Could not create widget table: " . $dbh->errstr;
+	}
+	$dbh->do("alter table $table add index (name)");
+	return 0;
 }
 
 1;

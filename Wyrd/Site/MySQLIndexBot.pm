@@ -1,15 +1,7 @@
 use strict;
 package Apache::Wyrd::Site::MySQLIndexBot;
 use base qw(Apache::Wyrd::Site::IndexBot);
-our $VERSION = '0.94';
-
-=pod
-
-This is beta software.  Documentation Pending.  See Apache::Wyrd for more info.
-
-=cut
-#Copyright barry king <barry@wyrdwright.com> and released under the GPL.
-#See http://www.gnu.org/licenses/gpl.html#TOC1 for details
+our $VERSION = '0.95';
 
 sub purge_missing {
 	my ($self, $instance) = @_;
@@ -30,5 +22,50 @@ sub purge_missing {
 	}
 	return @no_skip;
 }
+
+=pod
+
+=head1 NAME
+
+Apache::Wyrd::OBJECT
+
+=head1 SYNOPSIS
+
+NONE
+
+=head1 DESCRIPTION
+
+In all ways identical to C<Apache::Wyrd::Site::IndexBot>, save that it works
+with the Apache::Wyrd::Services::MySQLIndex and
+Apache::Wyrd::Site::MySQLIndex types of indexes.
+
+See that package for further details.
+
+=head1 AUTHOR
+
+Barry King E<lt>wyrd@nospam.wyrdwright.comE<gt>
+
+=head1 SEE ALSO
+
+=over
+
+=item Apache::Wyrd
+
+General-purpose HTML-embeddable perl object
+
+=item Apache::Wyrd::Site::IndexBot
+
+General-purpose HTML-embeddable perl object
+
+=back
+
+=head1 LICENSE
+
+Copyright 2002-2007 Wyrdwright, Inc. and licensed under the GNU GPL.
+
+See LICENSE under the documentation for C<Apache::Wyrd>.
+
+=cut
+
 
 1;

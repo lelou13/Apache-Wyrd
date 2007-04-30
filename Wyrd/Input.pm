@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Input;
-our $VERSION = '0.94';
+our $VERSION = '0.95';
 use Apache::Wyrd::Datum;
 use base qw(Apache::Wyrd::Interfaces::Setter Apache::Wyrd::Interfaces::SmartInput Apache::Wyrd);
 use Apache::Wyrd::Services::SAK qw(token_parse);
@@ -455,7 +455,7 @@ Built-in templates are text, textarea, password
 =cut
 
 sub _template_text {
-	return '<input type="text" name="$:param" value="$:value"?:size{ size="$:size"}?:class{ class="$:class"}?:id{ id="$:id"}?:maxlength{ maxlength="$:maxlength"}?:tabindex{ tabindex="$:tabindex"}?:accesskey{ accesskey="$:tabindex"}?:onchange{ onchange="$:onchange"}?:onselect{ onselect="$:onselect"}?:onblur{ onblur="$:onblur"}?:onfocus{ onfocus="$:onfocus"}?:autocomplete{ autocomplete="$:autocomplete"}?:disabled{ disabled}?:readonly{ readonly}>';
+	return '<input type="text" name="$:param" value="$:value"?:size{ size="$:size"}?:class{ class="$:class"}?:id{ id="$:id"}?:maxlength{ maxlength="$:maxlength"}?:tabindex{ tabindex="$:tabindex"}?:accesskey{ accesskey="$:tabindex"}?:onchange{ onchange="$:onchange"}?:onselect{ onselect="$:onselect"}?:onblur{ onblur="$:onblur"}?:onfocus{ onfocus="$:onfocus"}?:onkeydown{ onkeydown="$:onkeydown"}?:autocomplete{ autocomplete="$:autocomplete"}?:disabled{ disabled}?:readonly{ readonly}>';
 }
 
 sub _template_textarea {
@@ -463,7 +463,7 @@ sub _template_textarea {
 }
 
 sub _template_password {
-	return '<input type="password" name="$:param" value="$:value"?:size{ size="$:size"}?:id{ id="$:id"}?:maxlength{ maxlength="$:maxlength"}?:class{ class="$:class"}?:tabindex{ tabindex="$:tabindex"}?:accesskey{ accesskey="$:tabindex"}?:onchange{ onchange="$:onchange"}?:onselect{ onselect="$:onselect"}?:onblur{ onblur="$:onblur"}?:onfocus{ onfocus="$:onfocus"}?:autocomplete{ autocomplete="$:autocomplete"}?:disabled{ disabled}?:readonly{ readonly}>';
+	return '<input type="password" name="$:param" value="$:value"?:size{ size="$:size"}?:id{ id="$:id"}?:maxlength{ maxlength="$:maxlength"}?:class{ class="$:class"}?:tabindex{ tabindex="$:tabindex"}?:accesskey{ accesskey="$:tabindex"}?:onchange{ onchange="$:onchange"}?:onselect{ onselect="$:onselect"}?:onblur{ onblur="$:onblur"}?:onfocus{ onfocus="$:onfocus"}?:onkeydown{ onkeydown="$:onkeydown"}?:autocomplete{ autocomplete="$:autocomplete"}?:disabled{ disabled}?:readonly{ readonly}>';
 }
 
 sub _template_hidden {
@@ -592,7 +592,7 @@ General-purpose HTML-embeddable perl object
 
 =head1 LICENSE
 
-Copyright 2002-2005 Wyrdwright, Inc. and licensed under the GNU GPL.
+Copyright 2002-2007 Wyrdwright, Inc. and licensed under the GNU GPL.
 
 See LICENSE under the documentation for C<Apache::Wyrd>.
 

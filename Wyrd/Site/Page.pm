@@ -1,40 +1,189 @@
 package Apache::Wyrd::Site::Page;
 use strict;
-use base qw(Apache::Wyrd::Interfaces::IndexUser Apache::Wyrd::Interfaces::Indexable Apache::Wyrd::Interfaces::Setter Apache::Wyrd);
+use base qw(
+	Apache::Wyrd::Interfaces::IndexUser
+	Apache::Wyrd::Interfaces::Indexable
+	Apache::Wyrd::Interfaces::Setter
+	Apache::Wyrd
+);
 use Apache::Wyrd::Services::SAK qw(token_parse strip_html);
 use Apache::Wyrd::Services::FileCache;
 use Digest::SHA qw(sha1_hex);
-our $VERSION = '0.94';
-
-=pod
-
-This is beta software.  Documentation Pending.  See Apache::Wyrd for more info.
-
-=cut
-#Copyright barry king <barry@wyrdwright.com> and released under the GPL.
-#See http://www.gnu.org/licenses/gpl.html#TOC1 for details
-
-sub _setup {
-	my ($self) = @_;
-	$self->_init_state;
-	$self->_check_auth;
-	$self->_init_index;
-	$self->_page_edit;
-	unless ($self->_flags->nofail) {
-		my $name = $self->index_name;
-		if ($name eq $self->{'original'}) {
-			if ($name =~ m/^\//) {
-				$self->_raise_exception("Original file doesn't exist ($name).  Use the nofail flag to override this error.") unless (-f $self->dbl->req->document_root . $name);
-			}
-		}
-	}
-}
+our $VERSION = '0.95';
 
 #state of the widgets is stored by an alphanumeric code where a=1 and Z=62, limiting
-#widget controlss to 62 states and widgets to 62 controls
+#widget controls to 62 states and widgets to 62 controls
 my @encode = split //, 'abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 my $counter = 0;
 my %decode = map {$_, $counter++} @encode;
+
+=pod
+
+=head1 NAME
+
+Apache::Wyrd::Site::Page - Construct and track a page of an integrated site
+
+=head1 SYNOPSIS
+
+  <BASENAME::Page
+    title="A Random Page"
+    tags="random, sample, system"
+    description="This is a sample page."
+  >
+    Body of the page here...
+  </BASENAME::Page>
+
+=head1 DESCRIPTION
+
+Page is the fundamental unit in the Apache::Wyrd::Site hierarchy.  It
+generates the layout of and the meta-information for a "web page" and
+informs the index of the site about its self and its relationship to other
+pages.
+
+Page is usually used to represent a full page of HTML, in a single file,
+referred to by a single URL which needs to be find-able by other objects on
+the site.  Consequently, it is almost always seen as the outermost Wyrd on a
+page of HTML.  It's attributes are, for the most part, those that a page of
+HTML may have in it's HEAD section, namely a title, keywords, description,
+and other meta-data.
+
+An exception is when used as a proxy, in which case it stands in for another
+file/distinct location of the site, or some grouping of like files.  In this
+behavior, it informs the index about it's original file's meta-data, text,
+etc.  This provides a simple method of overcoming the opaqueness of some
+file formats to being indexed for word and meta-data content.  This is not
+the default behaviour.
+
+Page is rarely used in its "default" state, meaning that the logic of the
+layout or construction of a site is best served by working the special
+behaviors into a subclass of the Page Wyrd.  Consequently, the
+_format_output method of this Wyrd can generally be safely overridden in a
+subclass, as long as the index's update_entry is called with the page as the
+argument. (This call is, of course, only necessary if you plan to make use
+of Pulls and word-search indexing.)
+
+A page is also the parent of and controller of the Widget wyrds which exist
+on it.  Several of the internal methods of the Page Wyrd perform the
+housekeeping functions for Widgets, and unless Widgets and WidgetControls
+are used, can be safely ignored.
+
+=head2 HTML ATTRIBUTES
+
+=over
+
+=item name, timestamp, digest, data, children
+
+These are "reserved" attributes which are auto-generated in a format to suit
+the C<Apache::Wyrd::Services::Index> object.  They should not be defined in
+the HTML.  See C<Apache::Wyrd::Interfaces::Indexable>.
+
+=item parent
+
+The page directly above this one in the navigation-tree hierarchy.
+
+=item keywords
+
+Key words of the page, used for the keywords meta tag in the header.
+
+=item description
+
+A description of the page.
+
+=item published
+
+The publication date in YYYYMMDD format.
+
+=item section
+
+The section of the site, i.e. first branch of the tree this page belongs to in
+the navigational hierarcy.  See C<Apache::Wyrd::Site> and C<Apache::Wyrd::Site::NavPull>.
+
+=item allow/deny
+
+Authorization tags.  The default C<Apache::Wyrd::Services::Auth>,
+C<Apache::Wyrd::User>, and related classes operate by checking levels of
+authorization.  Users are assigned levels and what they are allowed to
+access depend on what levels are required.  If "allow" is not set, the page
+is considered public.  If it is, only authenticated users with the security
+level indicated by the tags are allowed access.  If "deny" is set, those
+users who would normally have access by virtue of the allow value are denied
+if they match one of the deny tags.
+
+=item tags
+
+Tokens used to classify the Page by subject matter.  These are used by
+C<Apache::Wyrd::Site::TagPull> to create lists of documents by subject
+metadata.
+
+=item original
+
+The location of the document if this page is proxying for another document. 
+For example, if the document is located site-root-relative pdfs/thispdf.pdf,
+the attribute would be "/pdfs/thispdf.pdf".  You would then want to set the
+doctype to "PDF" so that your pull can indicate that the doctype is PDF, not
+HTML.
+
+=item doctype
+
+The type of document (defaults to "HTML").
+
+=item expires
+
+A date attribute.  Not currently used by the default Wyrds in this
+hierarchy, but often proves useful in determining when something should no
+longer be considered new.
+
+=item longdescription
+
+In some pulls, a longer description can be useful.  This allows that
+description to be used, and defaults to the value of "description" when it
+is not provided.
+
+=item shorttitle
+
+Especially in NavPulls, the actual title of a page may be too cumbersome. 
+This allows for a shorter alternate.
+
+=item etc., etc.,
+
+Other indexible attributes may be added in subclasses.  Note that the
+attributes should be given as parameters to the index object (so it knows to
+look for and store them).  If the index object is SQL-type, the attributes
+should be added to the underlying main table (normaly _wyrd_index), an
+index_xxxxx method needs to be made to properly supply that value to the
+index, and either the more_info method be defined to add all the data from
+these attributes to the data fingerprint, or the index_digest call
+SUPER::index_digest with the additional data as an argument (single scalar).
+ See C<Apache::Wyrd::Services::Index> and
+C<Apache::Wyrd::Interfaces::Indexible>.
+
+=back
+
+=head2 FLAGS
+
+=over
+
+=item nofail
+
+If a document is supplied to the "original" attribute and the document does
+not exist, Page will normally terminate with a fatal error.  This forces
+Page to ignore the error.  It's normal use is to allow external
+sites/documents to be referenced by a Page Wyrd (i.e. by using the full
+URL).
+
+=back
+
+=head2 PERL METHODS
+
+I<(format: (returns) name (arguments after self))>
+
+=over
+
+=item (void) C<_init_state> (void)
+
+Internal method for initializing the widget substructure.
+
+=cut
 
 sub _init_state {
 	my ($self) = @_;
@@ -48,32 +197,62 @@ sub _init_state {
 	$self->{'_state'} = $self->_decode_state($string) if ($string);
 }
 
+=item (scalar) C<_state_digit> (void)
+
+=item (scalar) C<_state_symbol> (void)
+
+Internal methods for mapping widget states to values
+
+=cut
+
+#return the number associated with the character
 sub _state_digit {
 	return $decode{$_[1]};
 }
 
+#return the nth character
 sub _state_symbol {
 	return $encode[$_[1]];
 }
 
+=item (scalar) C<_decode_state> (void)
+
+=item (scalar) C<_encode_state> (void)
+
+=item (scalar) C<_state_string> (void)
+
+Internal methods for interacting with state values
+
+=cut
+
 sub _decode_state {
 	my ($self, $string) = @_;
 	#warn $string;
+
+	#The state is returned via a CGI string, which has a colon.  To the left of the colon is the
+	#state of the page prior to this request.  The status on the right is the part which changes.
 	my ($oldstate, $widget, $newstate) = split ':', $string;
 	my @state = split //, $oldstate;
 	my @array = ();
 	while (@state) {
+
+		#read off a char.  It represents the number of controls on the widget.
 		my $controls = $self->_state_digit(shift @state);
 		#warn $controls;
 		my @controls = ();
 		while ($controls) {
+			#read off as many chars as there are controls
 			push(@controls, $self->_state_digit(shift @state));
 			$controls--;
 		}
 		push @array, \@controls;
 	}
+
 	#warn 'Decoded state: ' . Dumper(\@array);
+	#The status on the right splits into "what control" and "what state"
 	my ($control, $value) = split //, $newstate;
+
+	#map this value over the previous value
 	$array[$widget]->[$self->_state_digit($control)]=$self->_state_digit($value);
 	#warn 'Decoded state, with change: ' . Dumper(\@array);
 	return \@array;
@@ -131,6 +310,15 @@ sub _state_marker {
 	my ($self) = @_;
 	return '#!#_wyrd_site_page_state#!#';
 }
+
+=pod
+
+=item (void) C<_set_state> (void)
+
+The process by which the placemarker for the current state (once built) is inserted into the page
+final body.  The default is to use a s/// regular expression.
+
+=cut
 
 sub _set_state {
 	my ($self) = @_;
@@ -215,31 +403,64 @@ sub get_state {
 	$self->{'_state_counter'}++;
 }
 
+=pod
+
+=item (void) C<_read_widget_state> (void)
+
+The function by which each widget is assigned widget controls and records which values those widget
+controls have.  Additionally, what encoding the widget controls will pass as CGI variables in order
+to manipulate their respective widget's state are generated during this attribute/value permutation
+count.
+
+=cut
+
 sub _read_widget_state {
 	my ($self, $widget) = @_;
 	my @state = ();
 	my %attr = ();
 	my %this_attr = ();
 	my $attr_counter = 1;
+	#Go through each child (Apache::Wyrd::Site::WidgetControl) of the widget
 	foreach my $child (@{$widget->{'_children'}}) {
+		#keep track of which attribute number it is, since this will need to be translated
 		unless ($attr{$child->{'attribute'}}) {
 			$attr{$child->{'attribute'}} = $attr_counter++;
 		}
+		#If the attribute value is not yet initialized, use the value of the widget control
 		$widget->{$child->{'attribute'}} ||= $child->{'value'};
+		#If one child is the "default", i.e. flagged default, that value overrides the first-value-found above
 		$widget->{$child->{'attribute'}} = $child->{'value'} if ($child->_flags->default);
+		#if the current value of the attribute matches the value of the widget control, the state of the
+		#widget control is set to "on".
 		if ($widget->{$child->{'attribute'}} eq $child->{'value'}) {
 			$state[$attr{$child->{'attribute'}} - 1] = $this_attr{$child->{'attribute'}};
 			$child->{'_on'} = 1;
 		}
-		#give the child a "name" it passes via link
+		#give the child a "name" it passes via link to a newly loaded page.  The name is the encoding of the
+		#current state plus the new encoding for the value to be changed.  At this point, the page state is not
+		#built, so the placemarker for the page is used for the first portion (up to the :) of the link.
 		$child->{'_switch'} =  $self->{'_state_counter'}
 							 . ':'
 							 . $self->_state_symbol($attr{$child->{'attribute'}} - 1)
 							 . $self->_state_symbol($this_attr{$child->{'attribute'}});
+		#and increment the attribute counter for the next widgetcontrol.
 		$this_attr{$child->{'attribute'}}++;
 	};
 	return \@state
 }
+
+=item (scalar) C<_check_auth> (void)
+
+Examine the allow/deny state of the page and determine whether the user has the
+clearance to view the page.  These interact with Apache::Wyrd::User-derived
+objects using the Apache::Wyrd::Services::Auth conventions to determine the
+user's current authorization levels.  If the page is forbidden to the public, it
+will use the dir_config value "UnaauthURL" to direct them to an "unauthorized
+page", presumably to be prompted to log in, or failing the existence of that,
+simply return an error message.
+
+=cut
+
 
 sub _check_auth {
 	my ($self) = @_;
@@ -270,6 +491,14 @@ sub _check_auth {
 	return;
 }
 
+=item (scalar) C<_override_auth_conditions> (void)
+
+Override the default authorization behavior.  The default behavior is to check
+the id against the dir_config values for "trusted_ipaddrs", a
+whitespace-separated list.
+
+=cut
+
 sub _override_auth_conditions {
 	my ($self) = @_;
 	my $addrs = $self->dbl->req->dir_config('trusted_ipaddrs');
@@ -280,63 +509,57 @@ sub _override_auth_conditions {
 	return 0;
 }
 
+=item (scalar) C<_unauthorized_text> (void)
+
+The error message to be returned when no UnauthURL is set.
+
+=cut
+
 sub _unauthorized_text {
 	my ($self) = @_;
 	return '<h1>Unauthorized</h1><hr>You are not authorized to view this document';
 }
+
+=item (void) C<_page_edit> (void)
+
+A hook method for pages which interact with some sort of content management editing facility.
+
+=cut
 
 sub _page_edit {
 	my ($self) = @_;
 	return;
 }
 
-sub _attribs {
-	my ($self) = @_;
-	return qw(section title shorttitle description keywords doctype published expires tags parent flags);
+=item (void) C<_process_template> (void)
 
+A hook method for how to assemble the body section of the page from the
+template.  Defaults to replacing the string _INSERT_TEXT_HERE_ with the
+enclosed text.
+
+=cut
+
+sub _process_template {
+	my ($self, $template) = @_;
+	$template =~ s/_INSERT_TEXT_HERE_/$$self{_data}/;
+	$self->{_data} = $template;
 }
 
-sub _format_output {
-	my ($self) = @_;
-	my $response = $self->index->update_entry($self);
-	$self->_info($response);
-	$self->_set_state;
-	my $head = join ('/', $self->dbl->req->document_root, 'lib/head.html');
-	my $file = join ('/', $self->dbl->req->document_root, 'lib/body.html');
-	my $template = $self->get_cached($head);
-	my $title = $self->{'title'};
-	my $keywords = $self->{'keywords'};
-	my $description = $self->{'description'};
-	my $meta = $self->{'meta'};
-	$template =~ s/<\/head>/\n$meta\n<\/head>/ if ($meta);
-	my $lib = $self->{'lib'};
-	if ($lib) {
-		my @inserts = token_parse($lib);
-		foreach my $lib (@inserts) {
-			$lib =  join ('/', $self->dbl->req->document_root, 'lib', $lib);
-			$lib = $self->get_cached($lib);
-			$template =~ s/<\/head>/$lib\n<\/head>/;
-		}
-	}
-	$title =~ s/\s+/ /g;
-	$keywords =~ s/\s+/ /g;
-	$description =~ s/\s+/ /g;
-	$template = $self->_set({title => strip_html($title), keywords => strip_html($keywords), description => strip_html($description)}, $template);
-	$template .= $self->get_cached($file);
-	$self->_process_template($template);
-	return;
-}
+=item (array) C<_attribute_list> (void)
 
-sub _generate_output {
-	my ($self) = @_;
-	$self->_dispose_index;
-	return $self->SUPER::_generate_output;
-}
+=item (array) C<_map_list> (void)
+
+List of those attributes supported by this Page object that are tracked in
+the the attributes of the Index object that supports it.  The default is to
+use the Index object's attribute and map lists, respectively.  See
+C<qw(Apache::Wyrd::Site::Index)> and C<qw(Apache::Wyrd::Services::Index)>.
+
+=cut
 
 #index-dependent attribute list
 sub _attribute_list {
 	my ($self) = @_;
-	return ($self->index->attribute_list, $self->SUPER::attribute_list);
+	return ($self->index->attribute_list);
 }
 
 sub _map_list {
@@ -346,8 +569,17 @@ sub _map_list {
 
 #overloads Indexable
 
+=item (scalar) C<index_digest> (void)
+
+As in C<Apache::Wyrd::Interfaces::Indexable>, provides the raw data to be
+considered in generating the "fingerprint" that is used to determine if this
+page has been changed, and consequently requires re-indexing.
+
+=cut
+
 sub index_digest {
-	my ($self) = @_;
+	my ($self, $extra) = @_;
+	$extra ||= '';
 	return $self->SUPER::index_digest(
 		  $self->index_parent
 		. $self->index_published
@@ -362,16 +594,42 @@ sub index_digest {
 		. $self->index_shorttitle
 
 		. $self->more_info
+		. $extra
 	);
 }
+
+=item (scalar) C<more_info> (void)
+
+A hook method for adding information to the fingerprint for C<index_digest>.
+
+=cut
 
 sub more_info {
 	return;
 }
 
+=item (scalar) C<index_*> (void)
+
+Methods used to provide this fingerprint data, per
+C<Apache::Wyrd::Interfaces::Indexable>.
+
+One of the default methods provided in this class is C<index_children>,
+which also provides for the arbitrary order of children of a parent.  See
+C<Apache::Wyrd::Site::NavPull> for an explanation of this feature.
+
+Also by default, the C<index_name> method will return the "original"
+attribute if set, to allow the page to proxy for another document.
+
+=cut
+
 #handled by Indexable: name reverse timestamp digest data count title keywords description
 
 #Abstract Page attributes: parent file published section allow deny tags children
+
+sub index_name {
+	my ($self) = @_;
+	return $self->{'original'} || $self->SUPER::index_name();
+}
 
 sub index_parent {
 	my ($self) = @_;
@@ -445,5 +703,93 @@ sub index_shorttitle {
 	my ($self) = @_;
 	return ($self->{'shorttitle'} || $self->{'title'});
 }
+
+=back
+
+=head1 BUGS/CAVEATS
+
+Reserves the _format_output and _generate_output methods.
+
+=cut
+
+sub _setup {
+	my ($self) = @_;
+	$self->_init_state;
+	$self->_check_auth;
+	$self->_init_index;
+	$self->_page_edit;
+	unless ($self->_flags->nofail) {
+		my $name = $self->index_name;
+		if ($name eq $self->{'original'}) {
+			if ($name =~ m/^\//) {
+				unless (-f $self->dbl->req->document_root . $name) {
+					$self->_raise_exception("Original file doesn't exist ($name).  Use the nofail flag to override this error.");
+				}
+			}
+		}
+	}
+}
+
+sub _format_output {
+	my ($self) = @_;
+	my $response = $self->index->update_entry($self);
+	$self->_info($response);
+	$self->_set_state;
+	my $head = join ('/', $self->dbl->req->document_root, 'lib/head.html');
+	my $file = join ('/', $self->dbl->req->document_root, 'lib/body.html');
+	my $template = $self->get_cached($head);
+	my $title = $self->{'title'};
+	my $keywords = $self->{'keywords'};
+	my $description = $self->{'description'};
+	my $meta = $self->{'meta'};
+	$template =~ s/<\/head>/\n$meta\n<\/head>/ if ($meta);
+	my $lib = $self->{'lib'};
+	if ($lib) {
+		my @inserts = token_parse($lib);
+		foreach my $lib (@inserts) {
+			$lib =  join ('/', $self->dbl->req->document_root, 'lib', $lib);
+			$lib = $self->get_cached($lib);
+			$template =~ s/<\/head>/$lib\n<\/head>/;
+		}
+	}
+	$title =~ s/\s+/ /g;
+	$keywords =~ s/\s+/ /g;
+	$description =~ s/\s+/ /g;
+	$template = $self->_set({title => strip_html($title), keywords => strip_html($keywords), description => strip_html($description)}, $template);
+	$template .= $self->get_cached($file);
+	$self->_process_template($template);
+	return;
+}
+
+sub _generate_output {
+	my ($self) = @_;
+	$self->_dispose_index;
+	return $self->SUPER::_generate_output;
+}
+
+
+=pod
+
+=head1 AUTHOR
+
+Barry King E<lt>wyrd@nospam.wyrdwright.comE<gt>
+
+=head1 SEE ALSO
+
+=over
+
+=item Apache::Wyrd
+
+General-purpose HTML-embeddable perl object
+
+=back
+
+=head1 LICENSE
+
+Copyright 2002-2007 Wyrdwright, Inc. and licensed under the GNU GPL.
+
+See LICENSE under the documentation for C<Apache::Wyrd>.
+
+=cut
 
 1;

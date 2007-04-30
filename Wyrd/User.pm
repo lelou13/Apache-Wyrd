@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::User;
-our $VERSION = '0.94';
+our $VERSION = '0.95';
 use XML::Dumper;
 use Apache::Wyrd::Services::SAK qw(data_clean);
 use Digest::SHA qw(sha1_hex);
@@ -259,7 +259,7 @@ General-purpose HTML-embeddable perl object
 
 =head1 LICENSE
 
-Copyright 2002-2005 Wyrdwright, Inc. and licensed under the GNU GPL.
+Copyright 2002-2007 Wyrdwright, Inc. and licensed under the GNU GPL.
 
 See LICENSE under the documentation for C<Apache::Wyrd>.
 

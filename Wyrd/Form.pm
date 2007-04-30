@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Form;
-our $VERSION = '0.94';
+our $VERSION = '0.95';
 use base qw(Apache::Wyrd::Interfaces::Mother Apache::Wyrd::Interfaces::Setter Apache::Wyrd);
 use XML::Dumper;
 use Apache::Wyrd::Services::CodeRing;
@@ -832,14 +832,17 @@ sub _wrap_form {
 	$default .= "/" . $self->{'_current_form'} unless ($self->_flags->no_grow);
 	my $action = ($self->{'_action_index'}->{$self->{'_current_form'}} || $self->{'action'} || $default);
 	my $method = ($self->{'method'} || 'post');
-	my $enctype = $self->{'enctype'};
-	if ($enctype) {
-		$enctype = ' enctype="'. $self->{'enctype'} . '"';
+	my $extra_attributes = '';
+	foreach my $attribute (qw(enctype accept-charset onsubmit)) {
+		my $attribute_value = $self->{$attribute};
+		if ($attribute_value) {
+			$extra_attributes .= qq( $attribute="$attribute_value");
+		}
 	}
 	my $name = ($self->{'_current_form'} || 'form');
 	my $header = $self->_proof_of_submit . $self->_current_marker;
 	$header .= $self->{'_stored_data'} if ($self->{'_stored_data'});
-	return "<form name=\"$name\" action=\"$action\" method=\"$method\"$enctype>\n" . $header . $form . "\n</form>";
+	return "<form name=\"$name\" action=\"$action\" method=\"$method\"$extra_attributes>\n" . $header . $form . "\n</form>";
 }
 
 sub _current_marker {
@@ -1019,7 +1022,7 @@ General-purpose HTML-embeddable perl object
 
 =head1 LICENSE
 
-Copyright 2002-2005 Wyrdwright, Inc. and licensed under the GNU GPL.
+Copyright 2002-2007 Wyrdwright, Inc. and licensed under the GNU GPL.
 
 See LICENSE under the documentation for C<Apache::Wyrd>.
 

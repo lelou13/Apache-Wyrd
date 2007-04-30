@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Lattice;
-our $VERSION = '0.94';
+our $VERSION = '0.95';
 use base qw(Apache::Wyrd::Interfaces::Setter Apache::Wyrd);
 use Apache::Wyrd::Services::SAK qw(token_parse);
 use Apache::Wyrd::Services::Tree;
@@ -228,10 +228,46 @@ General-purpose HTML-embeddable perl object
 
 =head1 LICENSE
 
-Copyright 2002-2005 Wyrdwright, Inc. and licensed under the GNU GPL.
+Copyright 2002-2007 Wyrdwright, Inc. and licensed under the GNU GPL.
 
 See LICENSE under the documentation for C<Apache::Wyrd>.
 
 =cut
+
+package Apache::Wyrd::Lattice::Header;
+use base qw(Apache::Wyrd);
+
+sub _format_output {
+	my ($self) = @_;
+	$self->_raise_exception($self->base_class . " may only be used within a Apache::Wyrd::Lattice context")
+		unless ($self->_parent->can('register_header'));
+	$self->{'_parent'}->register_header($self->_data);
+	$self->_data(undef);
+	return;
+}
+
+package Apache::Wyrd::Lattice::Footer;
+use base qw(Apache::Wyrd);
+
+sub _format_output {
+	my ($self) = @_;
+	$self->_raise_exception($self->base_class . " may only be used within a Apache::Wyrd::Lattice context")
+		unless ($self->_parent->can('register_footer'));
+	$self->_parent->register_footer($self->_data);
+	$self->_data('');
+	return;
+}
+
+package Apache::Wyrd::Lattice::Grid;
+use base qw(Apache::Wyrd);
+
+sub _format_output {
+	my ($self) = @_;
+	$self->_raise_exception($self->base_class . " may only be used within a Apache::Wyrd::Lattice context")
+		unless ($self->_parent->can('register_grid'));
+	$self->_parent->register_grid($self->_data);
+	$self->_data('');
+	return;
+}
 
 1;

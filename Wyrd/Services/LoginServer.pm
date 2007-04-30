@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::LoginServer;
-our $VERSION = '0.94';
+our $VERSION = '0.95';
 use Apache::Wyrd::Services::CodeRing;
 use Apache::Wyrd::Services::TicketPad;
 use Apache::Wyrd::Request;
@@ -22,12 +22,12 @@ Apache::Wyrd::Services::LoginServer - Login service For Auth object
 
 =head1 SYNOPSIS
 
-	<Location /logins/login.html>
-		SetHandler  perl-script
-		PerlHandler Apache::Wyrd::Services::LoginServer
-		PerlSetVar  TicketDBFile   /var/run/www/ticketfile.db
-		PerlSetVar  Debug          0
-	</Location>
+  <Location /logins/login.html>
+    SetHandler  perl-script
+    PerlHandler Apache::Wyrd::Services::LoginServer
+    PerlSetVar  TicketDBFile   /var/run/www/ticketfile.db
+    PerlSetVar  Debug   0
+  </Location>
 
 =head1 DESCRIPTION
 
@@ -192,7 +192,7 @@ Shared-memory encryption key and cypher.
 
 =head1 LICENSE
 
-Copyright 2002-2005 Wyrdwright, Inc. and licensed under the GNU GPL.
+Copyright 2002-2007 Wyrdwright, Inc. and licensed under the GNU GPL.
 
 See LICENSE under the documentation for C<Apache::Wyrd>.
 

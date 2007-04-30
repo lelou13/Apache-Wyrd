@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Interfaces::Indexable;
-our $VERSION = '0.94';
+our $VERSION = '0.95';
 use Digest::SHA qw(sha1_hex);
 
 =pod
@@ -61,7 +61,8 @@ sub no_index {
 =item (scalar) C<force_update> (void)
 
 Tells the index to ignore timestamp and digest arguments, and always update the
-entry for this object even if there is no apparent change
+entry for this object even if there is no apparent change.  This may be helpful
+in debugging index problems.
 
 =cut
 
@@ -157,7 +158,7 @@ Berkeley DB-based reverse index for search engines and other meta-data-bases.
 
 =head1 LICENSE
 
-Copyright 2002-2005 Wyrdwright, Inc. and licensed under the GNU GPL.
+Copyright 2002-2007 Wyrdwright, Inc. and licensed under the GNU GPL.
 
 See LICENSE under the documentation for C<Apache::Wyrd>.
 

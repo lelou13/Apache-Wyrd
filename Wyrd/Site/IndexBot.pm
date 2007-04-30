@@ -4,15 +4,131 @@ use base qw(Apache::Wyrd::Bot);
 use Apache::Wyrd::Services::SAK qw(:file);
 use HTTP::Request::Common;
 use BerkeleyDB;
-our $VERSION = '0.94';
+our $VERSION = '0.95';
 
 =pod
 
-This is beta software.  Documentation Pending.  See Apache::Wyrd for more info.
+=head1 NAME
+
+Apache::Wyrd::Site::IndexBot - Sample 'bot for forcing index builds
+
+=head1 SYNOPSIS
+
+  package BASENAME::IndexBot;
+  use strict;
+  use base qw(Apache::Wyrd::Site::MySQLIndexBot BASENAME::Wyrd);
+  use BASENAME::Index;
+  
+  sub params {
+    my ($self) = @_;
+    my $params = {
+      basefile => $self->dbl->req->document_root . '/var/indexbot',
+      server_hostname => $self->dbl->req->server->server_hostname,
+      document_root => $self->dbl->req->document_root,
+      fastindex => $self->_flags->fastindex || 0,
+      purge => $self->_flags->purge || 0,
+      realclean => $self->_flags->realclean || 0,
+    };
+    return $params;
+  }
+  
+  sub _work {
+    my ($self) = @_;
+    my $index = BASENAME::Index->new;
+    $index->delete_index if ($self->{'purge'});
+    $self->index_site($index);
+  }
+
+  <BASENAME::IndexBot refresh="20" expire="40" flags="reverse, purge">
+  <BASENAME::Template name="meta">$:meta</BASENAME::Attribute>
+  <H1>Rebuilding the Index</H1>
+  <H2>$:status</H2>
+  $:view
+  </BASENAME::Page>
+  </BASENAME::IndexBot>
+
+=head1 DESCRIPTION
+
+The IndexBot is an C<Apache::Wyrd::Bot> object which performs the action of
+causing a site to be completely indexed, and any remaining deleted documents
+purged from the index.  It does so by reading the name of existing files from
+the document root down, purging files that are no longer found in that file-
+tree, and generating HTTP requests for all the pages which are found.
+
+As these pages are "Indexable Pages", they update their own index pages when
+loaded by the server in answer to the HTTP request.
+
+It should be used in a webmaster-protected section of the site for two
+reasons: 1. providing public access to the indexing bot is inviting a denial-
+of-service attack, since indexing is very resource-intensive and 2. The
+C<Apache:Wyrd::Site::IndexBot> "borrows" the webmaster's authorization cookie
+in order to be granted full access to the site.
+
+=head2 HTML ATTRIBUTES
+
+=over
+
+=item refresh/timeout
+
+Per C<Apache::Wyrd::Bot>.
+
+=back
+
+=head2 FLAGS
+
+=over
+
+=item purge
+
+Clear the entire index beforehand.  When a first-time or major change has been
+made to a site, this tends to speed up the process by eliminating the need to
+detect and purge stale data.
+
+=item fastindex
+
+Only purge missing documents and index documents that have changed or have been
+added since the last build.
+
+=item reverse
+
+Per C<Apache::Wyrd::Bot>.  Show the bot output log in reverse, with newest
+events at the top.
+
+=back
+
+=head2 PERL METHODS
+
+I<(format: (returns) name (arguments after self))>
+
+=over
+
+=item (void) C<_work> (void)
+
+Per C<Apache::Wyrd::Bot>.  Each site must provide a _work method to the Bot
+in which the index is given as a reference and pass that index as the
+argument to the index_site method.
+
+=item (void) C<index_site> (Index Object Ref)
+
+Performs the indexing.
 
 =cut
-#Copyright barry king <barry@wyrdwright.com> and released under the GPL.
-#See http://www.gnu.org/licenses/gpl.html#TOC1 for details
+
+##Provide your own.
+
+=pod
+
+=back
+
+=head1 BUGS/CAVEATS
+
+Currently assumes there is a directory E<lt>docmentrootE<gt>/var/ and that
+it has write rights to that directory, and this is not (yet) configurable
+
+Other bugs/caveats per C<Apache::Wyrd::Bot>.  Also reserves the methods
+index_site and purge_missing.
+
+=cut
 
 sub index_site {
 	my ($self, $index) = @_;
@@ -191,5 +307,38 @@ sub purge_missing {
 	print "</p>";
 	return @no_skip;
 }
+
+
+=pod
+
+=head1 AUTHOR
+
+Barry King E<lt>wyrd@nospam.wyrdwright.comE<gt>
+
+=head1 SEE ALSO
+
+=over
+
+=item Apache::Wyrd
+
+General-purpose HTML-embeddable perl object
+
+=item Apache::Wyrd::Bot
+
+Server-launched, monitored processes.
+
+=item Apache::Wyrd::Page
+
+Construct and track a page of an integrated site
+
+=back
+
+=head1 LICENSE
+
+Copyright 2002-2007 Wyrdwright, Inc. and licensed under the GNU GPL.
+
+See LICENSE under the documentation for C<Apache::Wyrd>.
+
+=cut
 
 1;

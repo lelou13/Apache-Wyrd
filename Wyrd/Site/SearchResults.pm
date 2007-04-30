@@ -1,20 +1,131 @@
 package Apache::Wyrd::Site::SearchResults;
 use strict;
-use base qw(Apache::Wyrd::Interfaces::IndexUser Apache::Wyrd::Site::Pull Apache::Wyrd::Interfaces::Dater Apache::Wyrd::Interfaces::Setter Apache::Wyrd);
-our $VERSION = '0.94';
-
-=pod
-
-This is beta software.  Documentation Pending.  See Apache::Wyrd for more info.
-
-=cut
-#Copyright barry king <barry@wyrdwright.com> and released under the GPL.
-#See http://www.gnu.org/licenses/gpl.html#TOC1 for details
+use base qw(
+	Apache::Wyrd::Interfaces::IndexUser
+	Apache::Wyrd::Site::Pull
+	Apache::Wyrd::Interfaces::Dater
+	Apache::Wyrd::Interfaces::Setter
+	Apache::Wyrd
+);
+our $VERSION = '0.95';
 
 # searchparam - name of parameter containing the search string, default 'searchstring'
 # item - list item template
 # failed - template of error message for failed search
 # decimal - decimals of percentile
+
+=pod
+
+=head1 NAME
+
+Apache::Wyrd::Site::SearchResults - Perform a word-search of Pages
+
+=head1 SYNOPSIS
+
+	NONE
+
+=head1 DESCRIPTION
+
+SearchResults is another form of C<Apache::Wyrd::Site::Pull>, which uses the
+contents of the CGI variable "searchstring" to produce a list of search results
+from an C<Apache::Wyrd::Site::Index> object.  The searchstring variable can
+use any combination of parens, quotes, logical terms and +/- elements to limit
+the wordsearch to a smaller set.  This Pull processes the list of hashrefs of
+document metadata returned by the index object.
+
+The SearchResults object also adds to each result item the key-value pairs:
+
+=over
+
+=item rank
+
+Meaning the rank (1 = best) of the document as to relevance within the search set.
+
+=item counter
+
+The ordinal number of the item in the found set.
+
+=item weighted_rank
+
+Meaning the relative rank of the document in comparison with the others of the
+found set (in percent, 100=best).
+
+=item relevance
+
+The generic, unweighted relevance score, based on a function of word-incidents
+to document size (wordcount).
+
+=back
+
+To allow the individual items of the "search results" block to be related to
+each other.  Additionally, if a previous search result is given in the CGI
+variable "previous" and the CGI variable "within" is a non-null value (as would
+be returned by a hidden INPUT tag named "previous" and a checkbox named "within",
+The searcstring will be limited to the previous results.
+
+Additionally, the CGI variable "max" is used to limit the search results to
+"max" number of items or less, and the "next" and "beginning" CGI variables are
+used to define a window of "max" number of of search results within a search
+set, which is to say that as the frame moves to the window defined by "next",
+the C<Apache::Wyrd::Intefaces::Setter> elements will set C<$:next> in the list
+template to the current value of the CGI variable "next" + the value of "max".
+This allows the webmaster to easily construct a moving-window search result.
+
+=head2 HTML ATTRIBUTES
+
+=over
+
+=item decimals
+
+How many digits after the decimal point to include in weighted results.
+
+=item sort
+
+Which attributes of the sorted objects should be used to sort the list.  Note
+that if a sort item begins with "rev_", the sort is performed in reverse.
+
+=item instructions
+
+What to provide in case no searchstring parameter was given.
+
+=item failed
+
+What to provide in case of a failed search.  Often suppled as an
+Apache::Wyrd::Template Wyrd.
+
+=item list/item
+
+As with C<Apache::Wyrd::Site::Pull>, the templates (also often supplied as
+Apache::Wyrd::Template Wyrds, which provide formatting to the list itself and
+to the items of the list.
+
+=back
+
+=head2 FLAGS
+
+=over
+
+=item reverse
+
+Sort in reverse.
+
+=item weighted
+
+Sort by weighted relevance rather than generic score.
+
+=back
+
+=head2 PERL METHODS
+
+I<(format: (returns) name (arguments after self))>
+
+=over
+
+=item (void) C<_set_defaults> (void)
+
+method description
+
+=cut
 
 sub _set_defaults {
 	my ($self) = @_;
@@ -32,6 +143,31 @@ sub _set_defaults {
 		$self->{$param} = $self->dbl->param("search$param") || $self->{$param} || $default{$param};
 	}
 }
+
+=over
+
+=item (array) C<_doc_filter> (array)
+
+A "hook" method for filtering each (hashref-ed) search result.  The search
+results are given as an array of hashrefs, and similar array is expected.
+
+=cut
+
+sub _doc_filter {
+	my ($self) = shift;
+	return @_;
+}
+
+=pod
+
+=back
+
+=head1 BUGS/CAVEATS
+
+Reserves the _format_output method.
+
+=cut
+
 
 sub _format_output {
 	my ($self) = @_;
@@ -139,9 +275,46 @@ sub _format_output {
 	}
 }
 
-sub _doc_filter {
-	my ($self) = shift;
-	return @_;
-}
+=pod
+
+=head1 AUTHOR
+
+Barry King E<lt>wyrd@nospam.wyrdwright.comE<gt>
+
+=head1 SEE ALSO
+
+=over
+
+=item Apache::Wyrd
+
+General-purpose HTML-embeddable perl object
+
+=item Apache::Wyrd::Services::Index
+
+=item Apache::Wyrd::Services::MySQLIndex
+
+=item Apache::Wyrd::Site::Index
+
+=item Apache::Wyrd::Site::MySQLIndex
+
+Various index objects for site organization.
+
+=item Apache::Wyrd::Interfaces::IndexUser
+
+Convenience class for Wyrds which interface with Indexes
+
+=item Apache::Wyrd::Site::Pull
+
+Abstract class for lists of pages
+
+=back
+
+=head1 LICENSE
+
+Copyright 2002-2007 Wyrdwright, Inc. and licensed under the GNU GPL.
+
+See LICENSE under the documentation for C<Apache::Wyrd>.
+
+=cut
 
 1;

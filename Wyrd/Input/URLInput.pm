@@ -1,10 +1,28 @@
-#!/usr/bin/perl -w
-
 package Apache::Wyrd::Input::URLInput;
 use strict;
 use base qw(Apache::Wyrd::Input);
 use LWP::UserAgent;
 use HTTP::Request::Common;
+our $VERSION = '0.95';
+
+=pod
+
+=head1 NAME
+
+Apache::Wyrd::Input::URLInput - check URLs as inputs
+
+=head1 SYNOPSIS
+
+	<BASECLASS::Input::URLInput name="url" size="40" />
+
+=head1 DESCRIPTION
+
+Like any Form::Input Wyrd, but uses LWP::UserAgent to check that the URL
+entered is a valid one.  Will call insert_error on the enclosing Form if
+an attempt to contact the URL first using the HEAD method and then the GET
+method both return 404 Not Found.
+
+=cut
 
 sub _setup {
 	my ($self) = @_;
@@ -55,5 +73,28 @@ sub _check_param {
 	return $error;
 }
 
+=pod
+
+=head1 AUTHOR
+
+Barry King E<lt>wyrd@nospam.wyrdwright.comE<gt>
+
+=head1 SEE ALSO
+
+=over
+
+=item Apache::Wyrd
+
+General-purpose HTML-embeddable perl object
+
+=back
+
+=head1 LICENSE
+
+Copyright 2002-2007 Wyrdwright, Inc. and licensed under the GNU GPL.
+
+See LICENSE under the documentation for C<Apache::Wyrd>.
+
+=cut
 
 1;

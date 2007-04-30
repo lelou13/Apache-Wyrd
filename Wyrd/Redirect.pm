@@ -6,9 +6,10 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Redirect;
-our $VERSION = '0.94';
+our $VERSION = '0.95';
 use base qw (Apache::Wyrd);
 use Apache::Constants qw(REDIRECT);
+use Apache::Wyrd::Services::SAK qw(normalize_href);
 
 =pod
 
@@ -49,6 +50,7 @@ sub _setup {
 	my $url = $self->{'url'};
 	$url ||= $self->{'_data'};
 	$self->_raise_exception("No URL was supplied to Redirect") unless($url);
+	$url = normalize_href($self->dbl, $url);
 	$self->dbl->req->custom_response(REDIRECT, $url);
 	$self->abort(REDIRECT);
 }
@@ -72,7 +74,7 @@ General-purpose HTML-embeddable perl object
 
 =head1 LICENSE
 
-Copyright 2002-2005 Wyrdwright, Inc. and licensed under the GNU GPL.
+Copyright 2002-2007 Wyrdwright, Inc. and licensed under the GNU GPL.
 
 See LICENSE under the documentation for C<Apache::Wyrd>.
 

@@ -4,11 +4,39 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::PreAuth;
-our $VERSION = '0.94';
+our $VERSION = '0.95';
 use base qw(Apache::Wyrd::Services::Auth);
 use Apache::Constants qw(OK);
 use LWP::UserAgent;
 use HTTP::Request::Common;
+
+=pod
+
+=head1 NAME
+
+Apache::Wyrd::Services::PreAuth - Login to Apache::Wyrd::Services::Auth directly
+
+=head1 SYNOPSIS
+
+<Directory /www/someplace/preauth>
+  SetHandler perl-script
+  PerlHandler  Apache::Wyrd::Services::PreAuth
+</Directory>
+
+=head1 DESCRIPTION
+
+C<Apache::Wyrd::Services::PreAuth> is a much more simple form of the
+C<Apache::Wyrd::Services::Auth> class of handlers, in that it represents
+only that step in the process where a C<Apache::Wyrd::Services::LoginServer>
+object is used to authenticate the user.  Typically this is done to provide
+a login identity before a restricted page/directory is requested, rather than
+the redirect-to-login-if-unauthorized model that C<Apache::Wyrd::Services::Auth>
+uses.
+
+Otherwise, it behaves the same as a C<Apache::Wyrd::Services::PreAuth>
+handler, and uses the same dirconfig parameters.
+
+=cut
 
 sub handler : method {
 	my ($class, $req) = @_;
@@ -53,5 +81,39 @@ sub handler : method {
 	}
 	return OK;
 }
+
+=pod
+
+=back
+
+=head1 AUTHOR
+
+Barry King E<lt>wyrd@nospam.wyrdwright.comE<gt>
+
+=head1 SEE ALSO
+
+=over
+
+=item Apache::Wyrd
+
+General-purpose HTML-embeddable perl object
+
+=item Apache::Wyrd::Services::Auth
+
+Authentication and Authorization handler for the C<Apache::Wyrd> hierarchy.
+
+=item Apache::Wyrd::User
+
+Generic User object for the Wyrd hierarchy.
+
+=back
+
+=head1 LICENSE
+
+Copyright 2002-2007 Wyrdwright, Inc. and licensed under the GNU GPL.
+
+See LICENSE under the documentation for C<Apache::Wyrd>.
+
+=cut
 
 1;

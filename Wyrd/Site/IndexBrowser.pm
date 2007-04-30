@@ -5,11 +5,15 @@ use base qw(Apache::Wyrd::Interfaces::IndexUser Apache::Wyrd);
 use BerkeleyDB;
 use BerkeleyDB::Btree;
 use Apache::Util;
-our $VERSION = '0.94';
+our $VERSION = '0.95';
 
 =pod
 
-This is beta software.  Documentation Pending.  See Apache::Wyrd for more info.
+This is a wyrd for debugging Apache::Wyrd::Services::Index data. 
+Documentation will not be provided, due to the depreciation of the
+Apache::Wyrd::Services::Index class.  The
+Apache::Wyrd::Services::MySQLIndex class that replaces it is easier to
+debug via SQL queries, so no parallel version will be made.
 
 =cut
 #Copyright barry king <barry@wyrdwright.com> and released under the GPL.

@@ -9,39 +9,42 @@ use Digest::SHA qw(sha1_hex);
 
 =head1 NAME
 
-Apache::Wyrd::Widget
+Apache::Wyrd::Site::Widget - Abstract dynamic element of a page
 
 =head1 SYNOPSIS
 
-	package BASENAME::SampleWidget;
-	use base (Apache::Wyrd::Widget);
+  package BASENAME::SampleWidget;
+  use base (Apache::Wyrd::Site:::Widget);
 
-	sub _format_output {
-		my ($self) = @_;
-		my $text = '';
-		#...
-		##---generate some occasionally-changing content here---
-		#...
-		$self->_data($text);
-	}
-	....
+  sub _format_output {
+    my ($self) = @_;
+    my $text = '';
+    #...
+    ##---generate some occasionally-changing content here---
+    #...
+    $self->_data($text);
+  }
+  ....
 
-	<BASENAME::Page>
-		<BASENAME::SampleWidget />
-	</BASENAME::Page>
+  <BASENAME::Page>
+    <BASENAME::SampleWidget />
+  </BASENAME::Page>
 
 =head1 DESCRIPTION
 
-Widgets are a generic class of objects which work with Apache::Wyrd::Site::Page
-Wyrds.  Since a Page object by default looks only to it's own file modification
-date to determine if it has been changed, a Widget will keep track of it's own
-content in a similar way, triggering an update in it's parent Page Wyrd when
-it's content changes.  It does this by changing the (internal) modification time
-value of the parent to the current time as defined by the builtin C<time()>
-call.
+Widgets are a generic class of objects which work with
+Apache::Wyrd::Site::Page Wyrds, primarily to generate content on a page
+which may change through time and viewings.  This makes the indexing of
+pages problematic, since a Page object by default looks only to its own
+file modification date to determine if it has been changed and needs
+re-indexing.  A Widget will keep track of its own content in a similar
+way as the page (see Apache::Wyrd::Site::WidgetIndex), triggering an
+update in its parent Page Wyrd when it's content changes.  It does this
+by changing the (internal) modification time value of the parent to the
+current time as defined by the builtin C<time()> call.
 
-If you want content from external sources to be indexed as a page is indexed,
-the wyrd which generates the content should be a sub-class of
+So, if you want content from external sources to be indexed as a page is
+indexed, the wyrd which generates the content should be a sub-class of
 Apache::Wyrd::Site::Widget.
 
 =head2 HTML ATTRIBUTES
@@ -186,7 +189,7 @@ sub _setup {
 sub _generate_output {
 	my ($self) = @_;
 	unless ($self->_flags->noindex) {
-		$self->_error($self->class_name . " must have a name or title element or it will slow down indexing") 
+		$self->_error($self->class_name . " must have a name or title attribute or it will slow down indexing") 
 			unless ($self->{'title'} or $self->{'name'});
 		my $changed = $self->widgetindex->update_entry($self);
 		if ($changed) {
@@ -196,7 +199,6 @@ sub _generate_output {
 	}
 	return $self->_data;
 }
-
 
 =pod
 
@@ -224,7 +226,7 @@ Base Wyrd for Web site pages
 
 =head1 LICENSE
 
-Copyright 2002-2005 Wyrdwright, Inc. and licensed under the GNU GPL.
+Copyright 2002-2007 Wyrdwright, Inc. and licensed under the GNU GPL.
 
 See LICENSE under the documentation for C<Apache::Wyrd>.
 

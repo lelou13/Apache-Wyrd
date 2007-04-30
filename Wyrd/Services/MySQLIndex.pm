@@ -5,11 +5,127 @@ no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::MySQLIndex;
 use base qw(Apache::Wyrd::Services::Index);
-our $VERSION = '0.94';
+our $VERSION = '0.95';
 use Apache::Wyrd::Services::SAK qw(token_parse strip_html);
 use Apache::Wyrd::Services::SearchParser;
 use Digest::SHA qw(sha1_hex);
 use Data::Dumper;
+
+=pod
+
+=head1 NAME
+
+Apache::Wyrd::Services::Index - Metadata index for word/data search engines
+
+=head1 SYNOPSIS
+
+  sub new {
+    my ($class) = @_;
+    my $dbh = DBI->connect('DBI:mysql:dbname', 'username', 'password');
+    my $init = {
+      dbh => $dbh,
+      debug => 0,
+      attributes => [qw(doctype section parent)],
+      maps => [qw(tags children)],
+    };
+    return &Apache::Wyrd::Site::MySQLIndex::new($class, $init);
+  }
+
+  my @subject_is_foobar = $index->word_search('foobar', 'subjects');
+
+  my @pages =
+    $index->word_search('+musthaveword -mustnothaveword
+      other words to search for and add to results');
+  foreach my $page (@pages) {
+    print "title: $$page{title}, author: $$page{author};
+  }
+  
+  my @pages = $index->parsed_search('(this AND that) OR "the other"');
+  foreach my $page (@pages) {
+    print "title: $$page{title}, author: $$page{author};
+  }
+
+
+=head1 DESCRIPTION
+
+This is a MySQL-backed version of C<Apache::Wyrd::Services::Index>, and in most
+ways behaves exactly the same way, using the same methods.  Consequently, only
+the differences are documented here.
+
+=head1 METHODS
+
+I<(format: (returns) name (arguments after self))>
+
+=over
+
+=item (Apache::Wyrd::Services::Index) C<new> (hashref)
+
+Create a new MySQLIndex object.  Unlike the BDB-backed version, MySQLIndex is not (yet) capable of auto-creating the database backend.  In this backend, tables for each indexed object must be made as well as a separate table for every reverse index, including the default "word" map which stores the data for the word search.  An example table creation script for the instance under synopsis is as follows:
+
+  drop table if exists _wyrd_index;
+  create table _wyrd_index (
+  id integer not null auto_increment primary key,
+  name varchar(255) unique,
+  timestamp long,
+  digest char(40),
+  data blob,
+  wordcount integer,
+  title text,
+  keywords text,
+  description text,
+  
+  doctype text,
+  section text,
+  parent text,
+  ) ENGINE=MyISAM;
+  
+  drop table if exists _wyrd_index_word;
+  create table _wyrd_index_word (
+  item varchar(255) not null,
+  id integer,
+  tally integer
+  ) ENGINE=MyISAM;
+  create index id on _wyrd_index_data (id);
+  create index item on _wyrd_index_data (item);
+  
+  drop table if exists _wyrd_index_tags;
+  create table _wyrd_index_tags like _wyrd_index_data;
+  
+  drop table if exists _wyrd_index_children;
+  create table _wyrd_index_children like _wyrd_index_data;
+
+Like the BDB version, the C<new> method is initialized with a hashref.  Important keys for this hashref:
+
+=over
+
+=item dbd
+
+A DBI::mysql object reference connected to the database where the 
+
+=item strict
+
+Die on errors.  Default 1 (yes).
+
+=item quiet
+
+If not strict, be quiet in the error log about problems.  Use at your
+own risk.
+
+=item attributes
+
+Arrayref of attributes other than the default to use.  For every attribute
+B<foo>, an C<index_foo> method should be implemented by the object being
+indexed.  The value returned by this method will be stored under the attribute
+B<foo>.
+
+=item maps
+
+Arrayref of which attributes to treat as maps.  Any attribute that is a
+map must also be included in the list of attributes.
+
+=back
+
+=cut
 
 sub new {
 	my ($class, $init) = @_;
@@ -874,5 +990,44 @@ sub make_key {
 sub translate_packed {
 	&obsolete;
 }
+
+=pod
+
+=back
+
+=head1 AUTHOR
+
+Barry King E<lt>wyrd@nospam.wyrdwright.comE<gt>
+
+=head1 SEE ALSO
+
+=over
+
+=item Apache::Wyrd
+
+General-purpose HTML-embeddable perl object
+
+=item Apache::Wyrd::Services::Index
+
+BDB-backed base class to this class
+
+=item Apache::Wyrd::Interfaces::Indexable
+
+Methods to be implemented by any item that wants to be indexed.
+
+=item Apache::Wyrd::Services::SearchParser
+
+Parser for handling logical searches (AND/OR/NOT/DIFF).
+
+=back
+
+=head1 LICENSE
+
+Copyright 2002-2007 Wyrdwright, Inc. and licensed under the GNU GPL.
+
+See LICENSE under the documentation for C<Apache::Wyrd>.
+
+=cut
+
 
 1;

@@ -110,7 +110,7 @@ sub _format_output {
 	my @missing = grep {not($self->{$_})} @required_attributes;
 	@missing = grep {$_ ne 'name'} @missing if ($self->{'type'} ne 'input');#inputs must have names, but others don't have to.
 	$self->_raise_exception("Missing attributes: " . join ", ", @missing) if (@missing);
-	$self->{_fingerprint} = join ':', map {$self->{$_}} @required_attributes, @optional_attributes;
+	$self->{_fingerprint} = join(':', (map {$self->{$_}} @required_attributes, @optional_attributes));
 }
 
 sub _generate_output {
@@ -153,13 +153,10 @@ sub _generate_output {
 	my @attrs =  qw(name id action method alt src align onmouseover onmouseout onclick border height width ismap longdesc usemap);
 	my %attrs =  map {$_ => $self->{$_}} @attrs;
 	$attrs{'src'} = Apache::Util::escape_uri($attrs{'src'});
-	my $template = $self->_data;
-	unless ($template) {
-		if ($self->{'type'} eq 'input') {
-			$self->_data(q(<input type="image") . $self->_attribute_template(@attrs) . q(>));
-		} else {#consider anything else as an image tag.
-			$self->_data(q(<img) . $self->_attribute_template(@attrs) . q(>));
-		}
+	if ($self->{'type'} eq 'input') {
+		$self->_data(q(<input type="image") . $self->_attribute_template(@attrs) . q(>));
+	} else {#consider anything else as an image tag.
+		$self->_data(q(<img) . $self->_attribute_template(@attrs) . q(>));
 	}
 	return $self->_set(\%attrs);
 }
@@ -182,7 +179,7 @@ General-purpose HTML-embeddable perl object
 
 =head1 LICENSE
 
-Copyright 2002-2004 Wyrdwright, Inc. and licensed under the GNU GPL.
+Copyright 2002-2007 Wyrdwright, Inc. and licensed under the GNU GPL.
 
 See LICENSE under the documentation for C<Apache::Wyrd>.
 

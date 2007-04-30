@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::Auth;
-our $VERSION = '0.94';
+our $VERSION = '0.95';
 use Apache::Wyrd::Services::CodeRing;
 use Apache::Wyrd::Services::TicketPad;
 use Digest::SHA qw(sha256_hex);
@@ -487,10 +487,11 @@ ISPs) (0 for default no, 1 for yes)
 
 =head1 BUGS/CAVEATS/RESERVED METHODS
 
-As with many such schemes, man-in-the-middle attacks are always
-possible.  Additionally, a "stolen cookie", i.e. one obtained via packet
-sniffing or similar technique can be used to gain access until the
-server's key is regenerated on server restart.
+As with many such schemes, man-in-the-middle attacks are always possible, if
+a little problematic to implement.  Additionally, unless TieAddr is set, a
+"stolen cookie", i.e. one obtained via packet sniffing or similar technique
+can be used to gain access until the server's key is regenerated on server
+restart.
 
 =head1 AUTHOR
 
@@ -518,7 +519,7 @@ Perl Handler for login services.
 
 =head1 LICENSE
 
-Copyright 2002-2005 Wyrdwright, Inc. and licensed under the GNU GPL.
+Copyright 2002-2007 Wyrdwright, Inc. and licensed under the GNU GPL.
 
 See LICENSE under the documentation for C<Apache::Wyrd>.
 

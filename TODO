@@ -1,8 +1,14 @@
 - Minimize the number of required modules
 
+- Apache::Wyrd::Site::GDButton: add a facility for using a base graphic as the background.
+
 - convert to semicolon argument separations in URLs, not ampersands.
 
 - Apache2 compatibility:
 	HTTP_XXX Constants
 	Logging facility
 	etc.
+
+- Change tests to reflect BerkeleyDB Index test as optional (auto-detect BerkeleyDB?)
+
+- Add MySQL Index tests

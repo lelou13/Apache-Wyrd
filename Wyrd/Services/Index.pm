@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::Index;
-our $VERSION = '0.94';
+our $VERSION = '0.95';
 use Apache::Wyrd::Services::SAK qw(token_parse strip_html utf8_force utf8_to_entities);
 use Apache::Wyrd::Services::SearchParser;
 use BerkeleyDB;
@@ -1405,10 +1405,6 @@ sub translate_packed {
 
 =back
 
-=head1 BUGS/CAVEATS/RESERVED METHODS
-
-UNKNOWN
-
 =head1 AUTHOR
 
 Barry King E<lt>wyrd@nospam.wyrdwright.comE<gt>
@@ -1433,7 +1429,7 @@ Parser for handling logical searches (AND/OR/NOT/DIFF).
 
 =head1 LICENSE
 
-Copyright 2002-2005 Wyrdwright, Inc. and licensed under the GNU GPL.
+Copyright 2002-2007 Wyrdwright, Inc. and licensed under the GNU GPL.
 
 See LICENSE under the documentation for C<Apache::Wyrd>.
 

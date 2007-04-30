@@ -2,15 +2,169 @@ package Apache::Wyrd::Site::NavPull;
 use strict;
 use base qw(Apache::Wyrd::Site::Pull);
 use Apache::Wyrd::Services::SAK qw(:hash token_parse);
-our $VERSION = '0.94';
+our $VERSION = '0.95';
 
 =pod
 
-This is beta software.  Documentation Pending.  See Apache::Wyrd for more info.
+=head1 NAME
+
+Apache::Wyrd::NavPull - Display a list of documents in a navigation-tree
+
+=head1 SYNOPSIS
+
+  <BASECLASS::NavPull root="/someplace/index.html" maxdepth="3">
+    <BASECLASS::Template name="list">
+      <blockquote>$:items</blockquote>
+    </BASECLASS::Template>
+    <BASECLASS::Template name="item">
+      <p><a href="$:name">$:title</a></p>
+    </BASECLASS::Template>
+    <BASECLASS::Template name="selected">
+      <p>$:title</p>
+    </BASECLASS::Template>
+    <BASECLASS::Template name="nearest">
+      <p><a href="$:name"><b>$:title</a><b></p>
+    </BASECLASS::Template>
+  </BASECLASS::NavPull>
+
+=head1 DESCRIPTION
+
+NavPull is designed to make navigation bars self-managing.  It does so by
+recursively building the hierarchy out of the stated "parent" attributes of
+indexed Pages.  Beginning with a "root", which can be an arbitrary page or
+(the default) a section root, it builds the list using five templates:
+
+=over
+
+=item list
+
+"list" is the HTML which bounds the list itself: in one of the list tags, it
+represents the list tags themselves (e.g. <UL>...</UL>).  Where the items of
+the list are to appear, the placemarker $:items should appear.
+
+=item item
+
+"item" is the HTML which represents an individual page.  Whatever attributes
+of the Page you want to display in the list need to be given in placemarkers
+of this template.
+
+=item selected
+
+Identical to "item", but used only if the document in the NavPull list is
+the document on which it appears.  This template is kept separate from the
+item template to allow the document to be treated differently on the page on
+which it appears, for example, not at all, or unlinked, so that it is clear
+it can't be navigated to.  (Not normally used, see "metoo" flag, below.)
+
+=item nearest
+
+Identical to "selected", but represents the closest parent node before the
+depth of the tree runs out.  For example, if the NavPull is instructed to
+draw the tree only three nodes deep and the document on which the NavPull
+appears is five nodes down, the "nearest" template is used to draw the last
+ancestor which appears.  Unless supplied, it defaults to the "item"
+template.
+
+=item leaf
+
+When the "tree" tag is in effect, the last page in a branch, i.e. the "leaf"
+is drawn using this template.  Unless supplied, it defaults to the "item"
+template.
+
+=back
+
+These templates can be extended down the depth of the tree by leaving as-is,
+or any depth level can be made different from the shallower ones by
+appending the depth level to the template name: list2, item2, selected2,
+list3, item3, selected3, etc.  If templates for a depth level are not
+provided, they default to the next-shallower depth.
+
+Very crude templates are supplied automatically if no level of the template
+is specified in the body of the NavPull.
+
+NOTE: There is some support for multiple parentage.  If a page declares two
+parents (separated by commas), the decision as to how to draw the tree
+depends on the referrer field of the HTTP request.  If it indicates one of
+the ancestors of the page up one geneology, the navigation tree is drawn to
+reflect that branch, not the other(s).  Multiple parents must belong in the
+same section, however, and there can be no circular relationships between
+parents.
+
+=head2 HTML ATTRIBUTES
+
+=over
+
+=item root
+
+The starting point, or "root" of the inverted-tree hierarchy.  If not
+provided, the NavPull will seek through the sections of the site (the set of
+"section" attrubutes of pages) until it finds a document with a parent
+attribute which is the literal string "root" (signifying it has no parents
+other than the hierarchy root) and which belongs in the same section as the
+document on which the NavPull appears.
+
+root can also be "self", in which case the NavPull will display its progeny
+rather than its ancestors.
+
+=item maxdepth
+
+How many nodes down the tree to display.  If the tree does not have that
+many nodes, the display will stop at the deepest nodes it can find.
+
+=item sort
+
+If provided, the document will sort within each group of equal-node siblings
+(siblings with a common parent) based on this token-list.  As with TagPulls,
+the sorting is done in the order of the tags in either alphabetical or
+numerical order as appropriate, with those attributes designated "dates" by
+Apache::Wyrd::Site::Pull::_date_fields() in reverse chronological order.
+
+Note that there is also support for arbitrary sort orders.  Any set of siblings in a parentage-group may add a colon and numerical value to their parent attribute in order to indicate what order to be listed as siblings of the same node.  For example, parent="/path_to/my/parent.html:2" indicates that this page should be the second page listed among its siblings.  You may skip numbers in order to leave room for expansion among a sibling group, but any siblings missing these digits mixed in with siblings with these digits will appear before them in the list as if all numbered "0".
+
+=back
+
+=head2 FLAGS
+
+=over
+
+=item tree
+
+Normally, the expansion of the depth is along the selected document's
+branch.  Only siblings of direct ancestors are shown, not those siblings
+children.  This is in keeping with traditional navigation practice.  This
+flag overrides this convention, expanding all parent nodes to the depth of
+the tree or the maxdepth attribute, whichever comes first.  It is primarily
+of use in drawing site-maps.
+
+=item onlynodes
+
+Do not display end-documents, i.e. those Pages without children.
+
+=item reverse
+
+reverse the sort indicated in "sort" above.
+
+=item noself
+
+Remove this page (the one the NavPull is on) from the list, and by
+extension, all its children.
+
+=item light_path
+
+Use "nearest" templates for all direct ancestors, instead of the normal
+templates for all ancestors except for the nearest on a tree on which this
+page does not appear due to its excessive depth.
+
+=back
+
+=head1 BUGS/CAVEATS
+
+Reserves the _format_output method.  Support for multiple parentage has not
+proven very useful, since circular hierarchies cannot be tolerated, and any
+liberal application of multiple parentage quickly produces circular
+relationships.
 
 =cut
-#Copyright barry king <barry@wyrdwright.com> and released under the GPL.
-#See http://www.gnu.org/licenses/gpl.html#TOC1 for details
 
 sub _format_output {
 	my ($self) = @_;
@@ -40,6 +194,31 @@ sub _format_output {
 	my $out = $self->_format_list($id, 0, $self->_get_path);#root to use, 0 depth, array of parents of current document
 	$self->_data($out);
 }
+
+
+=pod
+
+=head1 AUTHOR
+
+Barry King E<lt>wyrd@nospam.wyrdwright.comE<gt>
+
+=head1 SEE ALSO
+
+=over
+
+=item Apache::Wyrd
+
+General-purpose HTML-embeddable perl object
+
+=back
+
+=head1 LICENSE
+
+Copyright 2002-2007 Wyrdwright, Inc. and licensed under the GNU GPL.
+
+See LICENSE under the documentation for C<Apache::Wyrd>.
+
+=cut
 
 sub _format_list {
 	my ($self, $id, $depth, @path) = @_;
@@ -75,9 +254,11 @@ sub _format_list {
 			#For 'onlynodes', an abort can skip this child.
 			next if ($next eq 'abort');
 
+			my $is_self = $child->{name} eq $self->dbl->self_path;
+			next if ($is_self and $self->_flags->noself);
 			my $template = (
 				  ($depth > ($self->{'maxdepth'} || 2)) 
-				? $self->_get_template('leaf', $depth) : ($child->{name} eq $self->dbl->self_path)
+				? $self->_get_template('leaf', $depth) : $is_self
 				? $self->_get_template('selected', $depth)	: $self->_get_template('item', $depth)
 			);
 			$out .= $self->_clear_set($child, $template);
@@ -90,10 +271,13 @@ sub _format_list {
 			#For 'onlynodes', an abort can skip this child.
 			next if ($next eq 'abort');
 
+			my $is_self = $child->{name} eq $self->dbl->self_path;
+			next if ($is_self and $self->_flags->noself);
+
 			#if this item is not a match for this page, either highlight it as nearest if there are no deeper
 			#levels and it is a match for the parentage-path, otherwise treat it like a normal item.
 			my $template = (
-				  ($child->{name} eq $self->dbl->self_path)
+				  $is_self
 				? $self->_get_template('selected', $depth)	: (($match and not($next))
 				? $self->_get_template('nearest', $depth)	: ($self->_flags->light_path and $match) 
 				? $self->_get_template('nearest', $depth)	: $self->_get_template('item', $depth))
@@ -114,7 +298,7 @@ sub _get_template {
 		if ($depth) {
 			$self->{"$type$depth"} = $self->_get_template($type, $depth - 1);
 		} else {
-			warn "no $type$depth";
+			#warn "no $type$depth";
 			return $self->{$type}
 		}
 	}
@@ -155,7 +339,7 @@ sub _get_path {
 		}
 		$parents_exist = 1;
 		#Null parents should be filtered out because they would cause an infinite loop.
-		#might be better written as _raise_exception
+		#NOTE TO SELF: might be better written as _raise_exception
 		if (!$parent) {
 			$self->_error("Null parent.  Skipping.");
 			next;

@@ -4,8 +4,8 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Chart;
-our $VERSION = '0.94';
-use base qw(Apache::Wyrd::Services::FileCache Apache::Wyrd::Interfaces::Setter Apache::Wyrd);
+our $VERSION = '0.95';
+use base qw(Apache::Wyrd::Interfaces::Setter Apache::Wyrd);
 use GD::Graph;
 use GD::Graph::colour qw(:colours :convert :lists);
 use Apache::Wyrd::Services::SAK qw(:tag :file token_parse token_hash);
@@ -371,10 +371,12 @@ sub _plot {
 	my $gd = $graph->plot($self->{'_graph_data'});
 	$self->_error($graph->error) if ($graph->error);
 	$self->_alter_graphic($gd);
+	$self->_error($graph->error) if ($graph->error);
 	#256 Color limit due to bugs in GD library
-	$gd->trueColor(0);
+	eval {$gd->trueColor(0)};
 	my $file = $self->{'_graphic_file'};
 	my $format = $self->{'_file_format'};
+	local $| = 1;
 	open OUT, "> $file" || $self->_raise_exception("Could not write file $file: $!");
 	binmode(OUT);
 	eval {
@@ -383,8 +385,10 @@ sub _plot {
 		} else {
 			print OUT $gd->png();
 		}
+		$self->_error($graph->error) if ($graph->error);
 	};
 	close OUT;
+	select OUT;
 	if ($@) {
 		$self->_error($@);
 	}
@@ -713,7 +717,7 @@ sub _format_output {
 	$self->{'_data_file'} = $datafile;
 	my $data = $self->_get_data;
 	my $cache = '';
-	$cache = $self->get_cached($datafile) if (-f _ and not($self->_flags->nocache));
+	$cache = $self->slurp_file($datafile) if (-f $datafile);
 	if (($data ne $cache)) {
 		$self->_info("(Re)building chart...");
 		$self->_process_data;
@@ -750,7 +754,7 @@ General-purpose HTML-embeddable perl object
 
 =head1 LICENSE
 
-Copyright 2002-2005 Wyrdwright, Inc. and licensed under the GNU GPL.
+Copyright 2002-2007 Wyrdwright, Inc. and licensed under the GNU GPL.
 
 See LICENSE under the documentation for C<Apache::Wyrd>.
 

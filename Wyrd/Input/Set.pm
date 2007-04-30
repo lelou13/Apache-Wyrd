@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Input::Set;
-our $VERSION = '0.94';
+our $VERSION = '0.95';
 use Apache::Wyrd::Datum;
 use base qw(
 	Apache::Wyrd::Interfaces::Mother
@@ -187,7 +187,7 @@ Options of the multi-value Input.
 
 =head1 LICENSE
 
-Copyright 2002-2005 Wyrdwright, Inc. and licensed under the GNU GPL.
+Copyright 2002-2007 Wyrdwright, Inc. and licensed under the GNU GPL.
 
 See LICENSE under the documentation for C<Apache::Wyrd>.
 
@@ -226,7 +226,10 @@ sub _startup_radiobuttons {
 	my $name = $self->name;
 	my $template = qq(<input type="hidden" name="_being_submitted_$name" value="1">);
 	my $emptyname = $self->{'emptyname'};
-	my @objects = sort {sort_by_ikey($a, $b, @sort)} @{$self->{'_children'}};
+	my @objects = @{$self->{'_children'}};
+	unless ($self->_flags->nosort) {
+		@objects = sort {sort_by_ikey($a, $b, @sort)} @objects;
+	}
 	if ($emptyname and not($self->_flags->noauto)) {
 		#pre-layed-out checkbox options should include their own empty option.
 		if (UNIVERSAL::can($self->{'_children'}->[0], 'clone')) {
@@ -271,7 +274,10 @@ sub _startup_checkboxes {
 	my $template = qq(<input type="hidden" name="_being_submitted_$name" value="1">);
 	my $emptyname = $self->{'emptyname'};
 	$self->_raise_exception("You must define some options") unless (@{$self->{'_children'} || []});
-	my @objects = sort {sort_by_ikey($a, $b, @sort)} @{$self->{'_children'}};
+	my @objects = @{$self->{'_children'}};
+	unless ($self->_flags->nosort) {
+		@objects = sort {sort_by_ikey($a, $b, @sort)} @objects;
+	}
 	if ($emptyname and not($self->_flags->noauto)) {
 		#pre-layed-out checkbox options should include their own empty option.
 		if (UNIVERSAL::can($self->{'_children'}->[0], 'clone')) {
@@ -313,7 +319,10 @@ sub _startup_selection {
 	my @sort = token_parse($self->{'sort'});
 	my $emptyname = $self->{'emptyname'};
 	my $template = '';
-	my @objects = sort {sort_by_ikey($a, $b, @sort)} @{$self->{'_children'}};
+	my @objects = @{$self->{'_children'}};
+	unless ($self->_flags->nosort) {
+		@objects = sort {sort_by_ikey($a, $b, @sort)} @objects;
+	}
 	if ($emptyname) {
 		if (UNIVERSAL::can($self->{'_children'}->[0], 'clone')) {
 			my $object = $self->{'_children'}->[0]->clone;
@@ -349,7 +358,11 @@ sub _startup_pulldown {
 	my $emptyname = $self->{'emptyname'};
 	my $template = qq(<option value="">$emptyname</option>);
 	$template = '' if ($self->_flags->noempty);
-	foreach my $object (sort {sort_by_ikey($a, $b, @sort)} @{$self->{'_children'}}) {
+	my @objects = @{$self->{'_children'}};
+	unless ($self->_flags->nosort) {
+		@objects = sort {sort_by_ikey($a, $b, @sort)} @objects;
+	}
+	foreach my $object (@objects) {
 		my $option = ($object->name || ($object->name eq '0' ? '0' : $self->{'_options'}->{$object->value}));
 		my $option_on = '$:_' . $option . '_on_';
 		$self->{'_' . $option . '_on_'} = undef;
