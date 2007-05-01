@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::User;
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 use XML::Dumper;
 use Apache::Wyrd::Services::SAK qw(data_clean);
 use Digest::SHA qw(sha1_hex);

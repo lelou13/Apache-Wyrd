@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Form::Preload;
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 use base qw (Apache::Wyrd);
 
 =pod
@@ -93,6 +93,10 @@ Barry King E<lt>wyrd@nospam.wyrdwright.comE<gt>
 General-purpose HTML-embeddable perl object
 
 =back
+
+=item Apache::Wyrd::Form
+
+Build complex HTML forms from Wyrds
 
 =head1 LICENSE
 

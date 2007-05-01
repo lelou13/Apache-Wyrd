@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Lib;
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 use strict;
 use base qw(Apache::Wyrd::Interfaces::Stealth Apache::Wyrd);
 use Apache::Wyrd::Services::FileCache;
@@ -15,7 +15,7 @@ use Apache::Wyrd::Services::FileCache;
 
 =head1 NAME
 
-Apache::Wyrd::Lib - SSI for Wyrds
+Apache::Wyrd::Lib - Insert data from a file, as in SSI
 
 =head1 SYNOPSIS
 

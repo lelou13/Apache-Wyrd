@@ -7,7 +7,7 @@ use base qw(
 	Apache::Wyrd::Interfaces::Setter
 	Apache::Wyrd
 );
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 
 # searchparam - name of parameter containing the search string, default 'searchstring'
 # item - list item template
@@ -22,7 +22,22 @@ Apache::Wyrd::Site::SearchResults - Perform a word-search of Pages
 
 =head1 SYNOPSIS
 
-	NONE
+  <BASENAME::SearchResults max="20">
+    <BASENAME::Template name="list"><table>$:items</table></BASENAME::Template>
+    <BASENAME::Template name="item">
+      <tr><td><a href="$:name">$:title</a>?:published{, posted: $:published}
+      ?:description{<BR>&#151;$:description}</td></tr>
+    </BASENAME::Template>
+    <BASENAME::Template name="instructions>
+      ...instructions here...
+    </BASENAME::Template>
+    <BASENAME::Template name="failed>
+      The search for 
+        <BASENAME::CGISetter>
+          "$:searchstring"
+        </BASENAME::CGISetter>did not produce any results.
+    </BASENAME::Template>
+  </BASENAME::SearchResults>
 
 =head1 DESCRIPTION
 

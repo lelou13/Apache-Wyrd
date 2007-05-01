@@ -3,7 +3,7 @@ use base qw(Apache::Wyrd::Services::Index);
 use Apache::Wyrd::Services::SAK qw(:file);
 use HTTP::Request::Common;
 use BerkeleyDB;
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 use strict;
 
 =pod

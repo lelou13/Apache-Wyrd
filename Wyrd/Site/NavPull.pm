@@ -2,13 +2,13 @@ package Apache::Wyrd::Site::NavPull;
 use strict;
 use base qw(Apache::Wyrd::Site::Pull);
 use Apache::Wyrd::Services::SAK qw(:hash token_parse);
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 
 =pod
 
 =head1 NAME
 
-Apache::Wyrd::NavPull - Display a list of documents in a navigation-tree
+Apache::Wyrd::Site::NavPull - Display a list of documents in a navigation-tree
 
 =head1 SYNOPSIS
 
@@ -209,6 +209,10 @@ Barry King E<lt>wyrd@nospam.wyrdwright.comE<gt>
 =item Apache::Wyrd
 
 General-purpose HTML-embeddable perl object
+
+=item Apache::Wyrd::Site::Pull
+
+Abstract document-list Wyrd
 
 =back
 

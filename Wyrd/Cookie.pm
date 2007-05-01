@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized redefine);
 
 package Apache::Wyrd::Cookie;
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 use vars qw(@ISA);
 
 my $have_apr = 1;
@@ -95,6 +95,10 @@ Barry King E<lt>wyrd@nospam.wyrdwright.comE<gt>
 =item Apache::Wyrd
 
 General-purpose HTML-embeddable perl object
+
+=item Apache::Cookie
+
+Cookies under Apache
 
 =back
 

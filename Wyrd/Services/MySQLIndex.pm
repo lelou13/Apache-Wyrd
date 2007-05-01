@@ -1,11 +1,10 @@
+package Apache::Wyrd::Services::MySQLIndex;
+use base qw(Apache::Wyrd::Services::Index);
 use 5.006;
 use strict;
 use warnings;
 no warnings qw(uninitialized);
-
-package Apache::Wyrd::Services::MySQLIndex;
-use base qw(Apache::Wyrd::Services::Index);
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 use Apache::Wyrd::Services::SAK qw(token_parse strip_html);
 use Apache::Wyrd::Services::SearchParser;
 use Digest::SHA qw(sha1_hex);
@@ -15,7 +14,7 @@ use Data::Dumper;
 
 =head1 NAME
 
-Apache::Wyrd::Services::Index - Metadata index for word/data search engines
+Apache::Wyrd::Services::MySQLIndex - MySQL version of Index
 
 =head1 SYNOPSIS
 

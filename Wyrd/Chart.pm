@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Chart;
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 use base qw(Apache::Wyrd::Interfaces::Setter Apache::Wyrd);
 use GD::Graph;
 use GD::Graph::colour qw(:colours :convert :lists);
@@ -16,7 +16,7 @@ use Data::Dumper;
 
 =head1 NAME
 
-Apache::Wyrd::Chart - Embed Dynamically-redrawn PNG charts in HTML
+Apache::Wyrd::Chart - Embed Dynamically-redrawn charts in HTML
 
 =head1 SYNOPSIS
 

@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Handler;
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 use Apache::Wyrd::DBL;
 use Apache::Wyrd;
 use Apache::Wyrd::Services::SAK qw(slurp_file);
@@ -49,9 +49,13 @@ this package and is used for testing.
 This way, several sites using Wyrds can be built, each subclassing
 Apache::Wyrd objects in their own idiom without interfering in the
 interpretation of the same objects in another BASENAME class.  (However,
-nothing prevents a second BASENAME from including the first BASENAME in
-its C<use base> declaration array).  This is a feature(tm) of Apache::Wyrd
-and is intended to promote code re-use.
+nothing prevents a second BASENAME from including the first BASENAME in its
+C<use base> declaration array).  This is a feature(tm) of Apache::Wyrd and
+is intended to promote code re-use.  B<It also means that multiple instances
+of Apache::Wyrd hierarchies on a shared machine are completely open to
+cross- scripting attacks.  Since it is generally not sensible to have
+mod_perl offered in a shared environment, a version of Apache::Wyrd without
+this vulnerability will probably never be made.>
 
 The Handler also dumps out the error log, if needed from the DBL, where
 it accumulates from it's own internal calls and calls by Wyrds to the
@@ -194,7 +198,7 @@ Called by handler on a successful responses from C<process> and
 C<respond>.  A hook for post-processing the final output.  At the point
 this method is called, all the output is ready to be sent and is waiting
 in the C<output> attribute, so this method traditionally manipulates
-C<$self->{'output'}> directly.
+C<$self-E<gt>{'output'}> directly.
 
 =cut
 

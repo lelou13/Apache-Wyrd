@@ -1,19 +1,19 @@
-#Copyright barry king <barry@wyrdwright.com> and released under the GPL.
-#See http://www.gnu.org/licenses/gpl.html#TOC1 for details
-use strict;
 package Apache::Wyrd::Site::MySQLIndex;
+use strict;
 use base qw(Apache::Wyrd::Services::MySQLIndex);
 use Apache::Wyrd::Services::SAK qw(:file);
 use HTTP::Request::Common;
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 
 =pod
 
 =head1 NAME
 
-Apache::Wyrd::Site::MySQLIndex -- Wrapper MySQLIndex for the Site classes
+Apache::Wyrd::Site::MySQLIndex - Wrapper MySQLIndex for the Site classes
 
 =head1 SYNOPSIS
+
+Sample Implementation:
 
   use base qw(Apache::Wyrd::Site::MySQLIndex);
 
@@ -42,14 +42,10 @@ Apache::Wyrd::Site::MySQLIndex -- Wrapper MySQLIndex for the Site classes
 
 =head1 DESCRIPTION
 
-NONE
-
-=head2 METHODS
-
-Note: This class extends the Apach::Wyrd::Site::Index class, so check
-the documentation of that module for any methods.  It provides an index of
-Apache::Wyrd::Site::Page objects (see that module for details) using the mysql
-backend instead of BerkeleyDB.
+This class extends the Apach::Wyrd::Site::Index class, so check the
+documentation of that module for any methods.  It provides an index of
+Apache::Wyrd::Site::Page objects (see that module for details) using the
+mysql backend instead of BerkeleyDB.
 
 =over
 

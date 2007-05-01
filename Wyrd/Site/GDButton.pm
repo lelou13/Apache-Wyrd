@@ -1,7 +1,6 @@
-#Copyright barry king <barry@wyrdwright.com> and released under the GPL.
-#See http://www.gnu.org/licenses/gpl.html#TOC1 for details
 package Apache::Wyrd::Site::GDButton;
 use strict;
+our $VERSION = '0.96';
 use base qw(Apache::Wyrd::Interfaces::Setter Apache::Wyrd::Site::Widget Apache::Wyrd);
 use Apache::Wyrd::Services::SAK qw(:file token_parse);
 use Apache::Util;
@@ -16,7 +15,7 @@ A wyrd to generate rectangular buttons using the GD library.
 
 =head1 SYNOPSIS
 
-	<BASENAME::GDButton name="pushme" src="/
+	<BASENAME::GDButton name="pushme" src="/img/pushbutton.gif" />
 
 =head1 DESCRIPTION
 

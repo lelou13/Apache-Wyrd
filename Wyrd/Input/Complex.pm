@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Input::Complex;
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 use base qw(
 	Apache::Wyrd::Interfaces::Mother
 	Apache::Wyrd::Interfaces::Setter

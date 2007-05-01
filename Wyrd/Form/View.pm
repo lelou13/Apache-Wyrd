@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Form::View;
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 use base qw(Apache::Wyrd::Interfaces::Setter Apache::Wyrd);
 
 =pod
@@ -17,12 +17,12 @@ Apache::Wyrd::Form::View - Preview Wyrd for Form Wyrds
 
 =head1 DESCRIPTION
 
-Provides a window into the current state of a Apache::Wyrd::Form object.
+Provides a window into the current state of a C<Apache::Wyrd::Form> object.
  This is useful for previews and similar widgets.
 
 What data is to be viewed is represented by standard
-Apache::Wyrd::Interface::Setter placemarkers where variable in
-$:variable is the name of the CGI parameter.
+C<Apache::Wyrd::Interface::Setter> placemarkers where variable in
+C<$:variable> is the name of the CGI parameter.
 
 Apache::Wyrd::Form::View automatically joins together the values of any
 multiple-value cgi variable with the string indicated under the
@@ -35,7 +35,7 @@ B<joiner> attribute.  By default, this is ", ".
 =item joiner
 
 What string to put between items when there are multiple values for the
-parameter.  Defaults to ', ';
+parameter.  Defaults to ', ' (comma-space).
 
 =back
 
@@ -115,6 +115,10 @@ Barry King E<lt>wyrd@nospam.wyrdwright.comE<gt>
 =item Apache::Wyrd
 
 General-purpose HTML-embeddable perl object
+
+=item Apache::Wyrd::Form
+
+Build complex HTML forms from Wyrds
 
 =back
 

@@ -2,7 +2,7 @@ package Apache::Wyrd::Site::Pull;
 use strict;
 use base qw(Apache::Wyrd::Interfaces::IndexUser Apache::Wyrd::Interfaces::Setter Apache::Wyrd::Interfaces::Dater Apache::Wyrd);
 use Apache::Wyrd::Services::SAK qw(token_parse);
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 
 =pod
 
@@ -211,11 +211,15 @@ Barry King E<lt>wyrd@nospam.wyrdwright.comE<gt>
 
 General-purpose HTML-embeddable perl object
 
-=item Apache::Wyrd::Index
+=item Apache::Wyrd::Services::Index
 
-=item Apache::Wyrd::MySQLIndex
+=item Apache::Wyrd::Services::MySQLIndex
 
-General-purpose metadata indexes
+=item Apache::Wyrd::Site::Index
+
+=item Apache::Wyrd::Site::MySQLIndex
+
+Various index objects for site organization.
 
 =item Apache::Wyrd::Page
 

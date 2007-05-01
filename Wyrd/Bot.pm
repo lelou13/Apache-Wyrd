@@ -1,9 +1,8 @@
-﻿use 5.006;
+﻿package Apache::Wyrd::Bot;
+use 5.006;
 use strict;
 use warnings;
-
-package Apache::Wyrd::Bot;
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 use base qw(Apache::Wyrd::Interfaces::Setter Apache::Wyrd);
 use Apache::Wyrd::Services::SAK qw(slurp_file);
 use XML::Dumper;
@@ -53,7 +52,7 @@ reloading page.
 will be files with this base name plus .pid, .out, and .err
 respectively.  They must be readable and writeable by the
 apache process.  Note that they do not need to be in a
-browser accessible place on the filesystem.
+browser-accessible place on the filesystem.
 
 =item pidfile, errfile, outfile
 

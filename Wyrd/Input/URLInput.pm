@@ -3,13 +3,13 @@ use strict;
 use base qw(Apache::Wyrd::Input);
 use LWP::UserAgent;
 use HTTP::Request::Common;
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 
 =pod
 
 =head1 NAME
 
-Apache::Wyrd::Input::URLInput - check URLs as inputs
+Apache::Wyrd::Input::URLInput - Check URLs as inputs
 
 =head1 SYNOPSIS
 
@@ -86,6 +86,10 @@ Barry King E<lt>wyrd@nospam.wyrdwright.comE<gt>
 =item Apache::Wyrd
 
 General-purpose HTML-embeddable perl object
+
+=item Apache::Wyrd::Form
+
+Build complex HTML forms from Wyrds
 
 =back
 

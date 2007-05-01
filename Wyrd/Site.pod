@@ -116,7 +116,7 @@ page to be refreshed.  The bredth of these requests can be limited by file
 modification date since a cached date to reduce the time for this build to
 take.
 
-=h3 Other Objects in the Apache::Wyrd::Site Hierarchy
+=head2 Other Objects in the Apache::Wyrd::Site Hierarchy
 
 This hierarchy is meant to be somewhat more volitile than the rest of the
 Apache::Wyrd classes.  As useful objects following these conventions come

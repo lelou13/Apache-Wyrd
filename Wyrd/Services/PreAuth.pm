@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::PreAuth;
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 use base qw(Apache::Wyrd::Services::Auth);
 use Apache::Constants qw(OK);
 use LWP::UserAgent;
@@ -18,10 +18,10 @@ Apache::Wyrd::Services::PreAuth - Login to Apache::Wyrd::Services::Auth directly
 
 =head1 SYNOPSIS
 
-<Directory /www/someplace/preauth>
-  SetHandler perl-script
-  PerlHandler  Apache::Wyrd::Services::PreAuth
-</Directory>
+  <Directory /www/someplace/preauth>
+    SetHandler perl-script
+    PerlHandler  Apache::Wyrd::Services::PreAuth
+  </Directory>
 
 =head1 DESCRIPTION
 
@@ -83,8 +83,6 @@ sub handler : method {
 }
 
 =pod
-
-=back
 
 =head1 AUTHOR
 

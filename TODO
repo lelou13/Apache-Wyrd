@@ -12,3 +12,8 @@
 - Change tests to reflect BerkeleyDB Index test as optional (auto-detect BerkeleyDB?)
 
 - Add MySQL Index tests
+
+- Remove Input::Preload, Apache::Site::IndexBrowser and Apache::Wyrd::Interfaces::XMLer from the official distro.
+
+- Make the size of the TicketPad of the LoginServer configurable.
+

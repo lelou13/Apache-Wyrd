@@ -1,10 +1,10 @@
-use strict;
 package Apache::Wyrd::Site::IndexBot;
+use strict;
 use base qw(Apache::Wyrd::Bot);
 use Apache::Wyrd::Services::SAK qw(:file);
 use HTTP::Request::Common;
 use BerkeleyDB;
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 
 =pod
 
@@ -13,6 +13,8 @@ our $VERSION = '0.95';
 Apache::Wyrd::Site::IndexBot - Sample 'bot for forcing index builds
 
 =head1 SYNOPSIS
+
+Sample Implementation:
 
   package BASENAME::IndexBot;
   use strict;
@@ -38,6 +40,8 @@ Apache::Wyrd::Site::IndexBot - Sample 'bot for forcing index builds
     $index->delete_index if ($self->{'purge'});
     $self->index_site($index);
   }
+
+Sample Usage:
 
   <BASENAME::IndexBot refresh="20" expire="40" flags="reverse, purge">
   <BASENAME::Template name="meta">$:meta</BASENAME::Attribute>
@@ -71,6 +75,10 @@ in order to be granted full access to the site.
 =item refresh/timeout
 
 Per C<Apache::Wyrd::Bot>.
+
+=item basefile
+
+Per C<Apache::Wyrd::Bot>, but now required.
 
 =back
 
@@ -122,9 +130,6 @@ Performs the indexing.
 
 =head1 BUGS/CAVEATS
 
-Currently assumes there is a directory E<lt>docmentrootE<gt>/var/ and that
-it has write rights to that directory, and this is not (yet) configurable
-
 Other bugs/caveats per C<Apache::Wyrd::Bot>.  Also reserves the methods
 index_site and purge_missing.
 
@@ -135,6 +140,10 @@ sub index_site {
 	my $lastindex = undef;
 	my $hostname = $self->{'server_hostname'};
 	my $root = $self->{'document_root'};
+	my $lastfile = $root . '/var/lastindex.db';
+	if ($self->{'basefile'}) {
+		$lastfile = $self->{'basefile'} . '.last';
+	}
 
 	#purge_missing returns a list of existing files for which there is no
 	#database entry and/or the entry has been deleted.
@@ -152,7 +161,7 @@ sub index_site {
 	#go through the files in the document root that match ".html",
 	#and read in the file that shows when the last update was done
 	open (FILES, "/usr/bin/find $root -name \*.html |");
-	$lastindex = ${slurp_file($root . "/var/lastindex.db")};
+	$lastindex = ${slurp_file($lastfile)};
 	my $newest = $lastindex;
 	my @files = ();
 	while (<FILES>) {
@@ -193,7 +202,7 @@ sub index_site {
 	print "<b><p>$counter files indexed</p></b>";
 
 	#Save the date to the lastindex file.
-	spit_file($root . '/var/lastindex.db', $newest);
+	spit_file($lastfile, $newest);
 	return;
 }
 

@@ -2,13 +2,13 @@ package Apache::Wyrd::Site::WidgetControl;
 use base qw(Apache::Wyrd::Interfaces::Setter Apache::Wyrd);
 use Apache::Wyrd::Services::SAK qw(env_4_get);
 use strict;
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 
 =pod
 
 =head1 NAME
 
-Apache::Wyrd::Site::WidgetControl
+Apache::Wyrd::Site::WidgetControl - Links that change a Widget's State
 
 =head1 SYNOPSIS
 

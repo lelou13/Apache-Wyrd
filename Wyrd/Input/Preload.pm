@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Input::Preload;
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 use base qw(Apache::Wyrd::Interfaces::Setter Apache::Wyrd);
 use Apache::Wyrd::Services::SAK qw(token_parse);
 
@@ -31,6 +31,9 @@ Apache::Wyrd::Input::Preload - Specify preloaded form values from CGI
   </BASENAME::Form>
 
 =head1 DESCRIPTION
+
+B<NOTE: Apache::Wyrd::Form objects now arbitrarily accept CGI data in preloads, so
+this class is consequently obsolete, and will be dropped in future versions.>
 
 The Input::Preload Input Wyrd will load the values passed to it via the CGI into
 the opening Template of a form Wyrd.  The inputs which are to be preloaded are
@@ -85,6 +88,10 @@ Barry King E<lt>wyrd@nospam.wyrdwright.comE<gt>
 =item Apache::Wyrd
 
 General-purpose HTML-embeddable perl object
+
+=item Apache::Wyrd::Form
+
+Build complex HTML forms from Wyrds
 
 =back
 

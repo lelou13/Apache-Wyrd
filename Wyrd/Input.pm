@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Input;
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 use Apache::Wyrd::Datum;
 use base qw(Apache::Wyrd::Interfaces::Setter Apache::Wyrd::Interfaces::SmartInput Apache::Wyrd);
 use Apache::Wyrd::Services::SAK qw(token_parse);
@@ -71,7 +71,7 @@ both shows the text and includes it in the form as a hidden input.  For
 other input types, such as radiobuttons, checkboxes, selection sets,
 etc., see C<Apache::Wyrd::Input::Set>.
 
-The Input does it's work in the C<_format_output> phase.  If given a
+The Input does its work in the C<_format_output> phase.  If given a
 type of "foo", it will first attempt to match it to one of the standard
 types, then look for a C<startup_foo> method and if it finds it, will call
 the method.  This is to allow derived Input objects to initialize
@@ -190,7 +190,7 @@ I<(format: (returns) name (arguments after self))>
 
 =over
 
-=item (scalar) C<name>, C<type>, C<value>, C<description>, C<param> (void)
+=item (scalar) C<name/type/value/description/param> (void)
 
 Input has read-only methods for C<name>, C<type>, C<value>,
 C<description>, C<triggers>, and C<param>.  The C<param> attribute is optional for
@@ -240,7 +240,7 @@ sub description {
 	return $self->{'description'};
 }
 
-=item (scalar) null_ok (void)
+=item (scalar) C<null_ok> (void)
 
 In rare cases (a number of checkboxes, for example), the Form Wyrd being
 unable to find the params associated with this input.  Normally, the
@@ -259,6 +259,7 @@ sub null_ok {
 
 =pod
 
+=item (void) C<set> (varies)
 
 set accepts a value, which is converted to the appropriate type
 (arrayref, scalar, etc.) to safely pass the next test, which is the
@@ -307,7 +308,7 @@ sub set {
 
 =pod
 
-=item (void) _parse_options (void)
+=item (void) C<_parse_options> (void)
 
 _parse_options looks to the B<options> attribute, which may be explicit
 as a comma/whitespace delineated list or built up by sub-objects (see
@@ -338,7 +339,7 @@ sub _parse_options {
 	}
 }
 
-=item (scalar) _check_param (scalar)
+=item (scalar) C<_check_param> (scalar)
 
 the B<_check_param> method itself, by default, calls the B<check> method
 of the underlying Datum instance.  Datum returns two values, the first
@@ -427,7 +428,7 @@ sub _escape {
 
 =item (scalar) C<_escape> (scalar)
 
-the C<_unescape> method should reverse-mirror the C<_escape> method exactly.
+the C<_unescape> method reverse-mirrors the C<_escape> method exactly.
 
 =cut
 
@@ -587,6 +588,10 @@ Barry King E<lt>wyrd@nospam.wyrdwright.comE<gt>
 =item Apache::Wyrd
 
 General-purpose HTML-embeddable perl object
+
+=item Apache::Wyrd::Form
+
+Build complex HTML forms from Wyrds
 
 =back
 

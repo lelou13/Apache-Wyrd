@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Defaults;
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 use base qw(Apache::Wyrd::Query);
 
 =pod
@@ -39,12 +39,10 @@ Apache::Wyrd::Defaults - Default data for a Form Wyrd
 =head1 DESCRIPTION
 
 Provide default values to a parent object.  The parent must have a
-C<register_defaults> method to which Defaults passes itself, but other
-than that, it is up to the parent what to do with the Defaults.  The
+C<register_defaults> method to which Defaults passes itself.  The
 defaults are given in the form of a query, and the C<sh> method accesses
-the statement handle of that query.  This Wyrd was designed primarily to
-be used with an C<Apache::Wyrd::Form::Preload> object, but may have
-other uses.
+the statement handle of that query.  This Wyrd was designed to
+be used with an C<Apache::Wyrd::Form::Preload> object.
 
 =head2 HTML ATTRIBUTES
 
@@ -85,6 +83,10 @@ Barry King E<lt>wyrd@nospam.wyrdwright.comE<gt>
 =item Apache::Wyrd
 
 General-purpose HTML-embeddable perl object
+
+=item Apache::Wyrd::Form
+
+Build complex HTML forms from Wyrds
 
 =back
 

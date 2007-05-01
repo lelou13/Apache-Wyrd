@@ -1,10 +1,13 @@
 package Apache::Wyrd::Interfaces::IndexUser;
+use strict;
+use warnings;
+our $VERSION = '0.96';
 
 =pod
 
 =head1 NAME
 
-Apache::Wyrd::Interfaces::IndexUser - Convenience Class
+Apache::Wyrd::Interfaces::IndexUser - Convenience Class for Index-driven Wyrds
 
 =head1 SYNOPSIS
 
@@ -42,10 +45,10 @@ BASECLASS::Index holds a default definition and put it in the index data
 key of the Wyrd.  It can then be used at any point in the body of the
 Wyrd's perl code.
 
-=item _init_index
+=item _dispose_index
 
 Shutdown the index and dispose of the handle.  Must be called to avoid
-database/dbfile handle "leaks".
+database/dbfile handle "leaks" (open but dead database connections).
 
 =cut
 

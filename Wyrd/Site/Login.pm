@@ -9,7 +9,7 @@ use Apache::Constants qw(OK);
 use MIME::Base64;
 use LWP::UserAgent;
 use HTTP::Request::Common;
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 
 =pod
 

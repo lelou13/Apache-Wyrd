@@ -8,7 +8,7 @@ no warnings qw(uninitialized);
 no warnings qw(redefine);
 
 package Apache::Wyrd::Datum;
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 
 use constant TYPE => 0;
 use constant VALUE => 1;
@@ -466,8 +466,6 @@ params: strict, not-null, options (arrayref of possible options)
 
 params: strict, not-null, options (arrayref of possible options)
 
-=cut
-
 =head1 AUTHOR
 
 Barry King E<lt>wyrd@nospam.wyrdwright.comE<gt>
@@ -477,5 +475,7 @@ Barry King E<lt>wyrd@nospam.wyrdwright.comE<gt>
 Copyright 2002-2007 Wyrdwright, Inc. and licensed under the GNU GPL.
 
 See LICENSE under the documentation for C<Apache::Wyrd>.
+
+=cut
 
 1;

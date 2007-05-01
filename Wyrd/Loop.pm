@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Loop;
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 use base qw (Apache::Wyrd::Interfaces::Setter Apache::Wyrd::Interfaces::Stealth Apache::Wyrd);
 use Apache::Wyrd::Services::SAK qw(:db);
 
@@ -18,7 +18,7 @@ Apache::Wyrd::Loop - Loop through SQL query results
 
     <BASENAME::Loop query="select name from contact">
       <P>$:name</P>
-    </BASENAME::Lookup>
+    </BASENAME::Loop>
 
     <BASENAME::Loop
      query="select name from contact where name is like 'S%'">

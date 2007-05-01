@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::BrowserSwitch;
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 use base qw (Apache::Wyrd);
 
 =pod
@@ -100,6 +100,10 @@ Barry King E<lt>wyrd@nospam.wyrdwright.comE<gt>
 =item Apache::Wyrd
 
 General-purpose HTML-embeddable perl object
+
+=item Apache::Wyrd::Version
+
+Container for a browser-dependent version of a block of HTML
 
 =back
 

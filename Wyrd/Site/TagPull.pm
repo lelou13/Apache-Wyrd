@@ -5,7 +5,7 @@ use Apache::Wyrd::Services::SearchParser;
 use Apache::Wyrd::Services::SAK qw(:hash);
 use Apache::Wyrd::Interfaces::Dater;
 use Date::Calc qw(Add_Delta_Days);
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 
 =pod
 
@@ -23,7 +23,7 @@ Apache::Wyrd::Site::TagPull.pm - Display a list of Pages by subject
     </BASENAME::Template>
     <BASENAME::Template name="selected">
       <tr><td><b>$:title?:published{, posted: $:published}</b>
-      ?:description{<BR>&#151$:description}</td></tr>
+      ?:description{<BR>&#151;$:description}</td></tr>
     </BASENAME::Template>
   </BASENAME::TagPull>
 
@@ -213,6 +213,10 @@ Barry King E<lt>wyrd@nospam.wyrdwright.comE<gt>
 =item Apache::Wyrd
 
 General-purpose HTML-embeddable perl object
+
+=item Apache::Wyrd::Site::Pull
+
+Abstract document-list Wyrd
 
 =back
 

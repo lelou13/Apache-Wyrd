@@ -22,7 +22,10 @@ Apache::Wyrd::Services::SAK - Swiss Army Knife of common subs
 
 =head1 DESCRIPTION
 
-"Swiss Army Knife" of functions used in Apache::Wyrd.
+"Swiss Army Knife" of functions used in Apache::Wyrd.  These are mostly
+internal to the base classes of Wyrds, and are probably better implemented
+elsewhere in CPAN, but reducing the number of external modules was a goal of
+the Apache::Wyrd project.
 
 I<(format: (returns) C<name> (arguments))> for regular functions.
 
@@ -31,7 +34,7 @@ I<(format: (returns) C<$wyrd-E<gt>name> (arguments))> for methods
 
 =cut
 
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(
 	array_4_get
@@ -257,7 +260,7 @@ sub file_attribute {
 	return;
 }
 
-=over
+=pod
 
 =item (scalarref) C<slurp_file>(scalar)
 

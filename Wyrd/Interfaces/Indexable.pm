@@ -1,12 +1,9 @@
-#Copyright barry king <barry@wyrdwright.com> and released under the GPL.
-#See http://www.gnu.org/licenses/gpl.html#TOC1 for details
+package Apache::Wyrd::Interfaces::Indexable;
 use 5.006;
 use strict;
 use warnings;
 no warnings qw(uninitialized);
-
-package Apache::Wyrd::Interfaces::Indexable;
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 use Digest::SHA qw(sha1_hex);
 
 =pod
@@ -152,7 +149,13 @@ General-purpose HTML-embeddable perl object
 
 =item Apache::Wyrd::Services::Index
 
-Berkeley DB-based reverse index for search engines and other meta-data-bases.
+=item Apache::Wyrd::Services::MySQLIndex
+
+=item Apache::Wyrd::Site::Index
+
+=item Apache::Wyrd::Site::MySQLIndex
+
+Various index objects for site organization.
 
 =back
 

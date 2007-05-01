@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::DBL;
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 use DBI;
 use Apache;
 use Apache::Wyrd::Request;
@@ -15,7 +15,7 @@ use Apache::URI;
 
 =head1 NAME
 
-Apache::Wyrd::DBL - Object for Wyrds to access "Das Blinkenlights" (Apache internals, etc.)
+Apache::Wyrd::DBL - Centralized location for tracking variables, internals
 
 =head1 SYNOPSIS
 
@@ -25,11 +25,12 @@ Apache::Wyrd::DBL - Object for Wyrds to access "Das Blinkenlights" (Apache inter
 
 =head1 DESCRIPTION
 
-"Das Blinkenlights" is a convenient placeholder for all session information a
-wyrd might need in order to do work.  It holds references to the session's
-current apreq, DBI, and Apache objects, as well as the current session log and
-other vital information.  It is meant to be called from within an Apache::Wyrd
-object through it's C<dbl> method, as in the SYNOPSIS.
+C<Apache::Wyrd::DBL> ("Das Blinkenlights") is a convenient placeholder for
+all session information a Wyrd might need in order to do work.  It holds
+references to the session's current apreq, DBI, and Apache objects, as well
+as the current session log and other vital information.  It is meant to be
+called from within an Apache::Wyrd object through it's C<dbl> method, as in
+the SYNOPSIS.
 
 Debugging is always turned on if port 81 is used.  Note that apache must be set
 up to listen at this port as well.  See the Listen and BindAddress Apache directives.

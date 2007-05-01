@@ -9,7 +9,7 @@ use base qw(
 use Apache::Wyrd::Services::SAK qw(token_parse strip_html);
 use Apache::Wyrd::Services::FileCache;
 use Digest::SHA qw(sha1_hex);
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 
 #state of the widgets is stored by an alphanumeric code where a=1 and Z=62, limiting
 #widget controls to 62 states and widgets to 62 controls
@@ -781,6 +781,20 @@ Barry King E<lt>wyrd@nospam.wyrdwright.comE<gt>
 =item Apache::Wyrd
 
 General-purpose HTML-embeddable perl object
+
+=item Apache::Wyrd::Services::Index
+
+=item Apache::Wyrd::Services::MySQLIndex
+
+=item Apache::Wyrd::Site::Index
+
+=item Apache::Wyrd::Site::MySQLIndex
+
+Various index objects for site organization.
+
+=item Apache::Wyrd::Site
+
+Documentation about this sub-hierarchy
 
 =back
 

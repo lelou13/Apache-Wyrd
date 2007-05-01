@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::CGISetter;
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 use base qw(Apache::Wyrd::Interfaces::Stealth Apache::Wyrd::Interfaces::Setter Apache::Wyrd);
 
 =pod
@@ -23,6 +23,7 @@ Sets variables in the space it encloses based on CGI params.  The variables are 
 by the sequence $:variable_name where the variable_name follows perl rules for variable
 names.
 
+This module uses the C<Apache::Wyrd::Interfaces::Setter> conventions.
 
 =head2 HTML ATTRIBUTES
 
@@ -93,6 +94,10 @@ Barry King E<lt>wyrd@nospam.wyrdwright.comE<gt>
 =item Apache::Wyrd
 
 General-purpose HTML-embeddable perl object
+
+=item Apache::Wyrd::Interfaces::Setter
+
+Implementation of a common template format for Wyrds
 
 =back
 

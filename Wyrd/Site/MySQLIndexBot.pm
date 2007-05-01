@@ -1,7 +1,7 @@
 use strict;
 package Apache::Wyrd::Site::MySQLIndexBot;
 use base qw(Apache::Wyrd::Site::IndexBot);
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 
 sub purge_missing {
 	my ($self, $instance) = @_;
@@ -27,7 +27,7 @@ sub purge_missing {
 
 =head1 NAME
 
-Apache::Wyrd::OBJECT
+Apache::Wyrd::MySQLIndexBot - MySQL-backend version of Apache::Wyrd::Site::IndexBot
 
 =head1 SYNOPSIS
 

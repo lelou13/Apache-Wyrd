@@ -2,7 +2,7 @@ package Apache::Wyrd::Site::WidgetIndex;
 use base qw(Apache::Wyrd::Services::Index);
 use strict;
 use Carp;
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 
 =pod
 
@@ -12,7 +12,28 @@ Apache::Wyrd::Site::WidgetIndex - Wrapper class to support Widget Class
 
 =head1 SYNOPSIS
 
-TODO
+Typical BASENAME::WidgetIndex Implementation:
+
+  package BASENAME::WidgetIndex;
+  use strict;
+  use base qw(Apache::Wyrd::Site::WidgetIndex);
+  
+  1;
+
+Typical BASENAME::Widget Implementation:
+
+  package BASENAME::Widget;
+  use base qw(Apache::Wyrd::Site::Widget);
+  use BASENAME::WidgetIndex;
+  
+  sub index {
+    my ($self) = @_;
+    return BASENAME::WidgetIndex->new;
+  }
+  
+  1;
+
+
 
 =head1 DESCRIPTION
 
@@ -20,7 +41,41 @@ Provides a simple interface to a MySQL table for storing data about widgets.
 
 =head1 BUGS/CAVEATS
 
-Not the most efficient way to store Widget information, but quick to implement.
+Not the most efficient way to store Widget information, but quick to
+implement.  No BDB backend has been offered for this class, but a Widget's
+index can be implemented for a non-mysql environment using an instance of
+the C<Apache::Wyrd::Services::Index> class with the following code:
+
+  package BASENAME::WidgetIndex;
+  use base qw(Apache::Wyrd::Services::Index);
+  
+  sub new {
+    my ($class) = @_;
+    my $init = {
+      file => '/var/www/BASENAME/db/widgetindex.db',
+      strict => 1
+    };
+    return Apache::Wyrd::Services::Index::new($class, $init);
+  }
+  
+  sub update_entry {
+    my ($self, $entry) = @_;
+    my $changed = 0;
+    my $index = $self->read_db;
+    my ($id, $id_is_new) = $self->get_id($entry->index_name);
+    $index->db_get("\x02\%$id", my $digest);
+    if ($digest ne $entry->index_digest) {
+      $index = $self->write_db;
+      $self->update_key($id, $entry->index_name);
+      $self->update_key("\x00%" . $entry->index_name, $id);
+      $self->update_key("\x02%" . $id, $entry->index_digest);
+      $changed = 1;
+    }
+    $self->close_db;
+    return $changed;
+  }
+
+1;
 
 =head1 AUTHOR
 
@@ -36,7 +91,8 @@ General-purpose HTML-embeddable perl object
 
 =item Apache::Wyrd::Site::Widget
 
-Base object for Widgets - semi-independent objects which enrich the content of a page
+Base object for Widgets - semi-independent objects which enrich the content
+of a page
 
 =back
 

@@ -1,7 +1,7 @@
-#Copyright barry king <barry@wyrdwright.com> and released under the GPL.
-#See http://www.gnu.org/licenses/gpl.html#TOC1 for details
 package Apache::Wyrd::Site::Widget;
 use strict;
+use warnings;
+our $VERSION = '0.96';
 use base qw(Apache::Wyrd::Interfaces::Indexable Apache::Wyrd::Interfaces::Mother);
 use Digest::SHA qw(sha1_hex);
 
@@ -33,19 +33,19 @@ Apache::Wyrd::Site::Widget - Abstract dynamic element of a page
 =head1 DESCRIPTION
 
 Widgets are a generic class of objects which work with
-Apache::Wyrd::Site::Page Wyrds, primarily to generate content on a page
+C<Apache::Wyrd::Site::Page> Wyrds, primarily to generate content on a page
 which may change through time and viewings.  This makes the indexing of
 pages problematic, since a Page object by default looks only to its own
 file modification date to determine if it has been changed and needs
 re-indexing.  A Widget will keep track of its own content in a similar
-way as the page (see Apache::Wyrd::Site::WidgetIndex), triggering an
+way as the page (see C<Apache::Wyrd::Site::WidgetIndex>), triggering an
 update in its parent Page Wyrd when it's content changes.  It does this
 by changing the (internal) modification time value of the parent to the
 current time as defined by the builtin C<time()> call.
 
 So, if you want content from external sources to be indexed as a page is
 indexed, the wyrd which generates the content should be a sub-class of
-Apache::Wyrd::Site::Widget.
+C<Apache::Wyrd::Site::Widget>.
 
 =head2 HTML ATTRIBUTES
 
@@ -65,7 +65,7 @@ I<(format: (returns) name (arguments after self))>
 
 =over
 
-=item (Apache::Wyrd::Site::WidgetIndex) C<index> (void)
+=item (Apache::Wyrd::Site::WidgetIndex ref) C<index> (void)
 
 Returns a Widget Index reference.  If the package
 E<lt>BASENAMEE<gt>::Site::WidgetIndex exists, it will attempt to call

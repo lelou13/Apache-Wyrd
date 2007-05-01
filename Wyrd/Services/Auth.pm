@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::Auth;
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 use Apache::Wyrd::Services::CodeRing;
 use Apache::Wyrd::Services::TicketPad;
 use Digest::SHA qw(sha256_hex);
@@ -42,13 +42,12 @@ Apache::Wyrd::Services::Auth - Cookie-based authorization handler
 
 =head1 DESCRIPTION
 
-Auth provides a secure cookies-based login system for a Wyrd-enabled
-server that might not itself be equipped with SSL.  It can do so if
-provided a connection to an SSL-enabled Apache server with an
-C<Apache::Wyrd::Services::LoginServer> available on a secure port.  It
-is not designed to be highly secure, but to circumvent an unauthorized
-party from obtaining login credentials (username/password) by
-packet-sniffing.
+Auth provides a secure cookies-based login system for a Wyrd-enabled server
+that might not itself be equipped with SSL.  It can do so if provided a
+connection to an SSL-enabled Apache server with an
+C<Apache::Wyrd::Services::LoginServer> available on a secure port.  It uses
+a standard SSL channel to circumvent an unauthorized party from obtaining
+login credentials (username/password) by packet-sniffing.
 
 To do so, it maintains a cookie-based authorization scheme which is
 implemented using stacked handlers.  It handles authorization by login
@@ -68,8 +67,8 @@ which keeps this user object stored for later use.
 
 If the challenge is not found, it checks for a cookie called
 auth_cookie, and decrypts it, passing it on in an XML notes item called
-"user" if it finds it.  The user note is in perl code, stored and
-retrieved via C<XML::Dumper>.
+"user" if it finds it.  (The user note is in perl code, stored and
+retrieved by the next handler via C<XML::Dumper>.)
 
 If the cookie is not found, it checks first to see if cookies are
 enabled on the browser, and if not, sends the browser to a url to
@@ -476,7 +475,9 @@ CGI param for password if not 'password'
 
 =item Debug
 
-Dump debugging information to the Error Log (0 for default no, 1 for yes)
+Dump debugging information to the Error Log (0 for default no, 1 for yes). 
+Note that if the log is not secure, this may compromise the users'
+credentials.
 
 =item TieAddr
 
@@ -488,7 +489,7 @@ ISPs) (0 for default no, 1 for yes)
 =head1 BUGS/CAVEATS/RESERVED METHODS
 
 As with many such schemes, man-in-the-middle attacks are always possible, if
-a little problematic to implement.  Additionally, unless TieAddr is set, a
+rather problematic to implement.  Additionally, unless TieAddr is set, a
 "stolen cookie", i.e. one obtained via packet sniffing or similar technique
 can be used to gain access until the server's key is regenerated on server
 restart.

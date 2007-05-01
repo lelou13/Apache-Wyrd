@@ -1,6 +1,6 @@
 use strict;
 package Apache::Wyrd::Interfaces::Columnize;
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 
 =pod
 

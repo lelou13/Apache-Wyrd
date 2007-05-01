@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::Tree;
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 
 =head1 NAME
 

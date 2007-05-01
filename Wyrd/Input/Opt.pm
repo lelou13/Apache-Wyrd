@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Input::Opt;
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 use Apache::Wyrd::Datum;
 use base qw(Apache::Wyrd::Interfaces::Setter Apache::Wyrd);
 =pod

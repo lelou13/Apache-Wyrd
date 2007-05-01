@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Interfaces::SmartInput;
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 
 =pod
 
@@ -29,7 +29,7 @@ or the other of 'text' or 'textarea'.
 
 Provides an estimate at best.  Assumes that browser defaults will not
 rapidly change.  Supports only the major mac and windows browsers at the
-time of writing.
+time of writing.  Use CSS.  It's been around long enough.
 
 =head1 AUTHOR
 

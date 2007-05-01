@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Form;
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 use base qw(Apache::Wyrd::Interfaces::Mother Apache::Wyrd::Interfaces::Setter Apache::Wyrd);
 use XML::Dumper;
 use Apache::Wyrd::Services::CodeRing;
@@ -20,7 +20,19 @@ Apache::Wyrd::Form - Build complex HTML forms from Wyrds
 
 =head1 SYNOPSIS
 
-	NONE
+  <BASENAME::Form recipient="webmaster@example.com">
+    <BASENAME::Form::Template name="enter">
+      $:error_block
+      <BASENAME::ErrField trigger="name">
+        Name:
+      </BASENAME::ErrField>
+      <BASENAME::Input type="text" name="name" flags="required" />
+      <input type="submit" name="action" value="Send Name" />
+    </BASENAME::Form::Template>
+    <BASENAME::Form::Template name="exit">
+      Your name has been mailed to the webmaster.
+    </BASENAME::Form::Template>
+  </BASENAME::Form>
 
 =head1 DESCRIPTION
 
@@ -222,7 +234,9 @@ form on the page.
 flags for particular error conditions, stored in an arrayref. This array
 is checked against registered triggers for errortags.  Errors are
 defined as arbitrary strings signifying an error event such as "preview"
-or "no full name"
+or "no full name".  Note that as soon as an error is inserted, the form
+will not advance to the next template until the error is corrected
+(unless, of course, the ignore_errors flag is set).
 
 =item _error_messages
 

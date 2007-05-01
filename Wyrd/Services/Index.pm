@@ -1,16 +1,14 @@
+package Apache::Wyrd::Services::Index;
 use 5.006;
 use strict;
 use warnings;
 no warnings qw(uninitialized);
-
-package Apache::Wyrd::Services::Index;
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 use Apache::Wyrd::Services::SAK qw(token_parse strip_html utf8_force utf8_to_entities);
 use Apache::Wyrd::Services::SearchParser;
 use BerkeleyDB;
 use BerkeleyDB::Btree;
 use Digest::SHA qw(sha1_hex);
-use Data::Dumper;
 use Carp;
 
 =pod

@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::CGICond;
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 use base qw(Apache::Wyrd::Interfaces::Stealth Apache::Wyrd);
 use Apache::Wyrd::Services::SAK qw(:hash);
 
@@ -35,7 +35,7 @@ Apache::Wyrd::CGICond - Selectively display or hide data based on CGI state
 
     <Apache::Wyrd::CGICond var="?!sam,pete">
       This text will appear if either of the CGI
-      variables "sam" and "pete" are undef
+      variables "sam" and "pete" are null
     </Apache::Wyrd::CGICond>
 
 =head1 DESCRIPTION

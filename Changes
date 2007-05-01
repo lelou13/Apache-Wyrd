@@ -1,7 +1,13 @@
 Changes
 =======
 
-    0.95   TBA
+    0.96   May 1, 2007
+
+           Apache::Wyrd::Site::IndexBot uses basefile for index date tracking
+
+           Documentation audit changes
+
+    0.95   April 30, 2007
 
            Module cleanup: removed some example & undocumented Wyrds from
            the core distribution: CSSGene, Site:EditablePage,
@@ -13,20 +19,20 @@ Changes
            Added a FileCacheTimeout to Apache::Wyrd::Services::FileCache
 
            Apache::Wyrd::Redirect can now use "href" conventions.  New
-           normalize_href Apache::Wyrd::Services::SAK function for this.
+           normalize_href Apache::Wyrd::Services::SAK function for this
 
            Apache::Form & Apache::Wyrd::Input has more passthrough of valid
            attributes for their base tags (enctype, onkeydown, etc.)
 
            Wyrds now accept hyphen in the attribute-name as a valid
            character, to allow for compatibility with valid HTML
-           attributes such as "accept-charset".
+           attributes such as "accept-charset"
 
            Apache::Wyrd::Services::Index now feature-frozen and depreciated
            in favor of Apache::Wyrd::Services::MySQLIndex. This is due to
-           locking and DB File corruption issues which could not be resolved.
+           locking and DB File corruption issues which could not be resolved
 
-           Documentation changes.
+           Documentation changes
 
     0.94   October 22, 2006
 
@@ -77,17 +83,17 @@ Changes
 
            Form Inputs now handle enctype attributes
 
-           Form Inputs now handle the triggers attribute correctly.
+           Form Inputs now handle the triggers attribute correctly
 
            Checkbox and radio button opts now handle style attributes
 
            Checkbox sets now properly handle removing all checks if there is
-           no "null" option.
+           no "null" option
 
            Input Set objects now properly handle literal '0' values
 
            Using a different param from the input name now works properly on
-           Input wyrds.
+           Input wyrds
 
            Escaped Form Inputs now also escape '<' and '>'
 
@@ -96,7 +102,7 @@ Changes
            Limited support for internal redirects method via the
            abort_redirect method.  Apache::Wyrd::Request attempts to recover
            the CGI environment after explicit calls to Apache's
-           internal_redirect method.
+           internal_redirect method
 
            The mother interface can now act on any attribute of a Wyrd, not
            just _data
@@ -115,7 +121,7 @@ Changes
 
            SAK: file_attribute() now untaints the file path it generates.
            sort_by_[i]key will reverse order on a key if the key is
-           preceeded by a minus sign.
+           preceeded by a minus sign
 
            Documentation changes
 
@@ -123,15 +129,15 @@ Changes
 
            New Wyrd: Apache::Wyrd::Services::Bot for defining a process
            to be invoked and monitoring that process from a browser
-           window.
+           window
 
-           Added post_process hook for Handler.
+           Added post_process hook for Handler
 
            Replaced MD5 with SHA1 for all internal hashing because of
            UTF problems with Digest::MD5
 
            Index now defaults to using concurrency instead of locking in
-           BerkeleyDB if version 4 or greater is installed.
+           BerkeleyDB if version 4 or greater is installed
 
            Fixed fatal error in Index when exact matching whole phrases
            with a - or + qualifier
@@ -145,7 +151,7 @@ Changes
            be reversed between value and name
 
            Fixed bug where simple attributes composed entirely of
-           non-word characters could cause parsing errors.
+           non-word characters could cause parsing errors
 
            Fixed bug where Lookup would have a fatal error on the use of
            a joiner
@@ -222,7 +228,7 @@ Changes
     0.86   (September 22, 2004)
 
            Minor change in Makefile.PL to allow non-blocking of
-           automated processes.
+           automated processes
 
     0.85   (September 22, 2004)
 

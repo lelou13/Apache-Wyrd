@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::CodeRing;
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 use Apache::Wyrd::Services::SAK qw(lc_hash);
 use Apache::Wyrd::Services::Key;
 use Digest::SHA qw(sha1_hex);
@@ -55,7 +55,8 @@ empty string.
 
 Unless the CodeRing is given a key on initialization, it uses an
 instance of the C<Apache::Wyrd::Services::Key> class, which is designed to
-be a constant in primary server memory space.
+be a constant in primary server memory space.  The Key, in this case, is
+"known" only to the Apache process, and is regenerated on each restart.
 
 =head2 HTML ATTRIBUTES
 

@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd;
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 use Apache::Wyrd::Services::SAK qw (token_parse slurp_file);
 use Apache::Wyrd::Services::Tree;
 use Apache::Util;
@@ -132,7 +132,7 @@ provide intermediary access to the Apache request and any DBI-style
 database interfaces.
 
 Each Wyrd has a corresponding perl module which performs work and
-generates output at the Wyrd's location on the HTML page, if any.  Each
+generates any output at the Wyrd's location on the HTML page.  Each
 of these objects is a derived class of Apache::Wyrd, and consequently
 draws on the existing methods of the abstract class as well as
 implements methods of its own.  A few "hook" methods (C<_setup>,
@@ -153,13 +153,12 @@ needs to be defined and properly configured and able to properly invoke
 an instance of C<BASENAME::DBL>.  [N.B: A sample minimal installation,
 C<TESTCLIENT> can be found in the t/lib directory of this package].
 
-When a BASENAME::FOO Wyrd is invoked, and no BASENAME::FOO perl object
-can be found, the object Apache::Wyrd::FOO will be tried.  This allows
-the use of any Apache::Wyrd::FOO objects derived from this module to be
-used in a web page as BASENAME::FOO objects without explicitly
-subclassing them.  If neither a BASENAME::FOO nor an Apache::Wyrd::FOO
-object exists, a generic (do-nothing) Apache::Wyrd will be used rather
-than an error occur.
+When a BASENAME::FOO Wyrd is invoked, and no BASENAME::FOO perl object can
+be found, the object Apache::Wyrd::FOO will be tried.  This allows the use
+of any Apache::Wyrd::FOO objects derived from this module to be used in a
+web page as BASENAME::FOO objects without explicitly subclassing them.  If
+neither a BASENAME::FOO nor an Apache::Wyrd::FOO object exists, a generic
+(do-nothing) Apache::Wyrd object will be used rather than an error occur.
 
 As one would expect, one namespace can also instantiate another namespace's
 objects as long as the other namespace can be found in the local perl
@@ -253,7 +252,16 @@ text to replace the Wyrd at that point in the HTML page.
 
 =back
 
-In most cases, there will not be any need to override non-hook methods.
+In most cases, there will not be any need to override non-hook methods.  For minor variations on Wyrd behavior, most
+of the built-in Wyrds can be quickly extended by overriding the method with a method that calls the SUPER class:
+
+  sub _setup {
+    my $self = shift;
+    
+    ...do something here...
+    
+    return $self->SUPER::_setup();
+  }
 
 =head2 HTML ATTRIBUTES
 
@@ -280,7 +288,7 @@ the loglevels and defaults to 'fatal'.
 
 A list of optional modifiers, separated by whitespace or commas, which
 can be used to modify the behavior of the Wyrd.  Flags should contain no
-whitespace.  One builtin flag exists: disable keeps the Wyrd and all
+whitespace.  One builtin flag exists: B<disable> keeps the Wyrd and all
 enclosed data from being processed or generated at all.
 
 =back
@@ -601,8 +609,9 @@ sub _shutdown {
 	return;
 }
 
-=pod =item (scalar, hashref) C<_pre_spawn> (scalar classname, hashref
-initialization)
+=pod
+
+=item (scalar, hashref) C<_pre_spawn> (scalar classname, hashref initialization)
 
 Pre-spawn allows the classname or initialization hash to be modified before a
 child Wyrd is generated.
@@ -627,7 +636,7 @@ tags of the type xxx:
 
 	<xxx>given value</xxx>
 
-I<This behavior has proven of limited value and will is depreciated.>
+I<This behavior has proven of limited value and is depreciated.>
 
 =cut
 
@@ -677,6 +686,17 @@ This software has only tested under Linux and Darwin, but should work
 for any *nix-style system.  This software is not intended for use on
 windows or other delicate glassware.
 
+=head2 Cross Scripting
+
+This software is meant to run on mod_perl, which, unlike PHP for example, is
+not a separate language.  It is a direct interface to Apache internals. 
+Although Apache::Wyrd supports multiple namespaces and consequently,
+multiple sites on different virtual server definitions of an Apache
+installation, it has not, and the author believes cannot, be designed to
+prevent cross-scripting attacks.  Consequently, Apache::Wyrd is not
+appropriate for a shared hosting environment where different site
+contributors must be protected from each other.
+
 =head1 AUTHOR
 
 Barry King E<lt>wyrd@nospam.wyrdwright.comE<gt>
@@ -714,15 +734,14 @@ For information on the debugging sub-system
 The "swiss army knife" of useful methods/subroutines which are collected in one
 library to improve standardization of behaviors.
 
+=item Apache::Wyrd::Site
+
+A collection of inter-related Wyrds which can be used to quickly implement
+an integrated site with self-maintaining navigation, search engine, subject
+cross-references, publication management, and dynamic state-tracked
+elements.
+
 =back
-
-=head2 EXAMPLES
-
-Other Wyrds which have proved useful in the past are also provided as
-examples: C<Apache::Wyrd::CSSGene>, C<Apache::Wyrd::Lookup>,
-C<Apache::Wyrd::Table>.
-
-See the MANIFEST.
 
 =head1 LICENSE
 

@@ -5,7 +5,7 @@ use base qw(Apache::Wyrd::Interfaces::IndexUser Apache::Wyrd);
 use BerkeleyDB;
 use BerkeleyDB::Btree;
 use Apache::Util;
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 
 =pod
 
