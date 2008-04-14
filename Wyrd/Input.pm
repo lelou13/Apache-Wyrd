@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Input;
-our $VERSION = '0.96';
+our $VERSION = '0.97';
 use Apache::Wyrd::Datum;
 use base qw(Apache::Wyrd::Interfaces::Setter Apache::Wyrd::Interfaces::SmartInput Apache::Wyrd);
 use Apache::Wyrd::Services::SAK qw(token_parse);
@@ -147,6 +147,13 @@ Required.  The type of the Input.
 =item flags
 
 =over
+
+=item allow_zero
+
+By default, a value of zero is not considered a valid value, and a value of zero
+will trigger an error if the required flag is set.  This flag will allow values
+that are mathematically equivalent to zero.  It may become the default behavior
+in future versions of this Wyrd.
 
 =item escape
 
@@ -456,15 +463,15 @@ Built-in templates are text, textarea, password
 =cut
 
 sub _template_text {
-	return '<input type="text" name="$:param" value="$:value"?:size{ size="$:size"}?:class{ class="$:class"}?:id{ id="$:id"}?:maxlength{ maxlength="$:maxlength"}?:tabindex{ tabindex="$:tabindex"}?:accesskey{ accesskey="$:tabindex"}?:onchange{ onchange="$:onchange"}?:onselect{ onselect="$:onselect"}?:onblur{ onblur="$:onblur"}?:onfocus{ onfocus="$:onfocus"}?:onkeydown{ onkeydown="$:onkeydown"}?:autocomplete{ autocomplete="$:autocomplete"}?:disabled{ disabled}?:readonly{ readonly}>';
+	return '<input type="text" name="$:param" value="$:value"?:size{ size="$:size"}?:class{ class="$:class"}?:style{ style="$:style"}?:id{ id="$:id"}?:maxlength{ maxlength="$:maxlength"}?:tabindex{ tabindex="$:tabindex"}?:accesskey{ accesskey="$:tabindex"}?:onchange{ onchange="$:onchange"}?:onselect{ onselect="$:onselect"}?:onblur{ onblur="$:onblur"}?:onfocus{ onfocus="$:onfocus"}?:onkeydown{ onkeydown="$:onkeydown"}?:autocomplete{ autocomplete="$:autocomplete"}?:disabled{ disabled}?:readonly{ readonly}>';
 }
 
 sub _template_textarea {
-	return '<textarea name="$:param"?:cols{ cols="$:cols"}?:rows{ rows="$:rows"}?:wrap{ wrap="$:wrap"}?:id{ id="$:id"}?:class{ class="$:class"}?:tabindex{ tabindex="$:tabindex"}?:accesskey{ accesskey="$:accesskey"}?:onblur{ onblur="$:onblur"}?:onchange{ onchange="$:onchange"}?:onfocus{ onfocus="$:onfocus"}?:onselect{ onselect="$:onselect"}?:disabled{ disabled}?:readonly{ readonly}>$:value</textarea>';
+	return '<textarea name="$:param"?:cols{ cols="$:cols"}?:rows{ rows="$:rows"}?:wrap{ wrap="$:wrap"}?:id{ id="$:id"}?:class{ class="$:class"}?:style{ style="$:style"}?:tabindex{ tabindex="$:tabindex"}?:accesskey{ accesskey="$:accesskey"}?:onblur{ onblur="$:onblur"}?:onchange{ onchange="$:onchange"}?:onfocus{ onfocus="$:onfocus"}?:onkeypress{ onkeypress="$:onkeypress"}?:disabled{ disabled}?:readonly{ readonly}>$:value</textarea>';
 }
 
 sub _template_password {
-	return '<input type="password" name="$:param" value="$:value"?:size{ size="$:size"}?:id{ id="$:id"}?:maxlength{ maxlength="$:maxlength"}?:class{ class="$:class"}?:tabindex{ tabindex="$:tabindex"}?:accesskey{ accesskey="$:tabindex"}?:onchange{ onchange="$:onchange"}?:onselect{ onselect="$:onselect"}?:onblur{ onblur="$:onblur"}?:onfocus{ onfocus="$:onfocus"}?:onkeydown{ onkeydown="$:onkeydown"}?:autocomplete{ autocomplete="$:autocomplete"}?:disabled{ disabled}?:readonly{ readonly}>';
+	return '<input type="password" name="$:param" value="$:value"?:size{ size="$:size"}?:id{ id="$:id"}?:maxlength{ maxlength="$:maxlength"}?:class{ class="$:class"}?:style{ style="$:style"}?:tabindex{ tabindex="$:tabindex"}?:accesskey{ accesskey="$:tabindex"}?:onchange{ onchange="$:onchange"}?:onselect{ onselect="$:onselect"}?:onblur{ onblur="$:onblur"}?:onfocus{ onfocus="$:onfocus"}?:onkeydown{ onkeydown="$:onkeydown"}?:autocomplete{ autocomplete="$:autocomplete"}?:disabled{ disabled}?:readonly{ readonly}>';
 }
 
 sub _template_hidden {
@@ -567,7 +574,7 @@ sub final_output {
 		$values{$value} = $self->{$value};
 	}
 	#If by now the input has no value, try to give it one from CGI, the form, or default in that order;
-	unless ($values{'value'} or $self->_flags->reset) {
+	unless ($values{'value'} or $self->_flags->reset or ($self->_flags->allow_zero and $values{'value'}=~ /^\s*0?E?[+\-]?\s*0(\.0+)?\s*/)) {
 		my ($value, $success) = $self->{'_parent'}->_get_value($self->{'name'});
 		$values{'value'} = ($value || $self->{'_parent'}->{'_variables'}->{$self->{'name'}} || $self->{'default'} || '');
 	}

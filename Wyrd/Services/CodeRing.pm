@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::CodeRing;
-our $VERSION = '0.96';
+our $VERSION = '0.97';
 use Apache::Wyrd::Services::SAK qw(lc_hash);
 use Apache::Wyrd::Services::Key;
 use Digest::SHA qw(sha1_hex);
@@ -157,7 +157,7 @@ sub decrypt {
 		$plaintext .= $self->{'cypher'}->decrypt($block);
 	}
 	#remove tail nulls and all trailing garbage
-	$plaintext =~ s/\0([A-Fa-f0-9]{40})\0*$//s;
+	$plaintext =~ s/\0([A-Fa-f0-9]{40})\0*.*$//s;
 	my $crc = sha1_hex($plaintext);
 	#If the CRC check fails, assume the key is bad and return null;
 	$plaintext = '' if ($crc ne $1);

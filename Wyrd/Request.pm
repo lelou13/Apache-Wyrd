@@ -4,20 +4,39 @@ use warnings;
 no warnings qw(uninitialized redefine);
 
 package Apache::Wyrd::Request;
-our $VERSION = '0.96';
+our $VERSION = '0.97';
+
+#set environment variables WYRD_USE_CGI or WYRD_USE_APR
+#to force the use of libapreq or CGI
+my $force_apr = 0;
+my $force_cgi = 0;
+if ($ENV{WYRD_USE_CGI}) {
+	$force_cgi = 1;
+}
+if ($ENV{WYRD_USE_APR}) {
+	$force_apr = 1;
+}
+
 my $have_apr = 1;
-eval ('use Apache::Request');
-if ($@) {
-	eval ('use CGI qw(param)');
+my $init_error = '';
+if (!$force_cgi) {
+	eval('use Apache::Request');
+	if ($@) {
+		$init_error = $@;
+		die "$@" if ($force_apr);
+	}
+}
+if ($init_error or $force_cgi) {
+	eval('use CGI qw(param)');
 	die "$@" if ($@);
-	$have_apr=0;
+	$have_apr = 0;
 }
 
 =pod
 
 =head1 NAME
 
-Apache::Wyrd::Request - Object for unifying libapreq configurations across Wyrds
+Apache::Wyrd::Request - Unified libapreq configuration or libapreq replacement
 
 =head1 SYNOPSIS
 
@@ -33,12 +52,22 @@ in Apache config:
 Wrapper for C<Apache::Request> or C<CGI> object with C<Apache::Request>-type
 assurances that this is the first and only invocation for this
 PerlResponseHandler.  The wrapper is for the convenience of allowing a
-consistent set of parameters to be used in initializing the
-C<Apache::Request> object between stacked/different handlers.
+consistent set of parameters to be used in initializing the C<Apache::Request>
+object between stacked/different handlers.
 
-These parameters are handed to the object via the RequestParms directory
-config variable.  As this is a hash, items must be added in pairs using
-PerlSetVar and PerlAddVar as shown in the SYNOPSIS.
+These parameters are handed to the object via the RequestParms directory config
+variable.  As this is a hash, items must be added in pairs using PerlSetVar and
+PerlAddVar as shown in the SYNOPSIS.
+
+If libapreq/C<Apache::Request> is not installed, the object provides a unified
+interface to the CGI parameters via the CGI module.  When libapreq is not
+installed, this behavior will be automitically invoked.  If neither are
+available, it will call C<die()>, causing a server error.
+
+You can force the use of C<Apache::Request> or C<CGI> by setting the
+WYRD_USE_CGI or WYRD_USE_APR environment variables.  If the forced module fails
+to load, the module will C<die()>, causing a server error.  Note that this also
+affects the behavior of C<Apache::Wyrd::Cookie>.
 
 =head1 METHODS
 

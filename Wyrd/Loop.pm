@@ -1,12 +1,12 @@
+package Apache::Wyrd::Loop;
 use 5.006;
 use strict;
 use warnings;
 no warnings qw(uninitialized);
-
-package Apache::Wyrd::Loop;
-our $VERSION = '0.96';
 use base qw (Apache::Wyrd::Interfaces::Setter Apache::Wyrd::Interfaces::Stealth Apache::Wyrd);
 use Apache::Wyrd::Services::SAK qw(:db);
+
+our $VERSION = '0.97';
 
 =pod
 

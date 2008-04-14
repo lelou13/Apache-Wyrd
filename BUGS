@@ -1,6 +1,7 @@
 List of known problems:
 
--	Apache2 incompatible.
+-	Apache2 incompatible.  An Apache2::Wyrd framework is in the works, though
+	it may be released as a context-sensitive wrapper class.
 
 -	Base Wyrd object should be either more seperable or totally inseperable
 	from an Apache::Wyrd::DBL object.
@@ -8,9 +9,11 @@ List of known problems:
 -	General audit needed to enforce object-model integrity and
 	interface consistency.
 
+-	Use of one-argument "open()" and "system()" calls.  To be audited out.
+
 -	Concurrent access modes (CDB_<FOO>)of the BerkeleyDB module have
 	not been widely tested, and the BerkeleyDB Index is scheduled for
-	demolition.
+	demolition before the 1.0 release.
 
 List of known problems which will not be fixed, and why:
 
@@ -40,3 +43,8 @@ List of known problems which will not be fixed, and why:
 	functionally incompatible with the idea of a "non-parsed-header"
 	document:  It makes more sense to use something else hand-coded if you
 	need to do that.
+
+-	The labor cost of converting the framework to D.C.'s spiffy new "Best
+	Practices" at this point outweigh the benefits.  Even the Apache2 port
+	will not need sufficient rewriting.  Current style is consistent where
+	required, and many of the more important best practices are already used.

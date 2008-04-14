@@ -4,7 +4,7 @@ use base qw(Apache::Wyrd::Bot);
 use Apache::Wyrd::Services::SAK qw(:file);
 use HTTP::Request::Common;
 use BerkeleyDB;
-our $VERSION = '0.96';
+our $VERSION = '0.97';
 
 =pod
 

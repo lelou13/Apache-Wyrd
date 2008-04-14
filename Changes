@@ -1,6 +1,46 @@
 Changes
 =======
 
+    0.97   April 14, 2008
+
+           Minor changes to Inputs and Form interaction to allow zero non-null
+           values where they would normally be forbidden.
+
+           Security enhancement where any submitted data containing a string
+           that can be interpreted as a Wyrd is dropped unless an exception is
+           explicitly made for it in the initialization data passed to
+           Apache::Wyrd::DBL by Apache::Wyrd::Handler.  This is to prevent
+           user-submitted data from being executed if it is displayed on a page.
+
+           Setting the environment variables WYRD_USE_CGI and WYRD_USE_APR can
+           be used to force the use of either CGI and CGI::Cookie or
+           Apache::Request and Apache::Cookie as the underlying modules in the
+           wrapper classes Apache::Wyrd::Request and Apache::Wyrd::Cookie.
+
+           Apache::Wyrd::Input & Apache::Wyrd::Input::Set more CSS and Java-
+           Script friendly.
+
+           Apache::DBL now relies on DBI's connect_cached connection rather
+           than doing its own caching.
+
+           Fixed a bug in Apache::Wyrd::Interfaces::Setter where interpolated
+           variables were not being sorted in some _set_xxxx functions.
+
+           Fixed a bug in Apache::Wyrd::Interfaces::Setter where defined undef-
+           equivalent but defined values were being interpreted as undefined
+
+           Apache::Wyrd::Site::GDButton now accepts a template base-image gif
+           or png
+
+           Apache::Wyrd::Services::Auth now allows an authentication session
+           to go ahead directly when the connection is on a secure port, with
+           some limits on passed variables
+
+           Apache::Wyrd::Services::Auth now passes through POST requests on
+           "DECLINED".  This allows it to be used with non-wyrd applications
+
+           Documentation changes
+
     0.96   May 1, 2007
 
            Apache::Wyrd::Site::IndexBot uses basefile for index date tracking

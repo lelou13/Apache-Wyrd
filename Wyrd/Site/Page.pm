@@ -9,7 +9,7 @@ use base qw(
 use Apache::Wyrd::Services::SAK qw(token_parse strip_html);
 use Apache::Wyrd::Services::FileCache;
 use Digest::SHA qw(sha1_hex);
-our $VERSION = '0.96';
+our $VERSION = '0.97';
 
 #state of the widgets is stored by an alphanumeric code where a=1 and Z=62, limiting
 #widget controls to 62 states and widgets to 62 controls
@@ -455,7 +455,7 @@ Examine the allow/deny state of the page and determine whether the user has the
 clearance to view the page.  These interact with Apache::Wyrd::User-derived
 objects using the Apache::Wyrd::Services::Auth conventions to determine the
 user's current authorization levels.  If the page is forbidden to the public, it
-will use the dir_config value "UnaauthURL" to direct them to an "unauthorized
+will use the dir_config value "UnauthURL" to direct them to an "unauthorized
 page", presumably to be prompted to log in, or failing the existence of that,
 simply return an error message.
 

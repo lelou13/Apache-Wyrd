@@ -2,10 +2,10 @@
 use 5.006;
 use strict;
 use warnings;
-our $VERSION = '0.96';
 use base qw(Apache::Wyrd::Interfaces::Setter Apache::Wyrd);
 use Apache::Wyrd::Services::SAK qw(slurp_file);
 use XML::Dumper;
+our $VERSION = '0.97';
 
 =pod
 

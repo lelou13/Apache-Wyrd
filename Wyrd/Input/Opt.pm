@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Input::Opt;
-our $VERSION = '0.96';
+our $VERSION = '0.97';
 use Apache::Wyrd::Datum;
 use base qw(Apache::Wyrd::Interfaces::Setter Apache::Wyrd);
 =pod
@@ -43,10 +43,6 @@ onchange
 
 =item *
 
-onselect
-
-=item *
-
 onblur
 
 =item *
@@ -60,7 +56,8 @@ disabled
 =back
 
 B<disabled> is set if the attribute B<disable> is set to some value or
-if the disabled B<flag> is set.
+if the disabled B<flag> is set.  Unlike in some versions of HTML tags,
+disabled on its own in a tag does not disable the Opt Wyrd.
 
 =over
 
@@ -72,6 +69,17 @@ The value this option will represent
 
 The label this option will have (Optional).  If not set, the label will
 be the same as the name.
+
+=item flags
+
+=over
+
+=item break
+
+By default, radio button and checkbox choices override breaking whitespace.
+This flag disables that override.
+
+=back
 
 =back
 
@@ -117,9 +125,10 @@ interface.
 
 sub radiobutton {
 	my ($self) = @_;
-	my $template = q(<nobr><input type="radio" name="$:name" value="$:option"$:option_on?:class{ class="$:class"}?:style{ style="$:style"}?:onchange{ onchange="$:onchange"}?:onselect{ onselect="$:onselect"}?:onblur{ onblur="$:onblur"}?:onfocus{ onfocus="$:onfocus"}?:disabled{ disabled}>$:option_text</input></nobr>);
+	my $template = q(<nobr><input type="radio" name="$:name" value="$:option"$:option_on?:id{ id="$:id"}?:class{ class="$:class"}?:style{ style="$:style"}?:onchange{ onchange="$:onchange"}?:onfocus{ onfocus="$:onfocus"}?:onblur{ onblur="$:onblur"}?:onclick{ onclick="$:onclick"}?:label{ label="$:label"}?:disabled{ disabled}>$:option_text</input>!:break{</nobr>});
 	$self->{'disabled'} = 1 if ($self->_flags->disabled);
-	my %hash = map {$_ => $self->{$_}} qw(class style onchange onselect onblur onfocus disabled);
+	$self->{'break'} = 1 if ($self->_flags->break);
+	my %hash = map {$_ => $self->{$_}} qw(id class style onchange onfocus onblur onclick label disabled break);
 	return $self->_set(\%hash, $template);
 }
 
@@ -135,10 +144,10 @@ interface.
 
 sub checkbox {
 	my ($self) = @_;
-	my $template = q(!:break{<nobr>}<input type="checkbox" name="$:name" value="$:option"$:option_on?:class{ class="$:class"}?:style{ style="$:style"}?:onchange{ onchange="$:onchange"}?:onselect{ onselect="$:onselect"}?:onblur{ onblur="$:onblur"}?:onfocus{ onfocus="$:onfocus"}?:disabled{ disabled}>$:option_text</input>!:break{</nobr>});
+	my $template = q(!:break{<nobr>}<input type="checkbox" name="$:name" value="$:option"$:option_on?:id{ id="$:id"}?:class{ class="$:class"}?:style{ style="$:style"}?:onchange{ onchange="$:onchange"}?:onfocus{ onfocus="$:onfocus"}?:onblur{ onblur="$:onblur"}?:onclick{ onclick="$:onclick"}?:label{ label="$:label"}?:disabled{ disabled}>$:option_text</input>!:break{</nobr>});
 	$self->{'disabled'} = 1 if ($self->_flags->disabled);
 	$self->{'break'} = 1 if ($self->_flags->break);
-	my %hash = map {$_ => $self->{$_}} qw(class style onchange onselect onblur onfocus disabled break);
+	my %hash = map {$_ => $self->{$_}} qw(id class style onchange onfocus onblur onclick label disabled break);
 	return $self->_set(\%hash, $template);
 }
 
@@ -154,9 +163,9 @@ interface.
 
 sub option {
 	my ($self) = @_;
-	my $template = q(<option value="$:option"$:option_on?:class{ class="$:class"}?:onchange{ onchange="$:onchange"}?:onselect{ onselect="$:onselect"}?:onblur{ onblur="$:onblur"}?:onfocus{ onfocus="$:onfocus"}?:disabled{ disabled}>$:option_text</option>);
+	my $template = q(<option value="$:option"$:option_on?:id{ id="$:id"}?:class{ class="$:class"}?:style{ style="$:style"}?:onchange{ onchange="$:onchange"}?:onfocus{ onfocus="$:onfocus"}?:onblur{ onblur="$:onblur"}?:onclick{ onclick="$:onclick"}?:label{ label="$:label"}?:disabled{ disabled}>$:option_text</option>);
 	$self->{'disabled'} = 1 if ($self->_flags->disabled);
-	my %hash = map {$_ => $self->{$_}} qw(class onchange onselect onblur onfocus disabled);
+	my %hash = map {$_ => $self->{$_}} qw(id class style onchange onfocus onblur onclick label disabled);
 	return $self->_set(\%hash, $template);
 }
 
@@ -175,7 +184,7 @@ Reserves the _format_output, _generate_output, and final_output methods.
 sub _format_output {
 	my ($self) = @_;
 	$self->{'value'} ||= ($self->{'_data'});
-	$self->_raise_exception("Opt must have at least a name or value") unless ($self->{'name'} or $self->{'value'});
+	$self->_raise_exception("Opt must have at least a name or value") unless ($self->{'name'} or $self->{'value'} or $self->{'name'} =~ /0/);
 	$self->_raise_exception("Opt needs to be inside an Input::Set") unless ($self->{'_parent'}->can('register_child'));
 	$self->{'_id'} = $self->{'_parent'}->register_child($self);
 	$self->{'_template'} = $self->_data;

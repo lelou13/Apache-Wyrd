@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Interfaces::GetUser;
-our $VERSION = '0.96';
+our $VERSION = '0.97';
 use Apache::Wyrd::Cookie;
 
 =pod

@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::Auth;
-our $VERSION = '0.96';
+our $VERSION = '0.97';
 use Apache::Wyrd::Services::CodeRing;
 use Apache::Wyrd::Services::TicketPad;
 use Digest::SHA qw(sha256_hex);
@@ -99,6 +99,19 @@ originally-requested URL via the challenge CGI variable.  As the Auth
 object will again be in the stack, it will receive the challenge per the
 first paragraph of this description.
 
+Under SSL, instead, the Auth module checks for a user with appropriate
+clearance.  Not finding one, it will expect to find the username and password
+under CGI variables of those names.  If found, it will attempt athentication.
+If this fails, as above, the browser will be redirected to the login URL.
+Instead of a LoginServer, however, the login form will be expected to attempt
+the URL it was refused in the first place, and will return the browser
+to the login page on each subsequent failure until a login succeeds.
+
+Note that under SSL, since CGI variables are scanned for authentication
+information, any CGI variables being passed prior to authentication will be
+lost in the subsequent re-direction which checks for browser cookie acceptance.
+If you wish to avoid this behavior, set the LSForce PerlVar directive to 1.
+
 =head2 METHODS
 
 I<(format: (returns) name (arguments after self))>
@@ -119,21 +132,24 @@ sub handler : method {
 	}
 	my $self = {};
 	bless ($self, $class);
-	my $apr = Apache::Wyrd::Request->instance($req);
 	my $scheme = 'http';
-	$scheme = 'https' if ($req->server->port == 443);
+	$scheme = 'https' if ($ENV{'HTTPS'} eq 'on');
 	my $port = '';
 	$port = ':' . $req->server->port unless ($req->server->port == 80);
-	my $challenge_failed = ($apr->param('ls_error') || '');
+	my $challenge_failed = '';
 	my $debug = $self->{'debug'} = $req->dir_config('Debug');
 	my $user_object = $self->{'user_object'} = $req->dir_config('UserObject');
 	my $auth_path = $self->{'ticketfile'} = $req->dir_config('AuthPath');
 	my $ticketfile = $self->{'ticketfile'} = $req->dir_config('KeyDBFile') || '/tmp/keyfile';
 	my $challenge_param = $self->{'challenge_param'} = $req->dir_config('ChallengeParam') || 'challenge';
-	my $key_url = $self->{'key_url'} = $req->dir_config('LSKeyURL')
-		|| die "Must define LSKeyURL in Apache Config to use Apache::Wyrd::Services::Auth on an insecure port.";
-
-	die "Must define UserObject in Apache Config to use Apache::Wyrd::Services::Auth." unless ($user_object);
+	my $key_url = $self->{'key_url'} = $req->dir_config('LSKeyURL');
+	my $force_login_server = $req->dir_config('LSForce');
+	if (!$key_url and ($scheme eq 'http' or $force_login_server)) {
+		die "Must define LSKeyURL in Apache Config to use Apache::Wyrd::Services::Auth on an insecure port.";
+	}
+	unless ($user_object) {
+		die "Must define UserObject in Apache Config to use Apache::Wyrd::Services::Auth.";
+	}
 	my $cr = Apache::Wyrd::Services::CodeRing->new;
 	my %cookie = Apache::Wyrd::Cookie->fetch;
 	my $user_info = undef;
@@ -179,36 +195,41 @@ sub handler : method {
 	if ($user_info) {
 		$req->notes->add('User' => $user_info);
 		return DECLINED;
-	} else {
+	}
 
-		#is there a challenge variable from the Login Server?
-		my $challenge = $apr->param($challenge_param);
-		$apr->param($challenge_param, '');
-		if ($challenge) {
-			$debug && warn('challenge ' . "'$challenge'" . ' decrypts to ' . join(':', $self->decrypt_challenge($challenge)));
-			my ($username, $password) = $self->decrypt_challenge($challenge);
-			if ($username) {
-				my $user = $self->initialize({username => $username, password => $password});
-				if ($user->login_ok) {
-					$self->authorize_user($req, $user);
-					my $uri = $req->uri;
-					$uri = Apache::URI->parse($uri);
-					#remove the challenge portion of the query string
-					my $query_string = $uri->query;
-					$query_string =~ s/challenge=[0123456789abcdefABCDEF:]+\&?//g;
-					$query_string =~ s/\&$//;
-					$query_string = '?' . $query_string if ($query_string);
-					my $self = $scheme . '://' . $req->hostname . $port . $req->uri . $query_string;
-					$req->custom_response(REDIRECT, $self);
-					return REDIRECT;
-				} else {
-					$debug && warn('challenge was bad, trying regular login again.');
-					$challenge_failed = ($user->auth_error || 'Incorrect Username/Password.  Please log in again.');
-				}
+	#This won't be declined, now, so we can parse any GET/POST requests
+	my $apr = Apache::Wyrd::Request->instance($req);
+
+	#is there a failed challenge?
+	$challenge_failed = ($apr->param('ls_error') || '');
+
+	#is there a challenge variable from the Login Server?
+	my $challenge = $apr->param($challenge_param);
+	$apr->param($challenge_param, '');
+	if ($challenge) {
+		$debug && warn('challenge ' . "'$challenge'" . ' decrypts to ' . join(':', $self->decrypt_challenge($challenge)));
+		my ($username, $password) = $self->decrypt_challenge($challenge);
+		if ($username) {
+			my $user = $self->initialize({username => $username, password => $password});
+			if ($user->login_ok) {
+				$self->authorize_user($req, $user);
+				my $uri = $req->uri;
+				$uri = Apache::URI->parse($uri);
+				#remove the challenge portion of the query string
+				my $query_string = $uri->query;
+				$query_string =~ s/challenge=[0123456789abcdefABCDEF:]+\&?//g;
+				$query_string =~ s/\&$//;
+				$query_string = '?' . $query_string if ($query_string);
+				my $self = $scheme . '://' . $req->hostname . $port . $req->uri . $query_string;
+				$req->custom_response(REDIRECT, $self);
+				return REDIRECT;
 			} else {
-				$debug && warn('challenge could not be decrypted, trying regular login again.');
-				$challenge_failed = ($user->auth_error || 'Could not process the login because of system maintenance.  Please try again.');
+				$debug && warn('challenge was bad, trying regular login again.');
+				$challenge_failed = ($user->auth_error || 'Incorrect Username/Password.  Please log in again.');
 			}
+		} else {
+			$debug && warn('challenge could not be decrypted, trying regular login again.');
+			$challenge_failed = ($user->auth_error || 'Could not process the login because of system maintenance.  Please try again.');
 		}
 	}
 
@@ -227,7 +248,7 @@ sub handler : method {
 	#if we have no knowledge of whether the browser can accept cookies at this point,
 	#put it to the test by setting the cookie and forcing the browser to reload this page,
 	#with the cookie_check variable set.
-	} else {
+	} elsif($scheme ne 'https') {
 		unless ($cookie{'check_cookie'}) {
 			my $cookie = Apache::Wyrd::Cookie->new(
 				$req,
@@ -256,7 +277,7 @@ sub handler : method {
 
 	#require an SSL login server if this is an insecure port (currently always).
 	#in future, 1 will be replaced with a test for SSL encryption.
-	if (1 or $req->dir_config('LSForce')) {
+	if (($ENV{'HTTPS'} ne 'on') or $force_login_server) {
 
 		#Get an encryption key and a ticket number
 		my ($key, $ticket) = $self->generate_ticket;
@@ -280,7 +301,11 @@ sub handler : method {
 
 		#If the key can't be saved on the login server, send regrets and close
 		if ($status !~ /200|OK/) {
-			$debug && warn ("Login Server status was $status");
+			if ($status =~ /Invalid argument/i) {
+				$debug && warn ("You may need to Update IO::Socket::SSL");
+			} else {
+				$debug && warn ("Login Server status was $status");
+			}
 			my $failed_url = $req->dir_config('LSDownURL');
 			$failed_url = $scheme . '://' . $req->hostname . $port . $failed_url unless ($failed_url =~ /^http/i);
 			if ($failed_url) {
@@ -321,9 +346,46 @@ sub handler : method {
 			}
 		}
 
-	#Since we are using SSL, we can accept login information.
+	#Since we are using SSL, we can accept login information as normal CGI params.
 	} else {
-		#never get here.
+		my $username = $apr->param('username');
+		my $password = $apr->param('password');
+		my $login_failed = '';
+		if ($username) {
+			my $user = $self->initialize({username => $username, password => $password});
+			if ($user->login_ok) {
+				$self->authorize_user($req, $user);
+				my $uri = $req->uri;
+				$uri = Apache::URI->parse($uri);
+				my $redirect = $scheme . '://' . $req->hostname . $port . $req->uri . '?check_cookie=yes';
+				$debug && warn('Setting a cookie, with redirect going to ' . $redirect);
+				$req->custom_response(REDIRECT, $redirect);
+				return REDIRECT;
+			}
+			$login_failed = 'Login failed.  Please check your username and password.';
+			$debug && warn('Login failed.');
+		} else {
+			$debug && warn('Login was not provided.');
+		}
+		my $use_error = $req->dir_config('ReturnError');
+		my $login_url = $req->dir_config('LoginFormURL');
+		$login_url = $scheme . '://' . $req->hostname . $port . $login_url unless ($login_url =~ /^http/i);
+		my $ls_url = $scheme . '://' . $req->hostname . $port . $req->uri;
+		if ($login_url) {
+			my $uri = $req->uri;
+			$uri = Apache::URI->parse($uri);
+			my $on_success = Apache::Util::escape_uri(encode_base64($scheme . '://' . $req->hostname . $port . $req->uri));
+			my $redirect = $login_url .
+				'?ls=' . $ls_url .
+				'&on_success=' . $on_success .
+				'&use_error=' . $use_error.
+				($login_failed ? '&'. $use_error . '=' . $login_failed : '');
+			$debug && warn('Need a login, with redirect going to ' . $redirect);
+			$req->custom_response(REDIRECT, $redirect);
+			return REDIRECT;
+		} else {
+			die "Must define LoginFormURL in Apache Config to use Apache::Wyrd::Services::Auth";
+		}
 	}
 }
 
@@ -449,29 +511,21 @@ Send error back to the Login URL via the given variable (optional)
 
 =item LSKeyURL
 
-Login Server URL for key (required for now)
+Login Server URL for key (required when a Login Server is being used)
 
 =item LSLoginURL
 
-Login Server URL for login (required for now)
+Login Server URL for login (when a Login Server is being used)
 
 =item LSForce
 
-Force the use of a Login Server on an SSL port 443 server  (required on
-https for now)
+Force the use of a Login Server on an HTTPS connection rather than attempting
+to authenticate directly through the username and password CGI variables.
 
 =item LSDownURL
 
 URL to redirect to when Login Server is down. (optional, but
 recommended)
-
-=item UserVar
-
-CGI param for username if not 'username'
-
-=item PassVar
-
-CGI param for password if not 'password'
 
 =item Debug
 
@@ -483,6 +537,11 @@ credentials.
 
 Require a fixed client address for the session (less compatible with some
 ISPs) (0 for default no, 1 for yes)
+
+=item UserObject
+
+The (text) name of the perl object which represents the user for this
+authentication (see C<Apache::Wyrd::User>).
 
 =back
 

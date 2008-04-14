@@ -1,6 +1,6 @@
 package Apache::Wyrd::Site::GDButton;
 use strict;
-our $VERSION = '0.96';
+our $VERSION = '0.97';
 use base qw(Apache::Wyrd::Interfaces::Setter Apache::Wyrd::Site::Widget Apache::Wyrd);
 use Apache::Wyrd::Services::SAK qw(:file token_parse);
 use Apache::Util;
@@ -39,13 +39,22 @@ attribute of the same to reflect the location of the output file.  This file
 must end in either .png or .gif.  The format of the output file will be
 determined by this file extension.
 
+=item template
+
+What file to use as a base image for this button.  It is located in the same way
+the src file is.  The file can be a GIF or PNG file (it will need to have the
+right file extension of .gif or .png, case insensitive).  The template file is
+copied to memory and then written to the file area indicated by the src
+attribute.
+
 =item width, height
 
-(required) in pixels.
+(required w/o template) in pixels.
 
 =item bgcolor, color
 
-(required) background and foreground color, in six-digit hex form (#RRGGBB).
+(required w/o template) background and foreground color, in six-digit hex form
+(#RRGGBB).
 
 =item size
 
@@ -88,9 +97,9 @@ Reserves the _format_output and _generate_output methods.
 
 sub _format_output {
 	my ($self) = @_;
-	my @required_attributes = qw(src name outfile);
+	my @required_attributes = qw(src name outfile bgcolor color size font);
 	unless ($self->{'template'}) {
-		push @required_attributes, qw(width height bgcolor color size font);
+		push @required_attributes, qw(width height);
 	}
 	my @optional_attributes = qw(margin lmargin rmargin bmargin tmargin halign valign);
 	my $defaults = $self->_defaults;
@@ -121,11 +130,30 @@ sub _generate_output {
 		my $antialias = 1;
 		$antialias = -1 if ($self->_flags->noantialias);
 
-		#Draw everything at 5 times the given size, since font shape and spacing issues are less prominent
-		my $image= GD::Image->new($self->{'width'} * 5, $self->{'height'} * 5);
-		my $bg = $image->colorAllocate($self->_get_color($self->{'bgcolor'}));
+		#prep the background and allocate the foreground
+		my ($image, $base_image) = ();
+		my $template = $self->{'template'};
+		if ($template) {
+			my $type = $self->{'template'} =~ /\.(png|gif)/i;
+			unless ($type) {
+				$self->_raise_exception('template base image must be PNG or GIF.');
+			}
+			if (lc($type) eq 'gif') {
+				$base_image = GD::Image->newFromGif($template);
+			} else {
+				$base_image = GD::Image->newFromPng($template);
+			}
+			my $width = $self->{'width'} = $base_image->width;
+			my $width = $self->{'height'} = $base_image->height;
+			$image = GD::Image->new($self->{'width'} * 5, $self->{'height'} * 5);
+			$image->copyResampled($base_image, 0, 0, 0, 0, $self->{'width'} * 5, $self->{'height'} * 5, $self->{'width'}, $self->{'height'});
+		} else {
+			#Draw everything at 5 times the given size, since font shape and spacing issues are less prominent
+			$image= GD::Image->new($self->{'width'} * 5, $self->{'height'} * 5);
+			my $bg = $image->colorAllocate($self->_get_color($self->{'bgcolor'}));
+			$image->filledRectangle(0, 0, $self->{'width'} * 5, $self->{'height'} * 5, $bg);
+		}
 		my $fg = $image->colorAllocate($self->_get_color($self->{'color'}));
-		$image->filledRectangle(0, 0, $self->{'width'} * 5, $self->{'height'} * 5, $bg);
 
 		#First get the size of the text image.  Since font shapes falling below
 		#the drawing line will throw off the placment, this value will be taken
@@ -149,7 +177,7 @@ sub _generate_output {
 	}
 
 	#attempt to preserve any normal IMG or INPUT attributes
-	my @attrs =  qw(name id action method alt src align onmouseover onmouseout onclick border height width ismap longdesc usemap);
+	my @attrs =  qw(name id action method alt src align onmouseover onmouseout onclick border height width ismap longdesc usemap class style);
 	my %attrs =  map {$_ => $self->{$_}} @attrs;
 	$attrs{'src'} = Apache::Util::escape_uri($attrs{'src'});
 	if ($self->{'type'} eq 'input') {

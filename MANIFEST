@@ -120,6 +120,7 @@ Wyrd/Services/SearchParser.pm
 Wyrd/Services/TicketPad.pm
 Wyrd/Services/Tree.pm
 Wyrd/ShowParams.pm
+Wyrd/Site.pod
 Wyrd/Site/GDButton.pm
 Wyrd/Site/Index.pm
 Wyrd/Site/IndexBot.pm
@@ -135,7 +136,6 @@ Wyrd/Site/TagPull.pm
 Wyrd/Site/Widget.pm
 Wyrd/Site/WidgetControl.pm
 Wyrd/Site/WidgetIndex.pm
-Wyrd/Site.pod
 Wyrd/SQLForm.pm
 Wyrd/Template.pm
 Wyrd/User.pm

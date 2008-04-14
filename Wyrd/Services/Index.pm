@@ -3,7 +3,7 @@ use 5.006;
 use strict;
 use warnings;
 no warnings qw(uninitialized);
-our $VERSION = '0.96';
+our $VERSION = '0.97';
 use Apache::Wyrd::Services::SAK qw(token_parse strip_html utf8_force utf8_to_entities);
 use Apache::Wyrd::Services::SearchParser;
 use BerkeleyDB;

@@ -2,7 +2,7 @@ use strict;
 use warnings;
 package Apache::Wyrd::Interfaces::Dater;
 use Date::Calc qw(Add_Delta_Days Add_Delta_YMD);
-our $VERSION = '0.96';
+our $VERSION = '0.97';
 
 =pod
 

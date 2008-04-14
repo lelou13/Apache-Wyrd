@@ -1,5 +1,3 @@
-#Copyright barry king <barry@wyrdwright.com> and released under the GPL.
-#See http://www.gnu.org/licenses/gpl.html#TOC1 for details
 use 5.006;
 use strict;
 use warnings;
@@ -8,7 +6,7 @@ no warnings qw(uninitialized);
 no warnings qw(redefine);
 
 package Apache::Wyrd::Datum;
-our $VERSION = '0.96';
+our $VERSION = '0.97';
 
 use constant TYPE => 0;
 use constant VALUE => 1;
@@ -181,9 +179,6 @@ sub _default_params {
 sub _check_params {
 	my ($self, $params) = @_;
 	die("enum without arrayref opts") unless (ref($params->{'options'}) eq 'ARRAY');
-	#This is only the case in some SQL engines
-	die("No more than 255 options are available in this datatype")
-		if (scalar(@{$params->{'options'}}) > 255);
 	return $params;
 }
 

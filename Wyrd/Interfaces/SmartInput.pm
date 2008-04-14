@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Interfaces::SmartInput;
-our $VERSION = '0.96';
+our $VERSION = '0.97';
 
 =pod
 

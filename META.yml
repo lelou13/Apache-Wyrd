@@ -1,7 +1,7 @@
 # http://module-build.sourceforge.net/META-spec.html
 #XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
 name:         Apache-Wyrd
-version:      0.96
+version:      0.97
 version_from: Wyrd.pm
 installdirs:  site
 requires:
@@ -13,7 +13,7 @@ requires:
     Apache::Util:                  0
     BerkeleyDB:                    0.23
     Class::Singleton:              0
-    Crypt::Blowfish_PP:            0
+    Crypt::Blowfish:               0
     DBI:                           0
     Digest::SHA:                   0
     HTML::Entities:                0
@@ -23,4 +23,4 @@ requires:
     XML::Dumper:                   0.67
 
 distribution_type: module
-generated_by: ExtUtils::MakeMaker version 6.17
+generated_by: ExtUtils::MakeMaker version 6.30

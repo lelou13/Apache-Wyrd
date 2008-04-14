@@ -34,7 +34,7 @@ I<(format: (returns) C<$wyrd-E<gt>name> (arguments))> for methods
 
 =cut
 
-our $VERSION = '0.96';
+our $VERSION = '0.97';
 our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(
 	array_4_get
@@ -557,7 +557,7 @@ sub normalize_href {
 	my ($dbl, $fragment) = @_;
 	my $req = $dbl->req;
 
-	my $default_scheme = $req->get_server_port==443 ? 'https' : 'http';
+	my $default_scheme = ($ENV{'HTTPS'} eq 'on') ? 'https' : 'http';
 	my $default_hostinfo = $req->hostname;
 	my $default_path = $dbl->self_path;
 
@@ -574,7 +574,7 @@ sub normalize_href {
 		return "$scheme://$hostinfo$fragment";
 	} else {
 		use Apache::URI;
-		my $uri =$req->parsed_uri;
+		my $uri=$req->parsed_uri;
 		return "$scheme://$hostinfo$path$fragment";
 	}
 }

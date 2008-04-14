@@ -3,7 +3,7 @@ use strict;
 use base qw(Apache::Wyrd::Input);
 use LWP::UserAgent;
 use HTTP::Request::Common;
-our $VERSION = '0.96';
+our $VERSION = '0.97';
 
 =pod
 

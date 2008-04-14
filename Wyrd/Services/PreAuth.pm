@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::PreAuth;
-our $VERSION = '0.96';
+our $VERSION = '0.97';
 use base qw(Apache::Wyrd::Services::Auth);
 use Apache::Constants qw(OK);
 use LWP::UserAgent;
@@ -46,7 +46,7 @@ sub handler : method {
 	$self->{'ticketfile'} = $req->dir_config('KeyDBFile') || '/tmp/keyfile';
 	my $debug = $req->dir_config('Debug');
 	my $scheme = 'http';
-	$scheme = 'https' if ($req->server->port == 443);
+	$scheme = 'https' if ($ENV{'HTTPS'} eq 'on');
 	my $port = '';
 	$port = ':' . $req->server->port unless ($req->server->port == 80);
 

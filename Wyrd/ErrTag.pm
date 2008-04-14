@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::ErrTag;
-our $VERSION = '0.96';
+our $VERSION = '0.97';
 use base qw(Apache::Wyrd);
 use Apache::Wyrd::Services::SAK qw(token_parse);
 

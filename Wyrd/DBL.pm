@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::DBL;
-our $VERSION = '0.96';
+our $VERSION = '0.97';
 use DBI;
 use Apache;
 use Apache::Wyrd::Request;
@@ -106,6 +106,7 @@ sub new {
 	}
 	my @standard_params = qw(
 		atime
+		base_class
 		blksize
 		blocks
 		ctime
@@ -128,6 +129,7 @@ sub new {
 		self_path
 		size
 		strict
+		taint_exceptions
 		uid
 		user
 	);
@@ -263,6 +265,33 @@ sub log_event {
 	if ($fh) {
 		print $fh (Apache::Util::escape_html($value) . "<br>\n");
 	}
+}
+
+=pod
+
+=item (hashref) C<base_class> (void)
+
+return the base class of this set of Wyrds.
+
+=cut
+
+sub base_class {
+	my ($self) = @_;
+	return $self->{'base_class'};
+}
+
+=pod
+
+=item (hashref) C<taint_exceptions> (void)
+
+Which params are allowed to contain information that could be interpreted as a
+Wyrd.
+
+=cut
+
+sub taint_exceptions {
+	my ($self) = @_;
+	return @{$self->{'taint_exceptions'} || []};
 }
 
 =pod
@@ -548,26 +577,19 @@ sub set_response {
 
 =item (DBI::DBD::handle) C<dbh> (void)
 
-Database handle object.  Will initialize a database connection on the first
-call, so as to avoid opening a database connection if the Wyrds in the file
-being serviced don't require one.
+Database handle object.  Collects database information from the initialization
+data and calls _init_db with it.
 
 =cut
 
 sub dbh {
 	my ($self) = shift;
-	return $self->{'dbh'} if ($self->{'dbh_ok'} && $self->{'dbh'}->ping);
-	if (UNIVERSAL::isa($self->{'dbh'}, 'DBI::db')) {
-		$self->{'dbh'}->disconnect;
-		$self->{'dbh'} = undef;
-		$self->{'dbh_ok'} = 0;
-	}
 	my $dba = $self->{'dba'};
 	my $db = $self->{'database'};
 	my $uname = $self->{'db_username'};
 	my $pw = $self->{'db_password'};
-	$self->_init_db($dba, $db, $uname, $pw);
-	return $self->{'dbh'} if ($self->{'dbh_ok'});
+	my $dbh = $self->_init_db($dba, $db, $uname, $pw);
+	return $dbh if ($dbh);
 	$self->log_bug('dbh was requested from DBL but no database could be initialized');
 	return;
 }
@@ -638,14 +660,32 @@ sub apr {
 
 =item (scalar/arrayref) C<param> ([scalar])
 
-Like CGI->param().
+Like CGI->param().  As a security measure, any data found in parameters which
+matches the name of the Wyrds on a given installation, I<e.g. BASENAME> is
+dropped unless the variable is named in the array of variable names stored
+by reference under the C<taint_exceptions> key of the BASENAME::Handler's
+C<init()> function.
 
 =cut
 
 sub param {
 	my ($self, $value, $set) = @_;
 	return $self->apr->param($value, $set) if (scalar(@_) > 2);
-	return $self->apr->param($value) if ($value);
+	if ($value) {
+			if (grep {$value eq $_} $self->taint_exceptions) {
+				return $self->apr->param($value);
+			}
+			my $forbidden = qr/<$self->{base_class}/;
+			if (wantarray) {
+				return grep {$_ !~ /$forbidden/} $self->apr->param($value);
+			} else {
+				my $result = $self->apr->param($value);
+				if ($result !~ /$forbidden/) {
+					return $result
+				}
+				return;
+			}
+	}
 	return $self->apr->param;
 }
 
@@ -702,9 +742,10 @@ return an interpolated version of the current url.
 sub self_url {
 	my ($self) = @_;
 	my $scheme = 'http:';
-	$scheme = 'https:' if ($self->req->server->port == 443);
+	$scheme = 'https:' if ($ENV{'HTTPS'} eq 'on');
 	return $scheme . '//' . $self->req->hostname . $self->req->parsed_uri->unparse;
 }
+
 =pod
 
 =item (internal) C<_init_db> (scalar, scalar, scalar, scalar);
@@ -712,21 +753,19 @@ sub self_url {
 open the DB connection.  Accepts a database type, a database name, a username,
 and a password.  Defaults to a mysql database.  Sets the dbh parameter and the
 dbh_ok parameter if the database connection was successful.  Meant to be called
-from C<dbh>.
+from C<dbh>.  As of version 0.97 calls connect_cached instead of attempting to
+maintain a cached connection itself.
 
 =cut
+
 
 sub _init_db {
 	my ($self, $dba, $database, $db_uname, $db_passwd) = @_;
 	my $dbh = undef;
 	$dba ||= 'mysql';
-	eval{$dbh = DBI->connect("DBI:$dba:$database", $db_uname, $db_passwd)};
+	eval{$dbh = DBI->connect_cached("DBI:$dba:$database", $db_uname, $db_passwd)};
 	$self->log_bug("Database init failed: $@") if ($@);
-	if (UNIVERSAL::isa($dbh, 'DBI::db') && $dbh->ping) {
-		$self->{'dbh_ok'} = 1;
-		$self->{'dbh'} = $dbh;
-	}
-	return;
+	return $dbh;
 }
 
 =pod

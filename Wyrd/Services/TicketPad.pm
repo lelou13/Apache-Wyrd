@@ -1,12 +1,10 @@
-#Copyright barry king <barry@wyrdwright.com> and released under the GPL.
-#See http://www.gnu.org/licenses/gpl.html#TOC1 for details
 use 5.006;
 use strict;
 use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::TicketPad;
-our $VERSION = '0.96';
+our $VERSION = '0.97';
 use BerkeleyDB;
 use BerkeleyDB::Btree;
 
@@ -61,7 +59,7 @@ sub new {
 		-Filename => $self->{'indexfile'},
 		-Flags => DB_CREATE,
 		-Env => $self->_berkeley_environment,
-		-Mode => 0600) || die('Could not tie to index file -- write operation');
+		-Mode => 0600) || die('Could not tie to index file ' . $self->{'indexfile'} . ' -- write operation');
 	my $challenge_key = 'I am he against whom no lock may hold nor fastened portal bar';
 	$challenge_key = ${$cr->encrypt(\$challenge_key)};
 	unless ($pad{'key'} eq $challenge_key) {

@@ -1,7 +1,7 @@
 package Apache::Wyrd::Site::Widget;
 use strict;
 use warnings;
-our $VERSION = '0.96';
+our $VERSION = '0.97';
 use base qw(Apache::Wyrd::Interfaces::Indexable Apache::Wyrd::Interfaces::Mother);
 use Digest::SHA qw(sha1_hex);
 

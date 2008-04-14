@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Lookup;
-our $VERSION = '0.96';
+our $VERSION = '0.97';
 use base qw (Apache::Wyrd Apache::Wyrd::Interfaces::Setter);
 use Apache::Wyrd::Services::SAK qw(:db);
 
@@ -44,9 +44,23 @@ return, and LF or "\n" will give a linefeed, the same for CRLF and
 
 an alias for C<joiner>
 
+=item no_results
+
+what HTML text to display when there are no results (optional).
+
 =item record_joiner
 
 what to join multiple values with.  Defaults to newline.
+
+=item flags
+
+=over
+
+=item nojoin
+
+Sets the record and field joiner to the null string.
+
+=back
 
 =back
 
@@ -150,9 +164,13 @@ sub _generate_output {
 		$final = $parts[0];
 	}
 	unless ($success) {
+		my $template = $self->{'no_results'};
 		#The query failed to produce results.  Report if there's an error
 		if ($sh->err) {
 			$self->_error("Error in query ($debug_query): " . $sh->errstr);
+		} elsif ($template) {
+			$self->_info("No results found, using no_results template.");
+			return $template;
 		}
 	}
 	return $final;

@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Input::Set;
-our $VERSION = '0.96';
+our $VERSION = '0.97';
 use Apache::Wyrd::Datum;
 use base qw(
 	Apache::Wyrd::Interfaces::Mother
@@ -98,6 +98,31 @@ sequence is param value, param label, param value, param label....
 Override the default behavior for parsing options or hash_options by
 using the indicated regexp as delimiter.  Defaults to commas if there
 are any or whitespace if not.
+
+=item flags
+
+=over
+
+=item noauto
+
+Do not automatically format the opt area, but allow the options and the HTML
+around them to remain.  This allows manual layout of checkboxes, etc.  This
+implies "nosort".
+
+=item nosort
+
+Do not sort the options.
+
+=item noempty
+
+Do not generate the empty option "" on pulldown menus.
+
+=item emptyname
+
+Generate the empty option on pulldown menus, but give it this name, for example
+"None".
+
+=back
 
 =back
 
@@ -226,6 +251,8 @@ sub _startup_radiobuttons {
 	my $name = $self->name;
 	my $template = qq(<input type="hidden" name="_being_submitted_$name" value="1">);
 	my $emptyname = $self->{'emptyname'};
+	my $emptyclass = $self->{'emptyclass'};
+	my $emptystyle = $self->{'emptystyle'};
 	my @objects = @{$self->{'_children'}};
 	unless ($self->_flags->nosort) {
 		@objects = sort {sort_by_ikey($a, $b, @sort)} @objects;
@@ -236,6 +263,8 @@ sub _startup_radiobuttons {
 			my $object = $self->{'_children'}->[0]->clone;
 			if ($object->can('radiobutton')) {
 				$object->{'value'} = $emptyname;
+				$object->{'class'} = $emptyclass;
+				$object->{'style'} = $emptystyle;
 				$object->{'name'} = '';
 				$self->_process_child($object);
 				unshift @objects, $object;
@@ -273,6 +302,8 @@ sub _startup_checkboxes {
 	my $name = $self->name;
 	my $template = qq(<input type="hidden" name="_being_submitted_$name" value="1">);
 	my $emptyname = $self->{'emptyname'};
+	my $emptyclass = $self->{'emptyclass'};
+	my $emptystyle = $self->{'emptystyle'};
 	$self->_raise_exception("You must define some options") unless (@{$self->{'_children'} || []});
 	my @objects = @{$self->{'_children'}};
 	unless ($self->_flags->nosort) {
@@ -284,6 +315,8 @@ sub _startup_checkboxes {
 			my $object = $self->{'_children'}->[0]->clone;
 			if ($object->can('checkbox')) {
 				$object->{'name'} = $emptyname;
+				$object->{'class'} = $emptyclass;
+				$object->{'style'} = $emptystyle;
 				$object->{'value'} = '';
 				$self->_process_child($object);
 				unshift @objects, $object;
@@ -318,6 +351,8 @@ sub _startup_selection {
 	$self->{'sort'} ||= 'value';
 	my @sort = token_parse($self->{'sort'});
 	my $emptyname = $self->{'emptyname'};
+	my $emptyclass = $self->{'emptyclass'};
+	my $emptystyle = $self->{'emptystyle'};
 	my $template = '';
 	my @objects = @{$self->{'_children'}};
 	unless ($self->_flags->nosort) {
@@ -328,6 +363,8 @@ sub _startup_selection {
 			my $object = $self->{'_children'}->[0]->clone;
 			if ($object->can('option')) {
 				$object->{'value'} = $emptyname;
+				$object->{'class'} = $emptyclass;
+				$object->{'style'} = $emptystyle;
 				$object->{'name'} = '';
 				$self->_process_child($object);
 				unshift @objects, $object;
@@ -342,8 +379,8 @@ sub _startup_selection {
 		$self->{'_' . $option . '_on_'} = undef;
 		$template .= $self->_set({option => $option, option_on => $option_on, option_text => $self->{_options}->{$option}}, $object->option);
 	}
-	my $additional = '?:size{ size="$:size"}?:class{ class="$:class"}?:onchange{ onchange="$:onchange"}?:onselect{ onselect="$:onselect"}?:onblur{ onblur="$:onblur"}?:onfocus{ onfocus="$:onfocus"}?:disabled{ disabled}';
-	my %hash = map {$_ => $self->{$_}} qw(size class onchange onselect onblur onfocus disabled);
+	my $additional = '?:size{ size="$:id"}?:id{ id="$:id"}?:class{ class="$:class"}?:style{ style="$:style"}?:onchange{ onchange="$:onchange"}?:onselect{ onselect="$:onselect"}?:onblur{ onblur="$:onblur"}?:onfocus{ onfocus="$:onfocus"}?:disabled{ disabled}';
+	my %hash = map {$_ => $self->{$_}} qw(size id class onchange onselect onblur onfocus disabled);
 	$additional = $self->_set(\%hash, $additional);
 	$self->{'_template'} = qq(<select name="\$:name"$additional multiple>\n$template\n</select>);
 }
@@ -356,7 +393,15 @@ sub _startup_pulldown {
 	$self->{'sort'} ||= 'name';
 	my @sort = token_parse($self->{'sort'});
 	my $emptyname = $self->{'emptyname'};
-	my $template = qq(<option value="">$emptyname</option>);
+	my $emptyclass = $self->{'emptyclass'};
+	if ($emptyclass) {
+		$emptyclass = qq( class="$emptyclass")
+	}
+	my $emptystyle = $self->{'emptystyle'};
+	if ($emptystyle) {
+		$emptystyle = qq( style="$emptystyle")
+	}
+	my $template = qq(<option value=""$emptyclass$emptystyle>$emptyname</option>);
 	$template = '' if ($self->_flags->noempty);
 	my @objects = @{$self->{'_children'}};
 	unless ($self->_flags->nosort) {
@@ -368,8 +413,8 @@ sub _startup_pulldown {
 		$self->{'_' . $option . '_on_'} = undef;
 		$template .= $self->_set({option => $option, option_on => $option_on, option_text => $object->value}, $object->option);
 	}
-	my $additional = '?:size{ size="$:size"}?:class{ class="$:class"}?:onchange{ onchange="$:onchange"}?:onselect{ onselect="$:onselect"}?:onblur{ onblur="$:onblur"}?:onfocus{ onfocus="$:onfocus"}?:disabled{ disabled}?:_multiple{ multiple}';
-	my %hash = map {$_ => $self->{$_}} qw(size class onchange onselect onblur onfocus disabled _multiple);
+	my $additional = '?:size{ size="$:size"}?:id{ id="$:id"}?:class{ class="$:class"}?:style{ style="$:style"}?:onchange{ onchange="$:onchange"}?:onselect{ onselect="$:onselect"}?:onblur{ onblur="$:onblur"}?:onfocus{ onfocus="$:onfocus"}?:disabled{ disabled}?:_multiple{ multiple}';
+	my %hash = map {$_ => $self->{$_}} qw(size id class onchange onselect onblur onfocus disabled _multiple);
 	$additional = $self->_set(\%hash, $additional);
 	$self->{'_template'} = qq(<select name="\$:name"$additional>\n$template\n</select>);
 }

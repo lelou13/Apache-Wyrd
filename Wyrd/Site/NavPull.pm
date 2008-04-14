@@ -2,7 +2,7 @@ package Apache::Wyrd::Site::NavPull;
 use strict;
 use base qw(Apache::Wyrd::Site::Pull);
 use Apache::Wyrd::Services::SAK qw(:hash token_parse);
-our $VERSION = '0.96';
+our $VERSION = '0.97';
 
 =pod
 
@@ -186,9 +186,11 @@ sub _format_output {
 		}
 		$id = $id->{name};
 	} elsif ($root eq 'self') {
+		$self->_debug('using self as the root');
 		$id = $self->dbl->self_path;
 	} else {
 		#assume the user knows what they're doing.  Make no checks on suitability.
+		$self->_debug('using supplied root:' . $root);
 		$id = $root;
 	}
 	my $out = $self->_format_list($id, 0, $self->_get_path);#root to use, 0 depth, array of parents of current document

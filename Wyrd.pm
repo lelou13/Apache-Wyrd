@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd;
-our $VERSION = '0.96';
+our $VERSION = '0.97';
 use Apache::Wyrd::Services::SAK qw (token_parse slurp_file);
 use Apache::Wyrd::Services::Tree;
 use Apache::Util;
@@ -410,8 +410,14 @@ sub new {
 	my $data = _init($dbl, $init);
 	bless ($data, $class);
 	$data->{'_class_name'} = $class;
-	$class =~ s/([^:]+)::.+/$1/;
-	$data->{'_base_class'} = ($init->{'_parent'}->{'_base_class'} || $class || 'Apache::Wyrd');
+	my $base_class = $dbl->base_class;
+	$base_class ||= $init->{'_parent'}->{'_base_class'};
+	unless ($base_class) {
+		$class =~ s/([^:]+)::.+/$1/;
+		$base_class ||= $class;
+		$base_class ||= 'Apache::Wyrd';
+	}
+	$data->{'_base_class'} = $base_class;
 	$data->_setup unless ($data->_flags->disable);
 	return ($data);
 }

@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Interfaces::Setter;
-our $VERSION = '0.96';
+our $VERSION = '0.97';
 use Apache::Util;
 
 =pod
@@ -48,10 +48,6 @@ valid perl variable name preceded by an exclamation or question mark
 and followed by curly braces enclosing text shows the enclosed text
 conditionally if the variable is true ("?:") or false ("!:").  These
 conditionals can be nested.
-
-Note that despite the flavor of Set-ting, conditionals are always
-interpreted and are considered false on non-existent, undefined, zero,
-or '' values, and true on anything else.
 
 The Setter interface provides several "flavors" of Set-ting functions
 depending on their purpose.  In general, however, they all accept two
@@ -174,7 +170,7 @@ sub _quote_set {
 		$hash{$i}='NULL' if ($hash{$i} eq q(''));
 	}
 	#then do replacements
-	foreach my $i (keys(%hash)) {
+	foreach my $i (sort {length($b) <=> length($a)} keys(%hash)) {
 		next unless ($i);#this is to prevent strange tied hashes from creating iloops
 		$self->_verbose("temp is $temp, i is $i and hash is $$hash{$i}");
 		$temp =~ s/\$:$i/$hash{$i}/gi;
@@ -200,7 +196,7 @@ sub _cgi_quote_set {
 	#then do quotations
 	$hash = $self->_cgi_hash($temp, 'quoted');
 	#then do replacements
-	foreach my $i (keys(%$hash)) {
+	foreach my $i (sort {length($b) <=> length($a)} keys(%$hash)) {
 		next unless ($i);#this is to prevent strange tied hashes from creating iloops
 		$self->_verbose("temp is $temp, i is $i and hash is $$hash{$i}");
 		$temp =~ s/\$:$i/$$hash{$i}/gi;
@@ -231,7 +227,7 @@ sub _escape_set {
 		$hash{$i}=Apache::Util::escape_html($hash{$i});
 	}
 	#then do replacements
-	foreach my $i (keys(%hash)) {
+	foreach my $i (sort {length($b) <=> length($a)} keys(%hash)) {
 		next unless ($i);#this is to prevent strange tied hashes from creating iloops
 		$self->_verbose("temp is $temp, i is $i and hash is $$hash{$i}");
 		$temp =~ s/\$:$i/$hash{$i}/gi;
@@ -302,7 +298,7 @@ sub _regexp_conditionals {
 				if ($char eq '{') {
 					my $identifier = substr($buf, 2);
 					if (exists($$hash{$identifier})) {
-						if (not($$hash{$identifier})) {
+						if (not(defined($$hash{$identifier}))) {
 							$state =~ tr/?!/!?/;
 						}
 						$buf = '';
@@ -381,7 +377,7 @@ sub _setter_replacements {
 		#substring of another
 		next unless ($i);#this is to prevent strange tied hashes from creating iloops
 		$self->_verbose("temp is '$temp', i is '$i' and value is '$$hash{$i}'");
-		$temp =~ s/\$:$i/$$hash{$i}/gi;
+		$temp =~ s/\$:\Q$i\E/$$hash{$i}/gi;
 	}
 	return $temp;
 }
@@ -486,9 +482,26 @@ sub _template_hash {
 
 =head1 BUGS/CAVEATS/RESERVED METHODS
 
+=head2 Interpolation Bug
+
 "$:" is a variable in perl, so be sure to escape or single-quote your
 in-code templates.  If you start seeing B<-variablename> in your pages,
 you'll know why.
+
+=head2 Defined Null Conditional Bug
+
+There's some un-perlish behavior in the setting of conditionals.  Conditional
+statements are set (?) or unset (!) depending on whether the item is defined,
+not whether it is true.  An eq operator, for example, returns '' (the null
+string) when the arguments are not equivalent strings, so a template with a
+conditional that should be false, and therefore unset, is actually considered
+true, since the result is defined and exists.  For example
+
+    $result = $self->_set({'a' => 'a' eq 'b'}, '?:a{wrong}');
+
+returns "wrong", not ''.  To prevent this, it should be written:
+
+    $result = $self->_set({'a' => ('a' eq 'b') || undef}, '?:a{wrong}');
 
 =head1 AUTHOR
 

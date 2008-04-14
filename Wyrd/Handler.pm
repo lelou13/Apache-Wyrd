@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Handler;
-our $VERSION = '0.96';
+our $VERSION = '0.97';
 use Apache::Wyrd::DBL;
 use Apache::Wyrd;
 use Apache::Wyrd::Services::SAK qw(slurp_file);
@@ -114,6 +114,7 @@ sub handler : method {
 	});
 	$self->{'init'} = $self->init;
 	$self->{'init'}->{'globals'} = $self->globals;
+	$self->{'init'}->{'base_class'} = $client;
 	my $response = $self->get_file;
 	return $response if ($response);
 	$response = $self->process;
@@ -294,6 +295,24 @@ other keys are optional.
 
 By default, if the hash key 'error_page' is set (non-null), the installation
 will use an error page with a debugging log.  See the C<errorpage> method.
+
+Note also if you wish to pass data containing Wyrd constructions via CGI
+variables, you need to list the variables by array reference here under the
+taint_exceptions key.  For example, a site under the namespace "TESTSITE" has
+a form with a text area called "widget_text" in which Wyrds may be composed.
+This text area's name is included in the hashref values returned by init:
+
+  sub init {
+    my ($self) = @_;
+    return {
+      req => $self->{'req'},
+      taint_exceptions => ['widget_text'],
+      .... other init keys and values ...
+    }
+  }
+
+Otherwise, any data submitted by the textarea will be ignored if it contains
+any string beginning with E<lt>TESTSITE::.
 
 =cut
 
