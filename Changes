@@ -1,30 +1,39 @@
 Changes
 =======
 
+    0.98   April 15, 2008
+
+           Converted two-argument forms of open() to three-argument forms
+
+           Modified some tests to reflect current state of test smokers,
+           alterations to Makefile.PL
+
+           Removed obsolete Wyrds from the official dist
+
     0.97   April 14, 2008
 
            Minor changes to Inputs and Form interaction to allow zero non-null
-           values where they would normally be forbidden.
+           values where they would normally be forbidden
 
            Security enhancement where any submitted data containing a string
            that can be interpreted as a Wyrd is dropped unless an exception is
            explicitly made for it in the initialization data passed to
            Apache::Wyrd::DBL by Apache::Wyrd::Handler.  This is to prevent
-           user-submitted data from being executed if it is displayed on a page.
+           user-submitted data from being executed if it is displayed on a page
 
            Setting the environment variables WYRD_USE_CGI and WYRD_USE_APR can
            be used to force the use of either CGI and CGI::Cookie or
            Apache::Request and Apache::Cookie as the underlying modules in the
-           wrapper classes Apache::Wyrd::Request and Apache::Wyrd::Cookie.
+           wrapper classes Apache::Wyrd::Request and Apache::Wyrd::Cookie
 
            Apache::Wyrd::Input & Apache::Wyrd::Input::Set more CSS and Java-
-           Script friendly.
+           Script friendly
 
            Apache::DBL now relies on DBI's connect_cached connection rather
-           than doing its own caching.
+           than doing its own caching
 
            Fixed a bug in Apache::Wyrd::Interfaces::Setter where interpolated
-           variables were not being sorted in some _set_xxxx functions.
+           variables were not being sorted in some _set_xxxx functions
 
            Fixed a bug in Apache::Wyrd::Interfaces::Setter where defined undef-
            equivalent but defined values were being interpreted as undefined
@@ -159,7 +168,7 @@ Changes
            operation, while clear_set interprets these conditionals as false. 
            This allows better layering of _set-tings on the same argument
 
-           SAK: file_attribute() now untaints the file path it generates.
+           SAK: file_attribute() now untaints the file path it generates
            sort_by_[i]key will reverse order on a key if the key is
            preceeded by a minus sign
 

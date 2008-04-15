@@ -6,15 +6,25 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::Key;
-our $VERSION = '0.97';
+our $VERSION = '0.98';
 use base qw(Class::Singleton);
 
 my $pure_perl = 0;
-eval ('use Crypt::Blowfish');
-if ($@) {
-	eval ('use Crypt::Blowfish_PP');
-	die "$@" if ($@);
-	$pure_perl = 1;
+
+if ($ENV{AUTOMATED_TESTING}) {
+
+	#If this is a smoker, Crypt::Blowfish is required.
+	use Crypt::Blowfish;
+
+} else {
+
+	eval ('use Crypt::Blowfish');
+	if ($@) {
+		eval ('use Crypt::Blowfish_PP');
+		die "$@" if ($@);
+		$pure_perl = 1;
+	}
+
 }
 
 =pod

@@ -1,6 +1,6 @@
 package Apache::Wyrd::Site::GDButton;
 use strict;
-our $VERSION = '0.97';
+our $VERSION = '0.98';
 use base qw(Apache::Wyrd::Interfaces::Setter Apache::Wyrd::Site::Widget Apache::Wyrd);
 use Apache::Wyrd::Services::SAK qw(:file token_parse);
 use Apache::Util;

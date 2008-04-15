@@ -1,10 +1,13 @@
-# http://module-build.sourceforge.net/META-spec.html
-#XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
-name:         Apache-Wyrd
-version:      0.97
-version_from: Wyrd.pm
-installdirs:  site
-requires:
+--- #YAML:1.0
+name:                Apache-Wyrd
+version:             0.98
+abstract:            ~
+license:             ~
+author:              
+    - barry king <wyrd@nospam.wyrdwright.com>
+generated_by:        ExtUtils::MakeMaker version 6.44
+distribution_type:   module
+requires:     
     Apache:                        1.26
     Apache::Constants:             0
     Apache::Cookie:                0
@@ -21,6 +24,6 @@ requires:
     LWP::UserAgent:                0
     MIME::Base64:                  0
     XML::Dumper:                   0.67
-
-distribution_type: module
-generated_by: ExtUtils::MakeMaker version 6.30
+meta-spec:
+    url:     http://module-build.sourceforge.net/META-spec-v1.3.html
+    version: 1.3

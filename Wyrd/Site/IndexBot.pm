@@ -4,7 +4,7 @@ use base qw(Apache::Wyrd::Bot);
 use Apache::Wyrd::Services::SAK qw(:file);
 use HTTP::Request::Common;
 use BerkeleyDB;
-our $VERSION = '0.97';
+our $VERSION = '0.98';
 
 =pod
 
@@ -160,7 +160,7 @@ sub index_site {
 
 	#go through the files in the document root that match ".html",
 	#and read in the file that shows when the last update was done
-	open (FILES, "/usr/bin/find $root -name \*.html |");
+	open (FILES, '-|', "/usr/bin/find $root -name \*.html");
 	$lastindex = ${slurp_file($lastfile)};
 	my $newest = $lastindex;
 	my @files = ();

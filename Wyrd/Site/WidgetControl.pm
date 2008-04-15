@@ -2,7 +2,7 @@ package Apache::Wyrd::Site::WidgetControl;
 use base qw(Apache::Wyrd::Interfaces::Setter Apache::Wyrd);
 use Apache::Wyrd::Services::SAK qw(env_4_get);
 use strict;
-our $VERSION = '0.97';
+our $VERSION = '0.98';
 
 =pod
 

@@ -2,7 +2,7 @@ package Apache::Wyrd::Site::WidgetIndex;
 use base qw(Apache::Wyrd::Services::Index);
 use strict;
 use Carp;
-our $VERSION = '0.97';
+our $VERSION = '0.98';
 
 =pod
 

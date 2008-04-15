@@ -34,7 +34,7 @@ I<(format: (returns) C<$wyrd-E<gt>name> (arguments))> for methods
 
 =cut
 
-our $VERSION = '0.97';
+our $VERSION = '0.98';
 our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(
 	array_4_get
@@ -291,7 +291,7 @@ A positive response means the file was successfully written.
 
 sub spit_file {
 	my ($file, $contents) = @_;
-	my $success = open (FILE, "> $file");
+	my $success = open (FILE, '>', $file);
 	if ($success) {
 		print FILE $contents;
 		close (FILE);
@@ -602,7 +602,7 @@ sub send_mail {
 	my $mail = shift;
 	$mail = lc_hash($mail);
 	my $path = ($$mail{'path'} || '/usr/sbin');
-	open (OUT, "| $path/sendmail -t ") || croak("Mail Failed: sendmail could not be used to send mail");
+	open (OUT, '|-', "$path/sendmail -t") || croak("Mail Failed: sendmail could not be used to send mail");
 	print OUT <<__mail_end__;
 From: $$mail{from}
 To: $$mail{to}

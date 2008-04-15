@@ -6,7 +6,7 @@ no warnings qw(uninitialized);
 use base qw (Apache::Wyrd::Interfaces::Setter Apache::Wyrd::Interfaces::Stealth Apache::Wyrd);
 use Apache::Wyrd::Services::SAK qw(:db);
 
-our $VERSION = '0.97';
+our $VERSION = '0.98';
 
 =pod
 

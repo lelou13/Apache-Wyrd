@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::MySQLForm;
-our $VERSION = '0.97';
+our $VERSION = '0.98';
 use base qw(Apache::Wyrd::SQLForm);
 use Apache::Wyrd::Services::SAK qw(:db);
 use warnings qw(all);

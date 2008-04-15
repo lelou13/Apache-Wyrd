@@ -9,7 +9,7 @@ use base qw(
 use Apache::Wyrd::Services::SAK qw(token_parse strip_html);
 use Apache::Wyrd::Services::FileCache;
 use Digest::SHA qw(sha1_hex);
-our $VERSION = '0.97';
+our $VERSION = '0.98';
 
 #state of the widgets is stored by an alphanumeric code where a=1 and Z=62, limiting
 #widget controls to 62 states and widgets to 62 controls

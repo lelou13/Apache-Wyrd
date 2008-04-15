@@ -3,7 +3,7 @@ use 5.006;
 use strict;
 use warnings;
 no warnings qw(uninitialized);
-our $VERSION = '0.97';
+our $VERSION = '0.98';
 use Digest::SHA qw(sha1_hex);
 
 =pod

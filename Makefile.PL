@@ -69,44 +69,49 @@ __MSG__
 }
 
 my $blowfish = 'Crypt::Blowfish';
-print "\nWyrds require Blowfish Crypto, which comes in xs or pure perl.\n";
-print "Checking for (faster, preferred) xs version...\n";
-eval ('use Crypt::Blowfish');
-if ($@) {
-	print "Falling back on pure perl version.\n";
-	eval('use Crypt::Blowfish_PP');
-	$blowfish .= '_PP' unless ($@);
-	print "No Blowfish Crypto found!\n" if ($@);
-} else {
-	print "Good. You have Crypt::Blowfish\n";
-}
-
 my $cgi = 'Apache::Request';
-print "\nWyrds require a CGI interpreter, either libapreq or CGI.\n";
-print "Checking for (faster, preferred) libapreq...\n";
-eval ('use Apache::Request');
-if ($@) {
-	print "Falling back on CGI.\n";
-	eval('use CGI');
-	$cgi = 'CGI' unless ($@);
-	print "But I can't find either!\n" if ($@);
-} else {
-	print "Good. You have Apache::Request\n";
-}
-
 my $cookie = 'Apache::Cookie';
-print "\nWyrds require a Cookie module.\n";
-print "Checking for (faster, preferred) Apache::Cookie...\n";
-eval ('use Apache::Cookie');
-if ($@) {
-	print "Falling back on CGI::Cookie.\n";
-	eval('use CGI::Cookie');
-	$cookie = 'CGI::Cookie' unless ($@);
-	print "But I can't find either!\n" if ($@);
-} else {
-	print "Good. You have Apache::Cookie\n";
-}
 
+if (!$ENV{AUTOMATED_TESTING}) {
+	
+	print "\nWyrds require Blowfish Crypto, which comes in xs or pure perl.\n";
+	print "Checking for (faster, preferred) xs version...\n";
+	eval ('use Crypt::Blowfish');
+	if ($@) {
+		print "Falling back on pure perl version.\n";
+		eval('use Crypt::Blowfish_PP');
+		$blowfish .= '_PP' unless ($@);
+		print "No Blowfish Crypto found!\n" if ($@);
+	} else {
+		print "Good. You have Crypt::Blowfish\n";
+	}
+	
+	print "\nWyrds require a CGI interpreter, either libapreq or CGI.\n";
+	print "Checking for (faster, preferred) libapreq...\n";
+	eval ('use Apache::Request');
+	if ($@) {
+		print "Falling back on CGI.\n";
+		eval('use CGI');
+		$cgi = 'CGI' unless ($@);
+		print "But I can't find either!\n" if ($@);
+	} else {
+		print "Good. You have Apache::Request\n";
+	}
+	
+	print "\nWyrds require a Cookie module.\n";
+	print "Checking for (faster, preferred) Apache::Cookie...\n";
+	eval ('use Apache::Cookie');
+	if ($@) {
+		print "Falling back on CGI::Cookie.\n";
+		eval('use CGI::Cookie');
+		$cookie = 'CGI::Cookie' unless ($@);
+		print "But I can't find either!\n" if ($@);
+	} else {
+		print "Good. You have Apache::Cookie\n";
+	}
+
+}
+	
 if ($have_atest) {
 	print "\nOK... Generating Makefile and TEST...\n";
 	Apache::TestMM::filter_args();
@@ -139,7 +144,19 @@ my $makefile = WriteMakefile(
 	},
 	AUTHOR			=> 'barry king <wyrd@nospam.wyrdwright.com>',
 	clean			=> {
-			FILES	=> q(t/TEST t/data/testindex.db t/data/testindex2.db t/data/testindex3.db t/data/testindex2_big.db t/data/ticketbook.db t/data/cookies.txt t/logs t/conf/modperl_startup.pl t/htdocs/index.html)
+			FILES	=> q(
+				t/TEST
+				t/data/testindex.db
+				t/data/testindex2.db
+				t/data/testindex3.db
+				t/data/testindex2_big.db
+				t/data/ticketbook.db
+				t/data/cookies.txt
+				t/data/__db.???
+				t/logs
+				t/conf/modperl_startup.pl
+				t/htdocs/index.html
+			)
 	}
 );
 

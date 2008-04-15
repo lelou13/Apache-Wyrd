@@ -3,37 +3,46 @@ use 5.006;
 use strict;
 use warnings;
 no warnings qw(uninitialized redefine);
-
-our $VERSION = '0.97';
+our $VERSION = '0.98';
 use vars qw(@ISA);
 
-#set environment variables WYRD_USE_CGI or WYRD_USE_APR
-#to force the use of libapreq or CGI
-my $force_apr = 0;
-my $force_cgi = 0;
-if ($ENV{WYRD_USE_CGI}) {
-	$force_cgi = 1;
-}
-if ($ENV{WYRD_USE_APR}) {
-	$force_apr = 1;
-}
-
 my $have_apr = 1;
-my $init_error = '';
-if (!$force_cgi) {
-	eval('use Apache::Cookie');
-	if ($@) {
-		$init_error = $@;
-		die "$@" if ($force_apr);
-	}
-}
-if ($init_error or $force_cgi) {
-	eval('use CGI::Cookie');
-	die "$@" if ($@);
-	$have_apr = 0;
-	push @ISA, 'CGI::Cookie';
+
+if ($ENV{AUTOMATED_TESTING}) {
+
+	#If this is a smoker, the APR method is required.
+	use base qw(Apache::Cookie);
+
 } else {
-	push @ISA, 'Apache::Cookie';
+
+	#set environment variables WYRD_USE_CGI or WYRD_USE_APR
+	#to force the use of libapreq or CGI
+	my $force_apr = 0;
+	my $force_cgi = 0;
+	if ($ENV{WYRD_USE_CGI}) {
+		$force_cgi = 1;
+	}
+	if ($ENV{WYRD_USE_APR}) {
+		$force_apr = 1;
+	}
+	
+	my $init_error = '';
+	if (!$force_cgi) {
+		eval('use Apache::Cookie');
+		if ($@) {
+			$init_error = $@;
+			die "$@" if ($force_apr);
+		}
+	}
+	if ($init_error or $force_cgi) {
+		eval('use CGI::Cookie');
+		die "$@" if ($@);
+		$have_apr = 0;
+		push @ISA, 'CGI::Cookie';
+	} else {
+		push @ISA, 'Apache::Cookie';
+	}
+
 }
 
 =pod

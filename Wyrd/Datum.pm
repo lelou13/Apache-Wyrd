@@ -6,7 +6,7 @@ no warnings qw(uninitialized);
 no warnings qw(redefine);
 
 package Apache::Wyrd::Datum;
-our $VERSION = '0.97';
+our $VERSION = '0.98';
 
 use constant TYPE => 0;
 use constant VALUE => 1;

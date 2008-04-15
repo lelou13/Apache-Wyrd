@@ -7,7 +7,7 @@ no warnings qw(uninitialized);
 
 package Apache::Wyrd::Interfaces::Mother;
 use base qw(Apache::Wyrd::Interfaces::Setter);
-our $VERSION = '0.97';
+our $VERSION = '0.98';
 
 =pod
 

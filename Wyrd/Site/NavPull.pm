@@ -2,7 +2,7 @@ package Apache::Wyrd::Site::NavPull;
 use strict;
 use base qw(Apache::Wyrd::Site::Pull);
 use Apache::Wyrd::Services::SAK qw(:hash token_parse);
-our $VERSION = '0.97';
+our $VERSION = '0.98';
 
 =pod
 

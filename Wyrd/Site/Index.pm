@@ -3,7 +3,7 @@ use base qw(Apache::Wyrd::Services::Index);
 use Apache::Wyrd::Services::SAK qw(:file);
 use HTTP::Request::Common;
 use BerkeleyDB;
-our $VERSION = '0.97';
+our $VERSION = '0.98';
 use strict;
 
 =pod
@@ -117,7 +117,7 @@ sub index_site {
 	my $ua = $self->ua;
 	$ua->timeout(60);
 	local $| = 1;
-	open (FILES, "/usr/bin/find $root -name \*.html |");
+	open (FILES, '-|', "/usr/bin/find $root -name \*.html");
 	my $counter = 0;
 	$lastindex = ${slurp_file($root. "/var/lastindex.db")};
 	my $newest = $lastindex;

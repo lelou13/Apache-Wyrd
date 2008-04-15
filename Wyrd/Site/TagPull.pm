@@ -5,7 +5,7 @@ use Apache::Wyrd::Services::SearchParser;
 use Apache::Wyrd::Services::SAK qw(:hash);
 use Apache::Wyrd::Interfaces::Dater;
 use Date::Calc qw(Add_Delta_Days);
-our $VERSION = '0.97';
+our $VERSION = '0.98';
 
 =pod
 

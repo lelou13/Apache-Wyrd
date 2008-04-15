@@ -83,7 +83,6 @@ Wyrd/Input.pm
 Wyrd/Input/Complex.pm
 Wyrd/Input/Condenser.pm
 Wyrd/Input/Opt.pm
-Wyrd/Input/Preload.pm
 Wyrd/Input/Set.pm
 Wyrd/Input/URLInput.pm
 Wyrd/Interfaces/Columnize.pm
@@ -95,7 +94,6 @@ Wyrd/Interfaces/Mother.pm
 Wyrd/Interfaces/Setter.pm
 Wyrd/Interfaces/SmartInput.pm
 Wyrd/Interfaces/Stealth.pm
-Wyrd/Interfaces/XMLer.pm
 Wyrd/Lattice.pm
 Wyrd/Lib.pm
 Wyrd/LogDump.pm
@@ -124,7 +122,6 @@ Wyrd/Site.pod
 Wyrd/Site/GDButton.pm
 Wyrd/Site/Index.pm
 Wyrd/Site/IndexBot.pm
-Wyrd/Site/IndexBrowser.pm
 Wyrd/Site/Login.pm
 Wyrd/Site/MySQLIndex.pm
 Wyrd/Site/MySQLIndexBot.pm

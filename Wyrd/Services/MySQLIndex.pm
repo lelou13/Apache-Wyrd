@@ -4,7 +4,7 @@ use 5.006;
 use strict;
 use warnings;
 no warnings qw(uninitialized);
-our $VERSION = '0.97';
+our $VERSION = '0.98';
 use Apache::Wyrd::Services::SAK qw(token_parse strip_html);
 use Apache::Wyrd::Services::SearchParser;
 use Digest::SHA qw(sha1_hex);

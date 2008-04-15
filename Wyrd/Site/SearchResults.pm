@@ -7,7 +7,7 @@ use base qw(
 	Apache::Wyrd::Interfaces::Setter
 	Apache::Wyrd
 );
-our $VERSION = '0.97';
+our $VERSION = '0.98';
 
 # searchparam - name of parameter containing the search string, default 'searchstring'
 # item - list item template

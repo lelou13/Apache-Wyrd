@@ -3,7 +3,7 @@ use strict;
 use base qw(Apache::Wyrd::Services::MySQLIndex);
 use Apache::Wyrd::Services::SAK qw(:file);
 use HTTP::Request::Common;
-our $VERSION = '0.97';
+our $VERSION = '0.98';
 
 =pod
 

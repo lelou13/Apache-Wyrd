@@ -2,7 +2,7 @@ package Apache::Wyrd::Site::Pull;
 use strict;
 use base qw(Apache::Wyrd::Interfaces::IndexUser Apache::Wyrd::Interfaces::Setter Apache::Wyrd::Interfaces::Dater Apache::Wyrd);
 use Apache::Wyrd::Services::SAK qw(token_parse);
-our $VERSION = '0.97';
+our $VERSION = '0.98';
 
 =pod
 

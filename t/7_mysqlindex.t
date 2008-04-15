@@ -23,6 +23,9 @@ EVAL
 if ($@) {
 	$count = 0;
 	warn "Could not initialize a connection to database 'test': $@";
+} elsif (!$dbh) {
+	$count = 0;
+	warn "DBI Connection failed to be opened.";
 }
 
 my $create_routine = <<"CREATE";
@@ -81,7 +84,9 @@ make sure:
 
 1. MySQL is installed and running
 2. A user account for database test exists: test, and that it has no password
-3. dbd::mysql is installed and working
+3. user account 'test' has sufficient privileges to create tables and insert
+   data.
+4. dbd::mysql is installed and working
 
 WARNING
 }

@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Services::TicketPad;
-our $VERSION = '0.97';
+our $VERSION = '0.98';
 use BerkeleyDB;
 use BerkeleyDB::Btree;
 
@@ -40,15 +40,15 @@ I<(format: (returns) name (arguments after self))>
 
 =item (Apache::Wyrd::Services::TicketFile) C<new> (scalar, scalar)
 
-Accepts a filename for the file which will hold the ticket pad.  Returns
-the TicketPad object.
+Accepts a filename for the file which will hold the ticket pad and the number of
+tickets the pad should keep (default 100).  Returns the TicketPad object.
 
 =cut
 
 sub new {
-	my ($class, $file) = @_;
+	my ($class, $file, $tickets) = @_;
 	$file || die ('You need to define a file for the ticketpad.');
-	my $tickets = 100;
+	$tickets ||= 100;
 	my $self = {
 		indexfile => $file,
 		tickets => $tickets

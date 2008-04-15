@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized);
 
 package Apache::Wyrd::Interfaces::Setter;
-our $VERSION = '0.97';
+our $VERSION = '0.98';
 use Apache::Util;
 
 =pod
